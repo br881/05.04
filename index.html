@@ -400,10 +400,11 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .tt-entry-field{
   width:100%;background:rgba(255,255,255,0.11);
   border:none;
-  border-radius:12px;padding:13px 15px;
-  color:#ffffff;font-size:17px;font-weight:400;
-  font-family:inherit;outline:none;
-  transition:background .2s;margin-bottom:12px;
+  border-radius:12px;padding:16px 15px;
+  color:#ffffff;font-size:22px;font-weight:300;
+  font-family:-apple-system,'SF Pro Text',BlinkMacSystemFont,sans-serif;
+  outline:none;transition:background .2s;margin-bottom:12px;
+  text-align:center;letter-spacing:-.01em;
 }
 .tt-entry-field:focus{background:rgba(255,255,255,0.16);}
 .tt-cat-row{
@@ -634,16 +635,17 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 </div>
 
 <!-- ══ ADD TASK OVERLAY ══ -->
-<div id="tempAddOverlay" style="position:absolute;inset:0;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 20px 32px;visibility:hidden;opacity:0;transition:opacity .22s,visibility .22s">
+<div id="tempAddOverlay" style="position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;visibility:hidden;opacity:0;transition:opacity .22s,visibility .22s;">
   <div onclick="closeTempAddOverlay()" style="position:absolute;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)"></div>
-  <div style="position:relative;z-index:1;width:100%;max-width:440px;display:flex;flex-direction:column;gap:14px;align-items:stretch">
-    <input id="tempAddField" class="temp-card-field" enterkeyhint="done" inputmode="text" autocomplete="off" autocapitalize="sentences" style="width:100%">
+  <div style="position:relative;z-index:1;width:100%;max-width:440px;padding:0 20px;margin-top:calc(env(safe-area-inset-top,44px) + 60px);display:flex;flex-direction:column;gap:14px;align-items:stretch">
+    <input id="tempAddField" enterkeyhint="done" inputmode="text" autocomplete="off" autocapitalize="sentences"
+      style="width:100%;background:rgba(255,255,255,0.18);border:none;border-radius:16px;padding:18px 20px;color:#fff;font-size:22px;font-weight:300;font-family:-apple-system,sans-serif;outline:none;text-align:center;letter-spacing:-.01em;box-sizing:border-box;-webkit-user-select:text;user-select:text;">
     <div id="tempAddSectors" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"></div>
   </div>
 </div>
 
 <!-- ══ ALL TASKS VIEW ══ -->
-<div id="allTasksView" class="screen" style="z-index:15">
+<div id="allTasksView" class="screen" style="z-index:15;overflow:visible;">
   <div class="settings-header">
     <button class="btn-back" onclick="closeAllTasksView()">‹</button>
   </div>
@@ -1229,20 +1231,24 @@ function completeTempFromScreen(tId){
 
 /* ══ ADD TASK OVERLAY ══ */
 function openTempAddOverlayTouch(e){
-  // iOS: focus MUST happen synchronously in touchstart (same gesture stack)
-  const f=document.getElementById('tempAddField');
-  f.focus();
-  // Let the click handler handle the rest
-}
-function openTempAddOverlay(){
+  // touchstart — MUST focus synchronously, before visibility changes
+  // Show overlay first so element is actually visible (iOS ignores focus on hidden)
   _tempAddSector=getActiveSector()?.id||state.sectors[0]?.id;
   document.getElementById('tempAddField').value='';
   document.getElementById('tempAddSectors').innerHTML=
     state.sectors.map(s=>`<div class="sector-pill${s.id===_tempAddSector?' active':''}" onclick="setTempAddSec('${s.id}',this)" style="font-size:16px;padding:10px 20px">${s.name}</div>`).join('');
   const ov=document.getElementById('tempAddOverlay');
+  ov.style.transition='none';
   ov.style.visibility='visible'; ov.style.opacity='1';
-  const f=document.getElementById('tempAddField');
-  f.focus();
+  // Now focus synchronously — element is visible, iOS will open keyboard
+  document.getElementById('tempAddField').focus();
+}
+function openTempAddOverlay(){
+  // onclick fires after touchstart; overlay already open, just re-focus
+  const ov=document.getElementById('tempAddOverlay');
+  ov.style.transition='opacity .22s,visibility .22s';
+  ov.style.visibility='visible'; ov.style.opacity='1';
+  document.getElementById('tempAddField').focus();
 }
 function closeTempAddOverlay(){
   document.getElementById('tempAddField')?.blur();
@@ -1636,7 +1642,7 @@ function renderSettings(){
       </button>
 
       <button onclick="toggleFold('archive')" style="width:52px;height:52px;border-radius:50%;background:${archiveOpen?'var(--accent-dim)':habitColor};border:none;color:${archiveOpen?'var(--accent-bright)':'rgba(255,255,255,0.7)'};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
       <button onclick="showExportSheet()" style="width:52px;height:52px;border-radius:50%;background:${habitColor};border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1650,6 +1656,13 @@ function renderSettings(){
   if(statsOpen){
     html+=`<div class="s-section s-lock-panel" style="margin-top:12px">`;
 
+    // — Shared period toggle (7 / 30 for ALL stats) —
+    const sharedPeriod=state._statPeriod||7;
+    html+=`<div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px;padding-top:4px">`;
+    html+=`<button onclick="setStatPeriod(7)" style="padding:6px 20px;border-radius:20px;border:none;font-size:13px;font-family:inherit;cursor:pointer;background:${sharedPeriod===7?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.07)'};color:${sharedPeriod===7?'#fff':'rgba(255,255,255,0.45)'}">7</button>`;
+    html+=`<button onclick="setStatPeriod(30)" style="padding:6px 20px;border-radius:20px;border:none;font-size:13px;font-family:inherit;cursor:pointer;background:${sharedPeriod===30?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.07)'};color:${sharedPeriod===30?'#fff':'rgba(255,255,255,0.45)'}">30</button>`;
+    html+=`</div>`;
+
     // — Habits table —
     const selCsvSec=state._csvSectorId||state.sectors[0]?.id;
     html+=`<div class="s-panel-body" style="padding-bottom:4px">`;
@@ -1659,7 +1672,7 @@ function renderSettings(){
     const selSec=state.sectors.find(s=>s.id===selCsvSec)||state.sectors[0];
     const habitsInSec=selSec?state.habits.filter(h=>!h.archived&&h.sectorId===selSec.id):[];
     const days7=[];const now7=new Date();
-    for(let i=6;i>=0;i--){ const d2=new Date(now7); d2.setDate(now7.getDate()-i); days7.push({key:fmtDate(d2),num:d2.getDate()}); }
+    for(let i=sharedPeriod-1;i>=0;i--){ const d2=new Date(now7); d2.setDate(now7.getDate()-i); days7.push({key:fmtDate(d2),num:d2.getDate()}); }
     const activeHabits=habitsInSec.filter(h=>days7.some(d=>isDone(state.daily?.[d.key]?.habits?.[h.id])));
     if(!activeHabits.length){
       html+=`<div class="empty"><div class="empty-text">Brak danych</div></div>`;
@@ -1693,8 +1706,8 @@ function renderSettings(){
     // — Czas stats (same style as money) —
     {
       const timeCats=state.timeCategories||[];
-      const timePeriod=state._timeStatPeriod||7;
-      const rawStats=getTimeStats(timePeriod==='month'?'month':'week');
+      const timePeriod=state._statPeriod||7;
+      const rawStats=getTimeStats(timePeriod===30||timePeriod==='month'?'month':'week');
       // rawStats is catId→mins; build same shape as money stats
       const totalMins=Object.values(rawStats).reduce((s,v)=>s+v,0);
       const tPalette=['#60a5fa','#f472b6','#fb923c','#a78bfa','#34d399','#fbbf24','#f87171','#38bdf8'];
@@ -1703,11 +1716,7 @@ function renderSettings(){
 
       html+=`<div class="s-panel-body" style="border-top:none;padding-top:4px">`;
 
-      // Period toggle
-      html+=`<div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px">`;
-      html+=`<button onclick="setTimeStatPeriod(7)" style="padding:6px 18px;border-radius:20px;border:none;font-size:12px;font-family:inherit;cursor:pointer;background:${timePeriod===7?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.07)'};color:${timePeriod===7?'#fff':'rgba(255,255,255,0.45)'}">7</button>`;
-      html+=`<button onclick="setTimeStatPeriod('month')" style="padding:6px 18px;border-radius:20px;border:none;font-size:12px;font-family:inherit;cursor:pointer;background:${timePeriod==='month'?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.07)'};color:${timePeriod==='month'?'#fff':'rgba(255,255,255,0.45)'}">30</button>`;
-      html+=`</div>`;
+      // period toggle is shared (shown once above)
 
       if(totalMins===0){
         html+=`<div class="empty"><div class="empty-text">brak</div></div>`;
@@ -1763,7 +1772,7 @@ function renderSettings(){
           const hh=Math.floor(mins/60),m=mins%60;
           const dur=hh>0?`${hh}h${m>0?' '+m+'m':''}`:m+'m';
           // Collect entries for this cat in period
-          const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-(timePeriod==='month'?30:7));
+          const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-(timePeriod===30||timePeriod==='month'?30:7));
           const entryRows=[];
           Object.entries(state.timeEntries||{}).forEach(([dateKey,dayEnts])=>{
             if(new Date(dateKey+'T00:00:00')<cutoff) return;
@@ -1793,22 +1802,6 @@ function renderSettings(){
           html+=`</div>`;
         });
       }
-
-      // Compact draggable category chips
-      html+=`<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;padding:4px 0">`;
-      timeCats.forEach((cat,i)=>{
-        const col=tCatColor(cat,i);
-        html+=`<div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.08);border-radius:20px;padding:5px 10px 5px 6px;cursor:grab;touch-action:none"
-          id="tcr-${cat.id}" data-tcid="${cat.id}"
-          draggable="true" ondragstart="tcDragStart(event,'${cat.id}')" ondragover="tcDragOver(event,'${cat.id}')" ondrop="tcDragDrop(event,'${cat.id}')" ondragend="tcDragEnd()"
-          ontouchstart="tcTouchStart(event,'${cat.id}')" ontouchmove="tcTouchMove(event)" ontouchend="tcTouchEnd(event,'${cat.id}')">
-          <input type="color" value="${col.startsWith('#')?col:'#555555'}" onchange="updateTimeCatColor('${cat.id}',this.value)" style="width:16px;height:16px;border:none;border-radius:50%;padding:0;background:none;cursor:pointer;overflow:hidden;flex-shrink:0" onclick="event.stopPropagation()">
-          <span style="font-size:14px">${cat.name}</span>
-          <button onclick="deleteTimeCat('${cat.id}')" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:15px;cursor:pointer;padding:0;line-height:1;margin-left:1px">×</button>
-        </div>`;
-      });
-      html+=`<button class="add-sector-btn-icon" onclick="openAddTimeCat()" style="padding:7px;width:30px;height:30px;flex-shrink:0">${plusSVG}</button>`;
-      html+=`</div>`;
 
       html+=`</div>`;
     }
@@ -1845,6 +1838,43 @@ function renderSettings(){
         </div>`);
       }
     }
+    html+=`</div>`;
+
+    // ── Kategorie: Czas ──
+    html+=`<div style="padding:12px 16px 8px">`;
+    html+=`<div style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px">Czas</div>`;
+    const _aCats=state.timeCategories||[];
+    const _aPal=['#60a5fa','#f472b6','#fb923c','#a78bfa','#34d399','#fbbf24','#f87171','#38bdf8'];
+    html+=`<div style="display:flex;flex-direction:column;gap:8px">`;
+    _aCats.forEach((cat,i)=>{
+      const col=cat.color||(_aPal[i%_aPal.length]);
+      html+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,0.06)"
+        id="tcr-${cat.id}" data-tcid="${cat.id}"
+        draggable="true" ondragstart="tcDragStart(event,'${cat.id}')" ondragover="tcDragOver(event,'${cat.id}')" ondrop="tcDragDrop(event,'${cat.id}')" ondragend="tcDragEnd()"
+        ontouchstart="tcTouchStart(event,'${cat.id}')" ontouchmove="tcTouchMove(event)" ontouchend="tcTouchEnd(event,'${cat.id}')">
+        <input type="color" value="${col.startsWith('#')?col:'#555'}" onchange="updateTimeCatColor('${cat.id}',this.value)" style="width:22px;height:22px;border:none;border-radius:50%;padding:0;background:none;cursor:pointer;overflow:hidden;flex-shrink:0" onclick="event.stopPropagation()">
+        <span style="flex:1;font-size:16px;color:#fff">${cat.name}</span>
+        <button onclick="deleteTimeCat('${cat.id}')" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:18px;cursor:pointer;padding:0;line-height:1">×</button>
+      </div>`;
+    });
+    html+=`</div>`;
+    html+=`<button onclick="openAddTimeCat()" style="display:flex;align-items:center;justify-content:center;width:100%;padding:10px;margin-top:6px;border:none;border-radius:12px;background:none;color:rgba(255,255,255,0.3);cursor:pointer;">${plusSVG}</button>`;
+
+    // ── Kategorie: Money ──
+    html+=`<div style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:.07em;text-transform:uppercase;margin:16px 0 10px">Money</div>`;
+    const _mCats2=(state.moneyCategories||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
+    const _mPal2=['#60a5fa','#f472b6','#fb923c','#a78bfa','#34d399','#fbbf24','#f87171','#38bdf8'];
+    html+=`<div style="display:flex;flex-direction:column;gap:8px">`;
+    _mCats2.forEach((c,i)=>{
+      const color=c.color||_mPal2[i%_mPal2.length];
+      html+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,0.06)">
+        <input type="color" value="${color.startsWith('#')?color:'#60a5fa'}" onchange="updateMoneyCatColor('${c.id}',this.value)" style="width:22px;height:22px;border:none;border-radius:50%;padding:0;background:none;cursor:pointer;overflow:hidden;flex-shrink:0;">
+        <span style="flex:1;font-size:16px;color:#fff">${c.name}</span>
+        <button onclick="deleteMoneyCat('${c.id}')" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:18px;cursor:pointer;padding:0;line-height:1">×</button>
+      </div>`;
+    });
+    html+=`</div>`;
+    html+=`<button onclick="openAddMoneyCat()" style="display:flex;align-items:center;justify-content:center;width:100%;padding:10px;margin-top:6px;border:none;border-radius:12px;background:none;color:rgba(255,255,255,0.3);cursor:pointer;">${plusSVG}</button>`;
     html+=`</div></div>`;
   }
 
@@ -3193,7 +3223,7 @@ function getMoneyStats(days){
 
 function renderMoneySettings(){
   const cats=(state.moneyCategories||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
-  const period=state._moneyStatPeriod||7;
+  const period=state._statPeriod||7;
   const stats=getMoneyStats(period);
   const total=Object.values(stats).reduce((s,v)=>s+v.total,0);
 
@@ -3202,11 +3232,7 @@ function renderMoneySettings(){
 
   let html='<div style="padding:8px 0">';
 
-  // Period toggle
-  html+=`<div style="display:flex;justify-content:center;gap:8px;margin-bottom:18px">`;
-  html+=`<button onclick="setMoneyStatPeriod(7)" style="padding:7px 20px;border-radius:20px;border:none;font-size:13px;font-family:inherit;cursor:pointer;background:${period===7?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.07)'};color:${period===7?'#fff':'rgba(255,255,255,0.5)'}">7</button>`;
-  html+=`<button onclick="setMoneyStatPeriod(30)" style="padding:7px 20px;border-radius:20px;border:none;font-size:13px;font-family:inherit;cursor:pointer;background:${period===30?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.07)'};color:${period===30?'#fff':'rgba(255,255,255,0.5)'}">30</button>`;
-  html+=`</div>`;
+  // period toggle is shared (shown once above)
 
   if(total===0){
     html+=`<div style="text-align:center;color:rgba(255,255,255,0.25);font-size:13px;padding:16px 0">Brak wpisów</div>`;
@@ -3269,27 +3295,15 @@ function renderMoneySettings(){
     });
   }
 
-  // Category management: inline chips like time cats
-  html+=`<div style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;margin-top:8px">Kategorie</div>`;
-  html+=`<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px;padding:4px 0">`;
-  cats.forEach((c,i)=>{
-    const color=c.color||palette[i%palette.length];
-    html+=`<div style="display:flex;align-items:center;gap:4px;border-radius:20px;padding:5px 10px 5px 6px;background:rgba(255,255,255,0.08)">`;
-    html+=`<input type="color" value="${color.startsWith('#')?color:'#60a5fa'}" onchange="updateMoneyCatColor('${c.id}',this.value)" style="width:20px;height:20px;border:none;border-radius:50%;padding:0;background:none;cursor:pointer;overflow:hidden;flex-shrink:0;">`;
-    html+=`<span style="font-size:15px;color:#fff">${c.name}</span>`;
-    html+=`<button onclick="deleteMoneyCat('${c.id}')" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:16px;cursor:pointer;padding:0;line-height:1;margin-left:2px">×</button>`;
-    html+=`</div>`;
-  });
-  html+=`<button class="add-sector-btn-icon" onclick="openAddMoneyCat()" style="padding:8px;width:34px;height:34px;flex-shrink:0">${plusSVG}</button>`;
-  html+=`</div>`;
+
   html+=`</div>`;
   return html;
 }
 
-function setTimeStatPeriod(p){ state._timeStatPeriod=p; save(); renderSettings(); }
-function setMoneyStatPeriod(days){
-  state._moneyStatPeriod=days; save(); renderSettings();
-}
+function setHabitStatPeriod(d){ state._habitStatPeriod=d; save(); renderSettings(); }
+function setStatPeriod(d){ state._statPeriod=d; save(); renderSettings(); }
+function setTimeStatPeriod(p){ setStatPeriod(p==='month'?30:p); }
+function setMoneyStatPeriod(days){ setStatPeriod(days); }
 
 function updateMoneyCatColor(id,color){
   const cat=(state.moneyCategories||[]).find(c=>c.id===id);
