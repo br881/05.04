@@ -75,7 +75,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .temp-overlay.open{opacity:1;pointer-events:all;}
 .temp-overlay-blur{position:absolute;inset:0;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(0,0,0,0.78);}
 .temp-card{position:relative;z-index:1;width:100%;max-width:440px;margin:0 auto;background:none;border:none;border-radius:0;padding:0;display:flex;flex-direction:column;gap:18px;align-items:center;}
-.temp-card-field{width:100%;background:rgba(255,255,255,0.32);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:18px;font-weight:400;font-family:inherit;outline:none;transition:background .2s;text-align:center;}
+.temp-card-field{width:100%;background:rgba(255,255,255,0.32);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:18px;font-weight:400;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
 .temp-card-field:focus{border-color:var(--accent-border);}
 .temp-card-sectors{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
 .sector-pill{padding:8px 16px;border-radius:20px;border:none;background:rgba(255,255,255,0.05);color:var(--ui);font-size:14px;cursor:pointer;font-family:inherit;transition:all .15s;}
@@ -119,7 +119,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .input-sheet.open{transform:translateY(0);}
 .is-handle{width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);margin:0 auto 14px;}
 .is-label{font-size:14px;color:var(--ui);margin-bottom:8px;opacity:.7;font-weight:400;}
-.is-field{width:100%;background:rgba(255,255,255,0.11);border:none;border-radius:12px;padding:13px 15px;color:#ffffff;font-size:17px;font-weight:400;font-family:inherit;outline:none;transition:background .2s;}
+.is-field{width:100%;background:rgba(255,255,255,0.11);border:none;border-radius:12px;padding:13px 15px;color:#ffffff;font-size:18px;font-weight:400;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
 .is-field:focus{background:rgba(255,255,255,0.16);}
 .is-confirm{width:100%;margin-top:10px;background:rgba(61,221,101,0.55);color:#fff;font-size:17px;font-weight:600;border:none;border-radius:12px;padding:14px;cursor:pointer;font-family:inherit;transition:opacity .15s;}
 .is-confirm:active{opacity:.7;}
@@ -130,7 +130,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .settings-header{position:absolute;top:0;left:0;z-index:10;padding:calc(var(--safe-top)+4px) 0 0 4px;}
 .btn-back{display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:none;border:none;color:var(--accent);font-size:28px;cursor:pointer;opacity:.7;line-height:1;}
 .btn-back:active{opacity:1;}
-.settings-scroll{flex:1;overflow-y:auto;scrollbar-width:none;padding-top:calc(var(--safe-top)+56px);padding-bottom:calc(var(--safe-bottom)+40px);}
+.settings-scroll{flex:1;overflow-y:auto;scrollbar-width:none;padding-top:max(calc(var(--safe-top)+56px),80px);padding-bottom:calc(var(--safe-bottom)+40px);}
 .settings-scroll::-webkit-scrollbar{display:none;}
 .s-section{padding:0 18px;margin-top:20px;}
 .s-section-title{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ui);margin-bottom:10px;padding:0 4px;opacity:.5;display:flex;align-items:center;justify-content:center;gap:6px;}
@@ -300,7 +300,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .type-selector{display:flex;gap:6px;}
 .type-btn{flex:1;padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.06);color:#ffffff;font-size:14px;cursor:pointer;font-family:inherit;transition:all .18s;text-align:center;display:flex;align-items:center;justify-content:center;}
 .type-btn.active{background:var(--accent-dim);color:var(--accent-bright);}
-.hd-name-input{flex:1;background:rgba(255,255,255,0.32);border:none;border-radius:12px;padding:13px 16px;color:#ffffff;font-size:19px;font-weight:600;font-family:inherit;outline:none;text-align:center;transition:background .2s;}
+.hd-name-input{flex:1;background:rgba(255,255,255,0.32);border:none;border-radius:12px;padding:13px 16px;color:#ffffff;font-size:18px;font-weight:400;font-family:inherit;outline:none;text-align:center;transition:background .2s;letter-spacing:-.02em;}
 .hd-name-input:focus{background:rgba(255,255,255,0.38);}
 .hd-name-input::placeholder{color:rgba(255,255,255,0.28);}
 
@@ -401,10 +401,10 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   width:100%;background:rgba(255,255,255,0.11);
   border:none;
   border-radius:12px;padding:16px 15px;
-  color:#ffffff;font-size:22px;font-weight:300;
-  font-family:-apple-system,'SF Pro Text',BlinkMacSystemFont,sans-serif;
+  color:#ffffff;font-size:18px;font-weight:400;
+  font-family:inherit;
   outline:none;transition:background .2s;margin-bottom:12px;
-  text-align:center;letter-spacing:-.01em;
+  text-align:center;letter-spacing:-.02em;
 }
 .tt-entry-field:focus{background:rgba(255,255,255,0.16);}
 .tt-cat-row{
@@ -553,11 +553,11 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
     <!-- Big number -->
     <div id="moneyDisplay" style="font-size:68px;font-weight:200;color:#ffffff;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;text-align:center;line-height:1;margin-bottom:48px;">0</div>
     <!-- Categories -->
-    <div id="moneyCatRow" style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:440px;"></div>
+    <div id="moneyCatRow" style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:400px;"></div>
     <!-- Extra note field — shown below categories, always visible, plain keyboard -->
     <input id="moneyNoteInput" type="text" inputmode="text" enterkeyhint="done" autocapitalize="sentences" autocomplete="off"
-      placeholder="…"
-      style="width:100%;max-width:440px;background:rgba(255,255,255,0.14);border:none;border-radius:16px;padding:18px 26px;color:#ffffff;font-size:18px;font-weight:300;text-align:center;font-family:inherit;outline:none;box-sizing:border-box;-webkit-appearance:none;"
+      placeholder=""
+      style="margin-top:10px;width:100%;max-width:400px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:14px 18px;color:#ffffff;font-size:18px;font-weight:400;text-align:center;font-family:inherit;outline:none;box-sizing:border-box;letter-spacing:-.02em;"
       onkeydown="if(event.key==='Enter'){event.preventDefault();saveMoney();}">
   </div>
 
@@ -619,7 +619,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
     </div>
   </div>
   <!-- task list, centered vertically like habits -->
-  <div style="position:absolute;top:0;left:0;right:0;bottom:120px;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;align-items:center;justify-content:center;padding-top:calc(var(--safe-top) + 44px);">
+  <div style="position:absolute;top:0;left:0;right:0;bottom:120px;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;align-items:center;justify-content:center;padding-top:max(calc(var(--safe-top) + 44px), 80px);">
     <div style="width:100%;max-width:500px;padding:0 28px">
       <div id="tempScreenList" style="display:flex;flex-direction:column;gap:10px"></div>
     </div>
@@ -635,12 +635,12 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 </div>
 
 <!-- ══ ADD TASK OVERLAY ══ -->
-<div id="tempAddOverlay" style="position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;visibility:hidden;opacity:0;transition:opacity .22s,visibility .22s;">
+<div id="tempAddOverlay" style="position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;visibility:hidden;opacity:0;transition:opacity .22s,visibility .22s;">
   <div onclick="closeTempAddOverlay()" style="position:absolute;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)"></div>
-  <div style="position:relative;z-index:1;width:100%;max-width:440px;padding:0 20px;margin-top:calc(env(safe-area-inset-top,44px) + 60px);display:flex;flex-direction:column;gap:40px;align-items:stretch">
+  <div id="tempAddCard" style="position:relative;z-index:1;width:100%;max-width:440px;padding:0 24px 32px;display:flex;flex-direction:column;gap:20px;align-items:stretch">
+    <div id="tempAddSectors" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"></div>
     <input id="tempAddField" enterkeyhint="done" inputmode="text" autocomplete="off" autocapitalize="sentences"
-      style="width:100%;background:rgba(255,255,255,0.18);border:none;border-radius:16px;padding:18px 20px;color:#fff;font-size:22px;font-weight:300;font-family:-apple-system,sans-serif;outline:none;text-align:center;letter-spacing:-.01em;box-sizing:border-box;-webkit-user-select:text;user-select:text;">
-    <div id="tempAddSectors" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"></div>
+      style="width:100%;background:rgba(255,255,255,0.18);border:none;border-radius:16px;padding:18px 20px;color:#fff;font-size:18px;font-weight:400;font-family:inherit;outline:none;text-align:center;letter-spacing:-.02em;box-sizing:border-box;-webkit-user-select:text;user-select:text;">
   </div>
 </div>
 
@@ -705,7 +705,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 <div class="input-sheet" id="extraSheet">
   <div class="is-handle" onclick="closeExtraSheet()"></div>
   <div class="is-label">Nowe pole</div>
-  <input class="is-field" id="extraNameField" placeholder="Nazwa…" style="margin-bottom:10px">
+  <input class="is-field" id="extraNameField" placeholder="" style="margin-bottom:10px">
   <div class="is-label" style="margin-top:4px">Typ</div>
   <div class="type-selector" style="margin-bottom:10px" id="extraTypePicker">
     <button class="type-btn active" onclick="setExtraType('checkbox',this)">
@@ -904,7 +904,7 @@ function openInputSheetThenTime(h){
   const f=document.getElementById('inputSheetField');
   f.value=''; f.type=h.type==='number'?'number':'text';
   f.inputMode=h.type==='number'?'numeric':'text';
-  f.placeholder=h.type==='number'?'0':'Wpisz…';
+  f.placeholder=h.type==='number'?'0':'';
   // Replace confirm button behavior
   const confirmBtn=document.querySelector('#inputSheet .is-confirm');
   if(confirmBtn){
@@ -954,7 +954,7 @@ function openInputSheet(h){
   const f=document.getElementById('inputSheetField');
   f.value=''; f.type=h.type==='number'?'number':'text';
   f.inputMode=h.type==='number'?'numeric':'text';
-  f.placeholder=h.type==='number'?'0':'Wpisz…';
+  f.placeholder=h.type==='number'?'0':'';
   showSheet('inputSheet');
   setTimeout(()=>f.focus(),340);
 }
@@ -1322,13 +1322,20 @@ function deleteTempTask(tId){
 
 // keyboard-aware overlay
 (()=>{
-  if(!window.visualViewport) return;
-  window.visualViewport.addEventListener('resize',()=>{
+  function adjustTempCard(){
     const ov=document.getElementById('tempAddOverlay');
     if(!ov||ov.style.visibility==='hidden') return;
-    const kb=window.innerHeight-(window.visualViewport.offsetTop+window.visualViewport.height);
-    ov.style.paddingBottom=Math.max(kb+24,32)+'px';
-  });
+    const card=document.getElementById('tempAddCard');
+    if(!card) return;
+    if(window.visualViewport){
+      const kb=window.innerHeight-(window.visualViewport.offsetTop+window.visualViewport.height);
+      card.style.paddingBottom=Math.max(kb+32,32)+'px';
+    }
+  }
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize',adjustTempCard);
+    window.visualViewport.addEventListener('scroll',adjustTempCard);
+  }
 })();
 
 function openTempSheet(){ openTempScreen(); }
@@ -1674,18 +1681,6 @@ function renderSettings(){
     const days7=[];const now7=new Date();
     for(let i=sharedPeriod-1;i>=0;i--){ const d2=new Date(now7); d2.setDate(now7.getDate()-i); days7.push({key:fmtDate(d2),num:d2.getDate()}); }
     const activeHabits=habitsInSec.filter(h=>days7.some(d=>isDone(state.daily?.[d.key]?.habits?.[h.id])));
-
-    // Check if ALL sections empty → show single "brak"
-    const _tChk=getTimeStats(sharedPeriod===30?'month':'week');
-    const _mChk=getMoneyStats(sharedPeriod);
-    const _allEmpty=!activeHabits.length && !Object.values(_tChk).some(v=>v>0) && !Object.values(_mChk).some(v=>v.total>0);
-
-    if(_allEmpty){
-      html+=`<div style="padding:20px 0 8px;text-align:center;font-size:14px;color:rgba(255,255,255,0.3)">brak</div>`;
-      html+=`</div>`; // close s-panel-body
-      html+=`</div>`; // end s-lock-panel stats
-      html+=`<div class="s-lock-panel" style="margin-top:10px;padding:4px 0">${renderMoneySettings()}</div>`;
-    } else {
     if(!activeHabits.length){
       html+=`<div class="empty"><div class="empty-text">Brak danych</div></div>`;
     } else {
@@ -1822,7 +1817,6 @@ function renderSettings(){
 
     // Money stats — shown under stats when statsOpen
     html+=`<div class="s-lock-panel" style="margin-top:10px;padding:4px 0">${renderMoneySettings()}</div>`;
-    } // end else (_allEmpty)
   }
 
   // ARCHIVE panel
@@ -1925,7 +1919,7 @@ function openAddTimeCat(){
   ov.id='ttCatAddOverlay';
   ov.style.cssText='position:fixed;inset:0;z-index:400;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);padding:0 20px 40px';
   ov.innerHTML=`<div style="width:100%;max-width:400px;background:#1a1a1a;border-radius:16px;padding:20px;">
-    <input id="ttCatAddInput" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:10px;padding:12px 14px;color:#fff;font-size:16px;font-family:inherit;outline:none;margin-bottom:12px" placeholder="np. 💼 Praca" autocapitalize="sentences">
+    <input id="ttCatAddInput" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:10px;padding:12px 14px;color:#fff;font-size:16px;font-family:inherit;outline:none;margin-bottom:12px" placeholder="" autocapitalize="sentences">
     <button onclick="confirmAddTimeCat()" style="width:100%;background:rgba(61,221,101,0.18);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-family:inherit;cursor:pointer">Dodaj</button>
   </div>`;
   ov.addEventListener('click',e=>{ if(e.target===ov){ ov.remove(); } });
@@ -3185,7 +3179,7 @@ function renderMoneyCats(){
     const isSel=_moneySelCat===c.id;
     const bg=isSel?'rgba(61,221,101,0.22)':'rgba(255,255,255,0.1)';
     const border=isSel?'rgba(61,221,101,0.5)':'rgba(255,255,255,0.08)';
-    return `<div onclick="selectAndSave('${c.id}')" style="padding:18px 26px;border-radius:16px;background:${bg};backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;font-size:18px;font-weight:500;cursor:pointer;transition:all .15s;text-align:left;letter-spacing:-.01em;">${c.name}</div>`;
+    return `<div onclick="selectAndSave('${c.id}')" style="padding:16px 20px;border-radius:16px;background:${bg};color:#fff;font-size:17px;font-weight:400;cursor:pointer;transition:all .15s;text-align:left;border:1px solid ${border};">${c.name}</div>`;
   }).join('');
 }
 
@@ -3331,7 +3325,7 @@ function openAddMoneyCat(){
   ov.id='mcAddOverlay';
   ov.style.cssText='position:fixed;inset:0;z-index:600;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);padding:0 20px 40px';
   ov.innerHTML=`<div style="width:100%;max-width:400px;background:#1a1a1a;border-radius:16px;padding:20px">
-    <input id="mcAddInput" style="width:100%;background:rgba(255,255,255,0.1);border:none;border-radius:10px;padding:12px 14px;color:#fff;font-size:16px;font-family:inherit;outline:none;margin-bottom:12px;text-align:center" placeholder="np. 🛒 Zakupy" autocapitalize="sentences">
+    <input id="mcAddInput" style="width:100%;background:rgba(255,255,255,0.1);border:none;border-radius:10px;padding:12px 14px;color:#fff;font-size:16px;font-family:inherit;outline:none;margin-bottom:12px;text-align:center" placeholder="" autocapitalize="sentences">
     <button onclick="confirmAddMoneyCat()" class="save-btn">Dodaj</button>
   </div>`;
   ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
