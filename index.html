@@ -557,7 +557,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
     <!-- Extra note field — shown below categories, always visible, plain keyboard -->
     <input id="moneyNoteInput" type="text" inputmode="text" enterkeyhint="done" autocapitalize="sentences" autocomplete="off"
       placeholder="…"
-      style="width:100%;max-width:440px;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:16px;padding:18px 28px;color:#ffffff;font-size:18px;font-weight:400;text-align:center;font-family:inherit;outline:none;box-sizing:border-box;-webkit-appearance:none;"
+      style="width:100%;max-width:440px;background:rgba(255,255,255,0.14);border:none;border-radius:16px;padding:18px 26px;color:#ffffff;font-size:18px;font-weight:300;text-align:center;font-family:inherit;outline:none;box-sizing:border-box;-webkit-appearance:none;"
       onkeydown="if(event.key==='Enter'){event.preventDefault();saveMoney();}">
   </div>
 
@@ -637,10 +637,10 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 <!-- ══ ADD TASK OVERLAY ══ -->
 <div id="tempAddOverlay" style="position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;visibility:hidden;opacity:0;transition:opacity .22s,visibility .22s;">
   <div onclick="closeTempAddOverlay()" style="position:absolute;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)"></div>
-  <div style="position:relative;z-index:1;width:100%;max-width:440px;padding:0 24px;margin-top:calc(env(safe-area-inset-top,44px) + 60px);display:flex;flex-direction:column;gap:36px;align-items:stretch">
+  <div style="position:relative;z-index:1;width:100%;max-width:440px;padding:0 20px;margin-top:calc(env(safe-area-inset-top,44px) + 60px);display:flex;flex-direction:column;gap:40px;align-items:stretch">
     <input id="tempAddField" enterkeyhint="done" inputmode="text" autocomplete="off" autocapitalize="sentences"
       style="width:100%;background:rgba(255,255,255,0.18);border:none;border-radius:16px;padding:18px 20px;color:#fff;font-size:22px;font-weight:300;font-family:-apple-system,sans-serif;outline:none;text-align:center;letter-spacing:-.01em;box-sizing:border-box;-webkit-user-select:text;user-select:text;">
-    <div id="tempAddSectors" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"></div>
+    <div id="tempAddSectors" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"></div>
   </div>
 </div>
 
@@ -1659,9 +1659,8 @@ function renderSettings(){
     // — Shared period toggle (7 / 30 for ALL stats) —
     const sharedPeriod=state._statPeriod||7;
     html+=`<div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px;padding-top:4px">`;
-    html+=`<button onclick="setStatPeriod(7)" style="padding:6px 18px;border-radius:20px;border:none;font-size:13px;font-family:inherit;cursor:pointer;background:${sharedPeriod===7?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.07)'};color:${sharedPeriod===7?'#fff':'rgba(255,255,255,0.45)'}">7</button>`;
-    html+=`<button onclick="setStatPeriod(30)" style="padding:6px 18px;border-radius:20px;border:none;font-size:13px;font-family:inherit;cursor:pointer;background:${sharedPeriod===30?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.07)'};color:${sharedPeriod===30?'#fff':'rgba(255,255,255,0.45)'}">30</button>`;
-    html+=`<button onclick="setStatPeriod('all')" style="padding:6px 18px;border-radius:20px;border:none;font-size:13px;font-family:inherit;cursor:pointer;background:${sharedPeriod==='all'?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.07)'};color:${sharedPeriod==='all'?'#fff':'rgba(255,255,255,0.45)'}">all</button>`;
+    html+=`<button onclick="setStatPeriod(7)" style="padding:6px 20px;border-radius:20px;border:none;font-size:13px;font-family:inherit;cursor:pointer;background:${sharedPeriod===7?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.07)'};color:${sharedPeriod===7?'#fff':'rgba(255,255,255,0.45)'}">7</button>`;
+    html+=`<button onclick="setStatPeriod(30)" style="padding:6px 20px;border-radius:20px;border:none;font-size:13px;font-family:inherit;cursor:pointer;background:${sharedPeriod===30?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.07)'};color:${sharedPeriod===30?'#fff':'rgba(255,255,255,0.45)'}">30</button>`;
     html+=`</div>`;
 
     // — Habits table —
@@ -1673,32 +1672,23 @@ function renderSettings(){
     const selSec=state.sectors.find(s=>s.id===selCsvSec)||state.sectors[0];
     const habitsInSec=selSec?state.habits.filter(h=>!h.archived&&h.sectorId===selSec.id):[];
     const days7=[];const now7=new Date();
-    if(sharedPeriod==='all'){
-      const allKeys=Object.keys(state.daily||{}).sort();
-      allKeys.forEach(k=>{ const d=new Date(k+'T00:00:00'); days7.push({key:k,num:d.getDate()}); });
-    } else {
-      for(let i=sharedPeriod-1;i>=0;i--){ const d2=new Date(now7); d2.setDate(now7.getDate()-i); days7.push({key:fmtDate(d2),num:d2.getDate()}); }
-    }
+    for(let i=sharedPeriod-1;i>=0;i--){ const d2=new Date(now7); d2.setDate(now7.getDate()-i); days7.push({key:fmtDate(d2),num:d2.getDate()}); }
     const activeHabits=habitsInSec.filter(h=>days7.some(d=>isDone(state.daily?.[d.key]?.habits?.[h.id])));
 
-    // Pre-check: if habits + time + money all empty → just show "brak"
-    {
-      const _tS=getTimeStats(timePeriod==='all'?'all':timePeriod===30?'month':'week');
-      const _hasT=Object.values(_tS).some(v=>v>0);
-      const _mS=getMoneyStats(sharedPeriod==='all'?99999:sharedPeriod);
-      const _hasM=Object.values(_mS).some(v=>v.total>0);
-      if(!activeHabits.length&&!_hasT&&!_hasM){
-        html+=`<div style="padding:20px 0;text-align:center;font-size:14px;color:rgba(255,255,255,0.3)">brak</div>`;
-        html+=`</div></div>`; // close s-panel-body + time s-panel-body
-        html+=`</div>`; // end s-lock-panel stats
-        html+=`<div class="s-lock-panel" style="margin-top:10px;padding:4px 0">${renderMoneySettings()}</div>`;
-        goto_stats_done=true;
-      }
-    }
-    var goto_stats_done=false;
-    if(!goto_stats_done && !activeHabits.length){
+    // Check if ALL sections empty → show single "brak"
+    const _tChk=getTimeStats(sharedPeriod===30?'month':'week');
+    const _mChk=getMoneyStats(sharedPeriod);
+    const _allEmpty=!activeHabits.length && !Object.values(_tChk).some(v=>v>0) && !Object.values(_mChk).some(v=>v.total>0);
+
+    if(_allEmpty){
+      html+=`<div style="padding:20px 0 8px;text-align:center;font-size:14px;color:rgba(255,255,255,0.3)">brak</div>`;
+      html+=`</div>`; // close s-panel-body
+      html+=`</div>`; // end s-lock-panel stats
+      html+=`<div class="s-lock-panel" style="margin-top:10px;padding:4px 0">${renderMoneySettings()}</div>`;
+    } else {
+    if(!activeHabits.length){
       html+=`<div class="empty"><div class="empty-text">Brak danych</div></div>`;
-    } else if(!goto_stats_done){
+    } else {
       html+=`<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;border-collapse:collapse;font-size:15px">`;
       html+=`<thead><tr><th style="color:rgba(255,255,255,0.5);text-align:left;padding:4px 8px 4px 0;font-weight:400;min-width:32px"></th>`;
       activeHabits.forEach(h=>html+=`<th style="color:#fff;font-size:12px;font-weight:500;padding:4px 4px;text-align:center;min-width:36px;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.name}</th>`);
@@ -1723,14 +1713,13 @@ function renderSettings(){
       }
       html+=`</tbody></table></div>`;
     }
-    if(!goto_stats_done) {
     html+=`</div>`;
 
     // — Czas stats (same style as money) —
     {
       const timeCats=state.timeCategories||[];
       const timePeriod=state._statPeriod||7;
-      const rawStats=getTimeStats(timePeriod==='all'?'all':timePeriod===30||timePeriod==='month'?'month':'week');
+      const rawStats=getTimeStats(timePeriod===30||timePeriod==='month'?'month':'week');
       // rawStats is catId→mins; build same shape as money stats
       const totalMins=Object.values(rawStats).reduce((s,v)=>s+v,0);
       const tPalette=['#60a5fa','#f472b6','#fb923c','#a78bfa','#34d399','#fbbf24','#f87171','#38bdf8'];
@@ -1795,10 +1784,10 @@ function renderSettings(){
           const hh=Math.floor(mins/60),m=mins%60;
           const dur=hh>0?`${hh}h${m>0?' '+m+'m':''}`:m+'m';
           // Collect entries for this cat in period
-          const cutoff=timePeriod==='all'?null:(()=>{const d=new Date();d.setDate(d.getDate()-(timePeriod===30||timePeriod==='month'?30:7));return d;})();
+          const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-(timePeriod===30||timePeriod==='month'?30:7));
           const entryRows=[];
           Object.entries(state.timeEntries||{}).forEach(([dateKey,dayEnts])=>{
-            if(cutoff&&new Date(dateKey+'T00:00:00')<cutoff) return;
+            if(new Date(dateKey+'T00:00:00')<cutoff) return;
             dayEnts.filter(e=>e.catId===catId&&!e.empty).forEach(e=>{
               const blkMins=(e.blocks?.length||0)*15;
               entryRows.push({date:dateKey,label:e.label||'',mins:blkMins});
@@ -1833,7 +1822,7 @@ function renderSettings(){
 
     // Money stats — shown under stats when statsOpen
     html+=`<div class="s-lock-panel" style="margin-top:10px;padding:4px 0">${renderMoneySettings()}</div>`;
-    } // end if(!goto_stats_done)
+    } // end else (_allEmpty)
   }
 
   // ARCHIVE panel
@@ -3194,9 +3183,9 @@ function renderMoneyCats(){
   const cats=(state.moneyCategories||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
   row.innerHTML=cats.map(c=>{
     const isSel=_moneySelCat===c.id;
-    const bg=isSel?'rgba(61,221,101,0.28)':'rgba(255,255,255,0.32)';
-    const clr=isSel?'var(--accent)':'#fff';
-    return `<div onclick="selectAndSave('${c.id}')" style="padding:18px 28px;border-radius:16px;background:${bg};backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:${clr};font-size:18px;font-weight:${isSel?'600':'500'};cursor:pointer;transition:all .15s;text-align:left;letter-spacing:-.01em;">${c.name}</div>`;
+    const bg=isSel?'rgba(61,221,101,0.22)':'rgba(255,255,255,0.1)';
+    const border=isSel?'rgba(61,221,101,0.5)':'rgba(255,255,255,0.08)';
+    return `<div onclick="selectAndSave('${c.id}')" style="padding:18px 26px;border-radius:16px;background:${bg};backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;font-size:18px;font-weight:500;cursor:pointer;transition:all .15s;text-align:left;letter-spacing:-.01em;">${c.name}</div>`;
   }).join('');
 }
 
@@ -3248,7 +3237,7 @@ function getMoneyStats(days){
 function renderMoneySettings(){
   const cats=(state.moneyCategories||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
   const period=state._statPeriod||7;
-  const stats=getMoneyStats(period==='all'?99999:period);
+  const stats=getMoneyStats(period);
   const total=Object.values(stats).reduce((s,v)=>s+v.total,0);
 
   // Palette for categories
