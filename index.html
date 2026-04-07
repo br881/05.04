@@ -75,7 +75,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .temp-overlay.open{opacity:1;pointer-events:all;}
 .temp-overlay-blur{position:absolute;inset:0;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(0,0,0,0.78);}
 .temp-card{position:relative;z-index:1;width:100%;max-width:440px;margin:0 auto;background:none;border:none;border-radius:0;padding:0;display:flex;flex-direction:column;gap:18px;align-items:center;}
-.temp-card-field{width:100%;background:rgba(255,255,255,0.32);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:18px;font-weight:400;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
+.temp-card-field{width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:20px;font-weight:400;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
 .temp-card-field:focus{border-color:var(--accent-border);}
 .temp-card-sectors{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
 .sector-pill{padding:8px 16px;border-radius:20px;border:none;background:rgba(255,255,255,0.05);color:var(--ui);font-size:14px;cursor:pointer;font-family:inherit;transition:all .15s;}
@@ -119,8 +119,8 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .input-sheet.open{transform:translateY(0);}
 .is-handle{width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);margin:0 auto 14px;}
 .is-label{font-size:14px;color:var(--ui);margin-bottom:8px;opacity:.7;font-weight:400;}
-.is-field{width:100%;background:rgba(255,255,255,0.11);border:none;border-radius:12px;padding:13px 15px;color:#ffffff;font-size:18px;font-weight:400;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
-.is-field:focus{background:rgba(255,255,255,0.16);}
+.is-field{width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:20px;font-weight:400;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
+.is-field:focus{background:rgba(255,255,255,0.38);}
 .is-confirm{width:100%;margin-top:10px;background:rgba(61,221,101,0.55);color:#fff;font-size:17px;font-weight:600;border:none;border-radius:12px;padding:14px;cursor:pointer;font-family:inherit;transition:opacity .15s;}
 .is-confirm:active{opacity:.7;}
 .extras-done{display:flex;align-items:center;justify-content:center;padding:32px 0;}
@@ -300,8 +300,8 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .type-selector{display:flex;gap:6px;}
 .type-btn{flex:1;padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.06);color:#ffffff;font-size:14px;cursor:pointer;font-family:inherit;transition:all .18s;text-align:center;display:flex;align-items:center;justify-content:center;}
 .type-btn.active{background:var(--accent-dim);color:var(--accent-bright);}
-.hd-name-input{flex:1;background:rgba(255,255,255,0.32);border:none;border-radius:12px;padding:13px 16px;color:#ffffff;font-size:18px;font-weight:400;font-family:inherit;outline:none;text-align:center;transition:background .2s;letter-spacing:-.02em;}
-.hd-name-input:focus{background:rgba(255,255,255,0.38);}
+.hd-name-input{flex:1;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:15px 18px;color:#ffffff;font-size:20px;font-weight:400;font-family:inherit;outline:none;text-align:center;transition:background .2s;letter-spacing:-.02em;}
+.hd-name-input:focus{background:rgba(255,255,255,0.42);}
 .hd-name-input::placeholder{color:rgba(255,255,255,0.28);}
 
 /* ══════════════════════════════════════════
@@ -398,15 +398,16 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   letter-spacing:-.02em;min-height:24px;
 }
 .tt-entry-field{
-  width:100%;background:rgba(255,255,255,0.11);
+  width:100%;background:rgba(255,255,255,0.32);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   border:none;
-  border-radius:12px;padding:16px 15px;
-  color:#ffffff;font-size:18px;font-weight:400;
+  border-radius:14px;padding:16px 18px;
+  color:#ffffff;font-size:20px;font-weight:400;
   font-family:inherit;
   outline:none;transition:background .2s;margin-bottom:12px;
   text-align:center;letter-spacing:-.02em;
 }
-.tt-entry-field:focus{background:rgba(255,255,255,0.16);}
+.tt-entry-field:focus{background:rgba(255,255,255,0.38);}
 .tt-cat-row{
   display:flex;gap:8px;
   margin-bottom:12px;justify-content:space-between;align-items:center;
@@ -610,8 +611,11 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 
 <!-- ══ TASKS SCREEN ══ -->
 <div id="tempScreen" style="position:absolute;inset:0;background:#000;transform:translateX(100%);transition:transform .62s cubic-bezier(.16,1,.3,1);z-index:10;overflow:visible;">
-  <!-- back arrow -->
-  <button class="btn-back" onclick="closeTempScreen()" style="position:absolute;top:calc(var(--safe-top)+4px);left:4px;z-index:3">‹</button>
+  <!-- all tasks view button — top right, notch-safe -->
+  <button onclick="openAllTasksView()" style="position:absolute;top:calc(var(--safe-top)+4px);right:4px;z-index:3;background:none;border:none;color:rgba(255,255,255,0.45);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px;width:48px;height:48px">
+    <span style="width:18px;height:1.5px;background:currentColor;border-radius:1px;display:block"></span>
+    <span style="width:18px;height:1.5px;background:currentColor;border-radius:1px;display:block"></span>
+  </button>
   <!-- blue done checkmark -->
   <div class="done-state-tasks" id="doneStateTasks">
     <div class="done-mark-tasks">
@@ -624,11 +628,8 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
       <div id="tempScreenList" style="display:flex;flex-direction:column;gap:10px"></div>
     </div>
   </div>
-  <!-- bottom buttons -->
-  <button onclick="openAllTasksView()" style="position:absolute;bottom:46px;left:28px;background:none;border:none;color:rgba(255,255,255,0.55);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;cursor:pointer;padding:8px;width:44px;height:44px">
-    <span style="width:20px;height:1.5px;background:currentColor;border-radius:1px;display:block"></span>
-    <span style="width:20px;height:1.5px;background:currentColor;border-radius:1px;display:block"></span>
-  </button>
+  <!-- bottom: back arrow moved from top-left to bottom-left -->
+  <button class="btn-back" onclick="closeTempScreen()" style="position:absolute;bottom:40px;left:18px;z-index:3">‹</button>
   <button ontouchstart="openTempAddOverlayTouch(event)" onclick="openTempAddOverlay()" style="position:absolute;bottom:40px;left:50%;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;background:rgba(96,165,250,0.18);border:none;color:#60a5fa;display:flex;align-items:center;justify-content:center;cursor:pointer">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   </button>
@@ -640,7 +641,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div id="tempAddCard" style="position:relative;z-index:1;width:100%;max-width:440px;padding:0 24px 32px;display:flex;flex-direction:column;gap:20px;align-items:stretch">
     <div id="tempAddSectors" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"></div>
     <input id="tempAddField" enterkeyhint="done" inputmode="text" autocomplete="off" autocapitalize="sentences"
-      style="width:100%;background:rgba(255,255,255,0.18);border:none;border-radius:16px;padding:18px 20px;color:#fff;font-size:18px;font-weight:400;font-family:inherit;outline:none;text-align:center;letter-spacing:-.02em;box-sizing:border-box;-webkit-user-select:text;user-select:text;">
+      style="width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:16px;padding:18px 20px;color:#fff;font-size:20px;font-weight:400;font-family:inherit;outline:none;text-align:center;letter-spacing:-.02em;box-sizing:border-box;-webkit-user-select:text;user-select:text;">
   </div>
 </div>
 
@@ -2539,8 +2540,8 @@ function openTimeTracker(habitId){
   }
   document.getElementById('home').classList.add('slide-out');
   const tt=document.getElementById('timeTracker');
-  tt.style.transform=''; // clear any leftover inline
-  void tt.offsetWidth;   // force reflow so CSS transition fires cleanly
+  tt.style.transition='transform .55s cubic-bezier(.16,1,.3,1)';
+  tt.style.transform='translateX(0)';
   tt.classList.add('active');
   document.querySelector('.habits-scroll').style.overflow='hidden';
   const blockW=(window.innerWidth-44-60)/4;
@@ -2567,8 +2568,11 @@ function openTimeTracker(habitId){
 }
 function closeTimeTracker(){
   const tt=document.getElementById('timeTracker'),home=document.getElementById('home');
-  tt.style.transform=''; home.style.transform='';
-  tt.classList.remove('active'); home.classList.remove('slide-out');
+  tt.style.transition='transform .55s cubic-bezier(.16,1,.3,1)';
+  tt.style.transform='translateX(100%)';
+  home.style.transform='';
+  home.classList.remove('slide-out');
+  setTimeout(()=>{ tt.classList.remove('active'); tt.style.transform=''; },560);
   document.querySelector('.habits-scroll').style.overflow='';
   closeTTEntry(); ttSelBlocks.clear(); ttSelecting=false;
   _ttHabitId=null;
@@ -3177,9 +3181,9 @@ function renderMoneyCats(){
   const cats=(state.moneyCategories||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
   row.innerHTML=cats.map(c=>{
     const isSel=_moneySelCat===c.id;
-    const bg=isSel?'rgba(61,221,101,0.22)':'rgba(255,255,255,0.1)';
-    const border=isSel?'rgba(61,221,101,0.5)':'rgba(255,255,255,0.08)';
-    return `<div onclick="selectAndSave('${c.id}')" style="padding:16px 20px;border-radius:16px;background:${bg};color:#fff;font-size:17px;font-weight:400;cursor:pointer;transition:all .15s;text-align:left;border:1px solid ${border};">${c.name}</div>`;
+    const bg=isSel?'rgba(61,221,101,0.28)':'rgba(255,255,255,0.32)';
+    const fw=isSel?'600':'500';
+    return `<div onclick="selectAndSave('${c.id}')" style="padding:18px 26px;border-radius:16px;background:${bg};backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;font-size:20px;font-weight:${fw};cursor:pointer;transition:all .15s;text-align:left;letter-spacing:-.02em;">${c.name}</div>`;
   }).join('');
 }
 
