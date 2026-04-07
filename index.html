@@ -127,10 +127,10 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .extras-done svg{color:#4ade80;opacity:1;}
 
 /* SETTINGS */
-.settings-header{position:absolute;top:0;left:0;z-index:10;padding:calc(var(--safe-top)+4px) 0 0 4px;}
+.settings-header{position:relative;top:0;left:0;z-index:10;padding:calc(var(--safe-top)+4px) 0 0 4px;flex-shrink:0;}
 .btn-back{display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:none;border:none;color:var(--accent);font-size:28px;cursor:pointer;opacity:.7;line-height:1;}
 .btn-back:active{opacity:1;}
-.settings-scroll{flex:1;overflow-y:auto;scrollbar-width:none;padding-top:calc(var(--safe-top)+56px);padding-bottom:calc(var(--safe-bottom)+40px);}
+.settings-scroll{flex:1;overflow-y:auto;scrollbar-width:none;padding-top:16px;padding-bottom:calc(var(--safe-bottom)+40px);}
 .settings-scroll::-webkit-scrollbar{display:none;}
 .s-section{padding:0 18px;margin-top:20px;}
 .s-section-title{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ui);margin-bottom:10px;padding:0 4px;opacity:.5;display:flex;align-items:center;justify-content:center;gap:6px;}
@@ -535,7 +535,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 </div>
 
 <!-- SETTINGS -->
-<div id="settings" class="screen" style="overflow:visible;">
+<div id="settings" class="screen" style="overflow:visible;display:flex;flex-direction:column;">
   <div class="settings-header">
     <button class="btn-back" onclick="closeSettings()">‹</button>
   </div>
@@ -558,7 +558,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
     <!-- Extra note field — shown below categories, always visible, plain keyboard -->
     <input id="moneyNoteInput" type="text" inputmode="text" enterkeyhint="done" autocapitalize="sentences" autocomplete="off"
       placeholder=""
-      style="margin-top:10px;width:100%;max-width:400px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:14px 18px;color:#ffffff;font-size:18px;font-weight:400;text-align:center;font-family:inherit;outline:none;box-sizing:border-box;letter-spacing:-.02em;"
+      style="margin-top:10px;width:100%;max-width:400px;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:var(--radius);padding:16px 18px;color:#ffffff;font-size:18px;font-weight:400;text-align:center;font-family:inherit;outline:none;box-sizing:border-box;letter-spacing:-.02em;"
       onkeydown="if(event.key==='Enter'){event.preventDefault();saveMoney();}">
   </div>
 
@@ -611,8 +611,8 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 
 <!-- ══ TASKS SCREEN ══ -->
 <div id="tempScreen" style="position:absolute;inset:0;background:#000;transform:translateX(100%);transition:transform .62s cubic-bezier(.16,1,.3,1);z-index:10;overflow:visible;">
-  <!-- all tasks view button — top right, notch-safe -->
-  <button onclick="openAllTasksView()" style="position:absolute;top:calc(var(--safe-top)+4px);right:4px;z-index:3;background:none;border:none;color:rgba(255,255,255,0.45);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px;width:48px;height:48px">
+  <!-- all tasks view button — fixed like settings gear, not clipped by notch -->
+  <button onclick="openAllTasksView()" style="position:fixed;top:calc(var(--safe-top) + 8px);right:12px;z-index:3;background:none;border:none;color:rgba(255,255,255,0.45);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px;width:36px;height:36px">
     <span style="width:18px;height:1.5px;background:currentColor;border-radius:1px;display:block"></span>
     <span style="width:18px;height:1.5px;background:currentColor;border-radius:1px;display:block"></span>
   </button>
@@ -646,7 +646,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 </div>
 
 <!-- ══ ALL TASKS VIEW ══ -->
-<div id="allTasksView" class="screen" style="z-index:15;overflow:visible;">
+<div id="allTasksView" class="screen" style="z-index:15;overflow:visible;display:flex;flex-direction:column;">
   <div class="settings-header">
     <button class="btn-back" onclick="closeAllTasksView()">‹</button>
   </div>
@@ -2568,11 +2568,13 @@ function openTimeTracker(habitId){
 }
 function closeTimeTracker(){
   const tt=document.getElementById('timeTracker'),home=document.getElementById('home');
+  // Same animation curve as money
   tt.style.transition='transform .55s cubic-bezier(.16,1,.3,1)';
-  tt.style.transform='translateX(100%)';
-  home.style.transform='';
+  home.style.transition='transform .55s cubic-bezier(.16,1,.3,1)';
+  tt.classList.remove('active');
   home.classList.remove('slide-out');
-  setTimeout(()=>{ tt.classList.remove('active'); tt.style.transform=''; },560);
+  home.style.transform='';
+  setTimeout(()=>{ tt.style.transform=''; home.style.transition=''; },560);
   document.querySelector('.habits-scroll').style.overflow='';
   closeTTEntry(); ttSelBlocks.clear(); ttSelecting=false;
   _ttHabitId=null;
@@ -3183,7 +3185,7 @@ function renderMoneyCats(){
     const isSel=_moneySelCat===c.id;
     const bg=isSel?'rgba(61,221,101,0.28)':'rgba(255,255,255,0.32)';
     const fw=isSel?'600':'500';
-    return `<div onclick="selectAndSave('${c.id}')" style="padding:18px 26px;border-radius:16px;background:${bg};backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;font-size:20px;font-weight:${fw};cursor:pointer;transition:all .15s;text-align:left;letter-spacing:-.02em;">${c.name}</div>`;
+    return `<div onclick="selectAndSave('${c.id}')" style="padding:18px 26px;border-radius:var(--radius);background:${bg};backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;font-size:18px;font-weight:${fw};cursor:pointer;transition:all .15s;text-align:left;letter-spacing:-.02em;">${c.name}</div>`;
   }).join('');
 }
 
