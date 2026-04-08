@@ -1092,11 +1092,7 @@ function saveExtraTime(){
     if(!state.timeEntries[k]) state.timeEntries[k]=[];
     state.timeEntries[k].push({id:'tt'+Date.now(),label:e.name,catId:e.trackCatId||(state.timeCategories||[])[0]?.id,blocks});
   }
-  const es=document.getElementById('extraTimeScreen');
-  save(); es.style.transition='none'; es.style.transform='translateY(100%)';
-  requestAnimationFrame(()=>{ es.style.transition=''; });
-  _extraTimeId=null; etSelBlocks.clear(); updateEtDuration();
-  openSheet();
+  save(); closeExtraTimeScreen(); openSheet();
 }
 function renderExtraTimeGrid(){
   const inner=document.getElementById('etGridInner'); if(!inner) return;
@@ -1856,15 +1852,16 @@ function renderSettings(){
     html+=`<div style="padding:12px 16px 8px">`;
     html+=`<div style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px">Czas</div>`;
     const _aCats=state.timeCategories||[];
-    const _aPal=['#60a5fa','#f472b6','#fb923c','#a78bfa','#34d399','#fbbf24','#f87171','#38bdf8'];
+    const _aPal=['#7dd3fc','#f9a8d4','#fdba74','#c4b5fd','#6ee7b7','#fde68a','#fca5a5','#67e8f9','#a5f3fc','#d8b4fe','#bbf7d0','#fed7aa'];
     html+=`<div style="display:flex;flex-direction:column;gap:8px">`;
     _aCats.forEach((cat,i)=>{
       const col=cat.color||(_aPal[i%_aPal.length]);
+      const safeCol=col.startsWith('#')?col:_aPal[0];
       html+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,0.06);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none"
         id="tcr-${cat.id}" data-tcid="${cat.id}"
         draggable="true" ondragstart="tcDragStart(event,'${cat.id}')" ondragover="tcDragOver(event,'${cat.id}')" ondrop="tcDragDrop(event,'${cat.id}')" ondragend="tcDragEnd()"
         ontouchstart="tcTouchStart(event,'${cat.id}')" ontouchmove="tcTouchMove(event)" ontouchend="tcTouchEnd(event,'${cat.id}')">
-        <input type="color" value="${col.startsWith('#')?col:'#555'}" onchange="updateTimeCatColor('${cat.id}',this.value)" style="width:22px;height:22px;border:none;border-radius:50%;padding:0;background:none;cursor:pointer;overflow:hidden;flex-shrink:0;-webkit-appearance:none" onclick="event.stopPropagation()">
+        <button onclick="event.stopPropagation();openCatColorPicker('tc','${cat.id}')" style="width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,0.25);background:${safeCol};cursor:pointer;flex-shrink:0;padding:0"></button>
         <span style="flex:1;font-size:16px;color:#fff">${cat.name}</span>
         <button onclick="deleteTimeCat('${cat.id}')" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:18px;cursor:pointer;padding:0;line-height:1">×</button>
       </div>`;
@@ -1875,15 +1872,16 @@ function renderSettings(){
     // ── Kategorie: Money ──
     html+=`<div style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:.07em;text-transform:uppercase;margin:16px 0 10px">Money</div>`;
     const _mCats2=(state.moneyCategories||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
-    const _mPal2=['#60a5fa','#f472b6','#fb923c','#a78bfa','#34d399','#fbbf24','#f87171','#38bdf8'];
+    const _mPal2=['#7dd3fc','#f9a8d4','#fdba74','#c4b5fd','#6ee7b7','#fde68a','#fca5a5','#67e8f9','#a5f3fc','#d8b4fe','#bbf7d0','#fed7aa'];
     html+=`<div style="display:flex;flex-direction:column;gap:8px">`;
     _mCats2.forEach((mc,i)=>{
       const mcol=mc.color||_mPal2[i%_mPal2.length];
+      const safeMcol=mcol.startsWith('#')?mcol:_mPal2[0];
       html+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,0.06);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none"
         id="mcr-${mc.id}" data-mcid="${mc.id}"
         draggable="true" ondragstart="mcDragStart(event,'${mc.id}')" ondragover="mcDragOver(event,'${mc.id}')" ondrop="mcDragDrop(event,'${mc.id}')" ondragend="mcDragEnd()"
         ontouchstart="mcTouchStart(event,'${mc.id}')" ontouchmove="mcTouchMove(event)" ontouchend="mcTouchEnd(event,'${mc.id}')">
-        <input type="color" value="${mcol.startsWith('#')?mcol:'#60a5fa'}" onchange="updateMoneyCatColor('${mc.id}',this.value)" style="width:22px;height:22px;border:none;border-radius:50%;padding:0;background:none;cursor:pointer;overflow:hidden;flex-shrink:0;-webkit-appearance:none" onclick="event.stopPropagation()">
+        <button onclick="event.stopPropagation();openCatColorPicker('mc','${mc.id}')" style="width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,0.25);background:${safeMcol};cursor:pointer;flex-shrink:0;padding:0"></button>
         <span style="flex:1;font-size:16px;color:#fff">${mc.name}</span>
         <button onclick="deleteMoneyCat('${mc.id}')" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:18px;cursor:pointer;padding:0;line-height:1">×</button>
       </div>`;
@@ -1926,9 +1924,9 @@ function openAddTimeCat(){
   const ov=document.createElement('div');
   ov.id='ttCatAddOverlay';
   ov.style.cssText='position:fixed;inset:0;z-index:400;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);padding:0 20px 40px';
-  ov.innerHTML=`<div style="width:100%;max-width:400px;background:#1a1a1a;border-radius:16px;padding:20px">
-    <input id="ttCatAddInput" style="width:100%;background:rgba(255,255,255,0.1);border:none;border-radius:10px;padding:12px 14px;color:#fff;font-size:16px;font-family:inherit;outline:none;margin-bottom:12px;text-align:center" placeholder="" autocapitalize="sentences">
-    <button onclick="confirmAddTimeCat()" class="save-btn">Dodaj</button>
+  ov.innerHTML=`<div style="width:100%;max-width:400px;background:#1a1a1a;border-radius:16px;padding:20px;">
+    <input id="ttCatAddInput" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:10px;padding:12px 14px;color:#fff;font-size:16px;font-family:inherit;outline:none;margin-bottom:12px" placeholder="" autocapitalize="sentences">
+    <button onclick="confirmAddTimeCat()" style="width:100%;background:rgba(61,221,101,0.18);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-family:inherit;cursor:pointer">Dodaj</button>
   </div>`;
   ov.addEventListener('click',e=>{ if(e.target===ov){ ov.remove(); } });
   document.body.appendChild(ov);
@@ -1970,6 +1968,23 @@ function toggleFold(key){
 }
 function setCsvSector(id){ state._csvSectorId=id; save(); renderSettings(); }
 function setTimePeriod(p){ state._timePeriod=p; save(); renderSettings(); }
+function openCatColorPicker(type,id){
+  const existing=document.getElementById('catColorPickerOverlay');
+  if(existing){ existing.remove(); return; }
+  const palette=['#7dd3fc','#38bdf8','#60a5fa','#818cf8','#c4b5fd','#d8b4fe','#f9a8d4','#fb7185','#fca5a5','#fdba74','#fde68a','#6ee7b7','#bbf7d0','#67e8f9','#a5f3fc','#ffffff','#94a3b8','#475569','#f87171','#34d399'];
+  const ov=document.createElement('div');
+  ov.id='catColorPickerOverlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:700;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:0 20px 40px';
+  const swatches=palette.map(c=>`<button onclick="pickCatColor('${type}','${id}','${c}')" style="width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,0.12);background:${c};cursor:pointer;padding:0;flex-shrink:0"></button>`).join('');
+  ov.innerHTML=`<div style="width:100%;max-width:400px;background:#1c1c1e;border-radius:20px;padding:22px"><div style="font-size:11px;color:rgba(255,255,255,0.3);text-align:center;margin-bottom:16px;letter-spacing:.07em;text-transform:uppercase">Kolor</div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;justify-items:center">${swatches}</div></div>`;
+  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+  document.body.appendChild(ov);
+}
+function pickCatColor(type,id,color){
+  document.getElementById('catColorPickerOverlay')?.remove();
+  if(type==='tc') updateTimeCatColor(id,color);
+  else updateMoneyCatColor(id,color);
+}
 function updateTimeCatColor(id,color){
   const cat=(state.timeCategories||[]).find(c=>c.id===id);
   if(cat){ cat.color=color; save(); renderSettings(); }
@@ -2301,7 +2316,6 @@ function closeHabitTimeScreen(){
   htHabitId=null; htSelBlocks.clear();
 }
 function saveHabitTime(){
-  const hs=document.getElementById('habitTimeScreen');
   if(!htHabitId||!htSelBlocks.size){ closeHabitTimeScreen(); completeHabit(htHabitId||'',true); renderHome(); return; }
   const h=state.habits.find(x=>x.id===htHabitId); if(!h) return;
   const blocks=Array.from(htSelBlocks).map(k=>{const[hh,q]=k.split(':');return{h:+hh,q:+q};});
@@ -2310,10 +2324,7 @@ function saveHabitTime(){
   if(!state.timeEntries[k]) state.timeEntries[k]=[];
   state.timeEntries[k].push({id:'tt'+Date.now(),label:h.name,catId:h.trackCatId||(state.timeCategories||[])[0]?.id,blocks});
   completeHabit(htHabitId,true);
-  save(); renderHome();
-  hs.style.transition='none'; hs.style.transform='translateY(100%)';
-  requestAnimationFrame(()=>{ hs.style.transition=''; });
-  htHabitId=null; htSelBlocks.clear();
+  save(); closeHabitTimeScreen(); renderHome();
 }
 function renderHabitTimeGrid(){
   const inner=document.getElementById('htGridInner'); if(!inner) return;
@@ -2604,18 +2615,7 @@ function saveTTHabitMode(){
     state.timeEntries[k].push({id:'tt'+Date.now(),label:h?.name||ttEntryLabel||'',catId:ttSelectedCat||h?.trackCatId||(state.timeCategories||[])[0]?.id,blocks});
     completeHabit(_ttHabitId,true); save();
   }
-  renderHome();
-  // Close time tracker immediately (no animation delay)
-  const tt=document.getElementById('timeTracker'),home=document.getElementById('home');
-  tt.style.transition='none'; tt.classList.remove('active');
-  home.style.transition='none'; home.classList.remove('slide-out'); home.style.transform='';
-  requestAnimationFrame(()=>{ tt.style.transition=''; tt.style.transform=''; home.style.transition=''; });
-  document.querySelector('.habits-scroll').style.overflow='';
-  closeTTEntry(); ttSelBlocks.clear(); ttSelecting=false;
-  _ttHabitId=null;
-  document.getElementById('ttSaveHabitBtn').style.display='none';
-  document.getElementById('ttBackBtn').style.display='block';
-  document.getElementById('ttHabitSaveBar').style.display='none';
+  closeTimeTracker(); renderHome();
   // Redirect to URL if set
   if(h?.url){ try{ window.open(h.url,'_blank'); }catch(e){} }
 }
