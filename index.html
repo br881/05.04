@@ -1671,99 +1671,167 @@ function renderSettings(){
     html+=`<button onclick="setStatPeriod(30)" style="padding:6px 20px;border-radius:20px;border:none;font-size:13px;font-family:inherit;cursor:pointer;background:${sharedPeriod===30?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.07)'};color:${sharedPeriod===30?'#fff':'rgba(255,255,255,0.45)'}">30</button>`;
     html+=`</div>`;
 
-    // — Habits table —
-    const selCsvSec=state._csvSectorId||state.sectors[0]?.id;
-    html+=`<div class="s-panel-body" style="padding-bottom:4px">`;
-    html+=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;justify-content:center">`;
-    state.sectors.forEach(sec=>html+=`<div class="sector-pill${sec.id===selCsvSec?' active':''}" onclick="setCsvSector('${sec.id}')" style="font-size:15px;padding:8px 18px">${sec.name}</div>`);
-    html+=`</div>`;
-    const selSec=state.sectors.find(s=>s.id===selCsvSec)||state.sectors[0];
-    const habitsInSec=selSec?state.habits.filter(h=>!h.archived&&h.sectorId===selSec.id):[];
-    const days7=[];const now7=new Date();
-    for(let i=sharedPeriod-1;i>=0;i--){ const d2=new Date(now7); d2.setDate(now7.getDate()-i); days7.push({key:fmtDate(d2),num:d2.getDate()}); }
-    const activeHabits=habitsInSec.filter(h=>days7.some(d=>isDone(state.daily?.[d.key]?.habits?.[h.id])));
-    if(!activeHabits.length){
-      html+=`<div class="empty"><div class="empty-text">Brak danych</div></div>`;
-    } else {
-      html+=`<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;border-collapse:collapse;font-size:15px">`;
-      html+=`<thead><tr><th style="color:rgba(255,255,255,0.5);text-align:left;padding:4px 8px 4px 0;font-weight:400;min-width:32px"></th>`;
-      activeHabits.forEach(h=>html+=`<th style="color:#fff;font-size:12px;font-weight:500;padding:4px 4px;text-align:center;min-width:36px;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.name}</th>`);
-      html+=`</tr></thead><tbody>`;
-      for(const day of days7){
-        const hasAny=activeHabits.some(h=>isDone(state.daily?.[day.key]?.habits?.[h.id]));
-        if(!hasAny) continue;
-        html+=`<tr><td style="color:rgba(255,255,255,0.55);font-size:12px;padding:6px 8px 6px 0;font-weight:400">${day.num}</td>`;
-        activeHabits.forEach(h=>{
-          const val=state.daily?.[day.key]?.habits?.[h.id];
-          const done=isDone(val);
-          html+=`<td style="text-align:center;padding:5px 4px">`;
-          if(done){
-            if(h.type==='checkbox') html+=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(61,221,101,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
-            else html+=`<span style="font-size:11px;color:#fff">${String(val).substring(0,4)}</span>`;
-          } else {
-            html+=`<span style="color:rgba(255,255,255,0.1);font-size:10px">·</span>`;
-          }
-          html+=`</td>`;
-        });
-        html+=`</tr>`;
-      }
-      html+=`</tbody></table></div>`;
-    }
-    html+=`</div>`;
+    // — Money stats (top) —
+    html+=`<div class="s-lock-panel" style="margin-top:0;padding:4px 0">${renderMoneySettings()}</div>`;
 
-    // — Czas stats (same style as money) —
+    // — Czas stats with per-day entries and labels —
     {
       const timeCats=state.timeCategories||[];
       const timePeriod=state._statPeriod||7;
-      const rawStats=getTimeStats(timePeriod===30||timePeriod==='month'?'month':'week');
-      // rawStats is catId→mins; build same shape as money stats
-      const totalMins=Object.values(rawStats).reduce((s,v)=>s+v,0);
       const tPalette=['#60a5fa','#f472b6','#fb923c','#a78bfa','#34d399','#fbbf24','#f87171','#38bdf8'];
-      const tCatColor=(cat,i)=>cat?.color||(tPalette[i%tPalette.length]);
-      const tDays=['Nd','Pn','Wt','Śr','Cz','Pt','So'];
-
-      html+=`<div class="s-panel-body" style="border-top:none;padding-top:4px">`;
-
-      // period toggle is shared (shown once above)
-
-      if(totalMins===0){
-        html+=`<div class="empty"><div class="empty-text">brak</div></div>`;
+      const tCatColor=(catId,i)=>{ const c=timeCats.find(x=>x.id===catId); return c?.color||(tPalette[i%tPalette.length]); };
+      const now2=new Date();
+      const tByDate={}; const tCatTotal={}; let totalMins2=0;
+      for(const[k,entries] of Object.entries(state.timeEntries||{})){
+        const d=new Date(k);
+        const diffDays=(now2-d)/(1000*60*60*24);
+        if(diffDays>timePeriod) continue;
+        for(const e of (entries||[])){
+          if(e.empty) continue;
+          const mins=(e.blocks?.length||0)*15;
+          if(!mins) continue;
+          tCatTotal[e.catId]=(tCatTotal[e.catId]||0)+mins;
+          totalMins2+=mins;
+          if(!tByDate[k]) tByDate[k]=[];
+          tByDate[k].push({label:e.label||'',catId:e.catId,mins,blocks:e.blocks||[]});
+        }
+      }
+      html+='<div class="s-panel-body" style="border-top:none;padding-top:4px">';
+      if(totalMins2===0){
+        html+='<div class="empty"><div class="empty-text">brak</div></div>';
       } else {
-        const tCatEntries=Object.entries(rawStats).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
-        const totH=Math.floor(totalMins/60), totM=totalMins%60;
-        const totDur=totH>0?`${totH}h${totM>0?' '+totM+'m':''}`:totM+'m';
-        // Total row
-        html+=`<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px;padding:0 2px">
-          <span style="font-size:26px;font-weight:200;color:#fff;letter-spacing:-.02em">${totDur}</span>
-          <span style="font-size:12px;color:rgba(255,255,255,0.3)">${timePeriod===30||timePeriod==='month'?'/ miesiąc':'/ tydzień'}</span>
-        </div>`;
-        // Bar rows per category
-        tCatEntries.forEach(([catId,mins],i)=>{
-          const cat=timeCats.find(c=>c.id===catId);
-          const col=tCatColor(cat,i);
-          const pct=Math.round(mins/totalMins*100);
+        const sortedTCats=Object.entries(tCatTotal).sort((a,b)=>b[1]-a[1]);
+        const tCatIdx={}; sortedTCats.forEach(([cid],i)=>tCatIdx[cid]=i);
+        const totH2=Math.floor(totalMins2/60), totM2=totalMins2%60;
+        const totDur2=(totH2>0?totH2+'h':'')+(totM2>0?' '+totM2+'m':'');
+        const periodLabel2=timePeriod===30?'/ miesi\u0105c':'/ '+timePeriod+' dni';
+        html+='<div style="margin-bottom:16px;padding:0 2px">';
+        html+='<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px">';
+        html+='<span style="font-size:26px;font-weight:200;color:#fff;letter-spacing:-.02em">'+totDur2.trim()+'</span>';
+        html+='<span style="font-size:12px;color:rgba(255,255,255,0.3)">'+periodLabel2+'</span>';
+        html+='</div>';
+        html+='<div style="height:5px;border-radius:3px;overflow:hidden;display:flex;gap:1px;margin-bottom:10px">';
+        sortedTCats.forEach(([cid,mins],i)=>{
+          const pct=(mins/totalMins2*100).toFixed(1);
+          html+='<div style="height:5px;width:'+pct+'%;background:'+tCatColor(cid,i)+';opacity:0.85;flex-shrink:0"></div>';
+        });
+        html+='</div>';
+        html+='<div style="display:flex;flex-wrap:wrap;gap:5px">';
+        sortedTCats.forEach(([cid,mins],i)=>{
+          const cat2=timeCats.find(c=>c.id===cid);
+          const col=tCatColor(cid,i);
           const hh=Math.floor(mins/60),m=mins%60;
-          const dur=hh>0?`${hh}h${m>0?' '+m+'m':''}`:m+'m';
-          html+=`<div style="margin-bottom:10px">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-              <span style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></span>
-              <span style="flex:1;font-size:13px;color:rgba(255,255,255,0.65)">${cat?.name||catId}</span>
-              <span style="font-size:13px;font-weight:500;color:#fff">${dur}</span>
-            </div>
-            <div style="height:3px;border-radius:2px;background:rgba(255,255,255,0.07)">
-              <div style="height:3px;border-radius:2px;background:${col};width:${pct}%;opacity:0.7"></div>
-            </div>
-          </div>`;
+          const dur=(hh>0?hh+'h':'')+(m>0?' '+m+'m':'');
+          html+='<div style="display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:20px;background:rgba(255,255,255,0.06)">';
+          html+='<span style="width:6px;height:6px;border-radius:50%;background:'+col+';flex-shrink:0;display:inline-block"></span>';
+          html+='<span style="font-size:12px;color:rgba(255,255,255,0.55)">'+(cat2?.name||cid)+'</span>';
+          html+='<span style="font-size:12px;font-weight:600;color:#fff">'+dur.trim()+'</span>';
+          html+='</div>';
+        });
+        html+='</div></div>';
+        const tDayNames=['Niedziela','Poniedzia\u0142ek','Wtorek','\u015aroda','Czwartek','Pi\u0105tek','Sobota'];
+        const todayKey2=today();
+        const sortedTDates=Object.keys(tByDate).sort((a,b)=>b.localeCompare(a));
+        sortedTDates.forEach(date=>{
+          const dayEnts=tByDate[date];
+          const d2=new Date(date+'T00:00:00');
+          const isToday2=date===todayKey2;
+          const dayLabel2=isToday2?'Dzi\u015b':tDayNames[d2.getDay()];
+          const dateStr2=d2.getDate()+'.'+(d2.getMonth()+1).toString().padStart(2,'0');
+          const dayMins=dayEnts.reduce((s,e)=>s+e.mins,0);
+          const dH=Math.floor(dayMins/60),dM=dayMins%60;
+          const dayDur=(dH>0?dH+'h':'')+(dM>0?' '+dM+'m':'');
+          const lOpacity=isToday2?'0.9':'0.45'; const lWeight=isToday2?'600':'400';
+          html+='<div style="margin-bottom:10px">';
+          html+='<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:5px;padding:0 2px">';
+          html+='<span style="font-size:13px;color:rgba(255,255,255,'+lOpacity+');font-weight:'+lWeight+'">'+dayLabel2+'</span>';
+          html+='<span style="font-size:11px;color:rgba(255,255,255,0.22)">'+dateStr2+'</span>';
+          html+='<span style="flex:1"></span>';
+          html+='<span style="font-size:12px;color:rgba(255,255,255,0.4)">'+dayDur.trim()+'</span>';
+          html+='</div>';
+          [...dayEnts].sort((a,b)=>{
+            const aB=a.blocks[0],bB=b.blocks[0];
+            if(!aB&&!bB) return 0; if(!aB) return 1; if(!bB) return -1;
+            return (aB.h*4+aB.q)-(bB.h*4+bB.q);
+          }).forEach(e=>{
+            const ci=tCatIdx[e.catId]??0;
+            const col=tCatColor(e.catId,ci);
+            const cat2=timeCats.find(c=>c.id===e.catId);
+            const eH=Math.floor(e.mins/60),eM=e.mins%60;
+            const eDur=(eH>0?eH+'h':'')+(eM>0?' '+eM+'m':'');
+            let timeRange='';
+            if(e.blocks&&e.blocks.length){
+              const sb=[...e.blocks].sort((a,b)=>a.h*4+a.q-(b.h*4+b.q));
+              const fb=sb[0],lb=sb[sb.length-1];
+              const fmt=(h,q)=>h+':'+(q*15).toString().padStart(2,'0');
+              const endQ=(lb.q+1)%4, endH=lb.h+(lb.q===3?1:0);
+              timeRange=fmt(fb.h,fb.q)+'\u2013'+fmt(endH,endQ);
+            }
+            html+='<div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:10px;background:rgba(255,255,255,0.05);margin-bottom:3px">';
+            html+='<span style="width:6px;height:6px;border-radius:50%;background:'+col+';flex-shrink:0;display:inline-block"></span>';
+            html+='<div style="flex:1;min-width:0">';
+            if(e.label) html+='<div style="font-size:13px;color:rgba(255,255,255,0.8);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e.label+'</div>';
+            if(cat2?.name||timeRange){
+              html+='<div style="display:flex;align-items:center;gap:6px;margin-top:1px">';
+              if(cat2?.name) html+='<span style="font-size:11px;color:rgba(255,255,255,0.35)">'+cat2.name+'</span>';
+              if(cat2?.name&&timeRange) html+='<span style="font-size:11px;color:rgba(255,255,255,0.18)">\u00b7</span>';
+              if(timeRange) html+='<span style="font-size:11px;color:rgba(255,255,255,0.3)">'+timeRange+'</span>';
+              html+='</div>';
+            }
+            html+='</div>';
+            html+='<span style="font-size:13px;font-weight:500;color:#fff;flex-shrink:0">'+eDur.trim()+'</span>';
+            html+='</div>';
+          });
+          html+='</div>';
         });
       }
+      html+='</div>';
+    }
 
-      html+=`</div>`;
+    // — Habits table (bottom, filtered by selected sector) —
+    {
+      const selCsvSec2=state._csvSectorId||state.sectors[0]?.id;
+      html+='<div class="s-panel-body" style="padding-top:16px;border-top:1px solid rgba(255,255,255,0.05)">';
+      html+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;justify-content:center">';
+      state.sectors.forEach(sec=>html+=`<div class="sector-pill${sec.id===selCsvSec2?' active':''}" onclick="setCsvSector('${sec.id}')" style="font-size:13px;padding:6px 14px">${sec.name}</div>`);
+      html+='</div>';
+      const selSec2=state.sectors.find(s=>s.id===selCsvSec2)||state.sectors[0];
+      const habitsInSec2=selSec2?state.habits.filter(h=>!h.archived&&h.sectorId===selSec2.id):[];
+      const sharedPeriod2=state._statPeriod||7;
+      const days7b=[];const now7b=new Date();
+      for(let i=sharedPeriod2-1;i>=0;i--){ const d2=new Date(now7b); d2.setDate(now7b.getDate()-i); days7b.push({key:fmtDate(d2),num:d2.getDate(),month:d2.getMonth()}); }
+      const activeHabits2=habitsInSec2.filter(h=>days7b.some(d=>isDone(state.daily?.[d.key]?.habits?.[h.id])));
+      if(!activeHabits2.length){
+        html+='<div class="empty"><div class="empty-text">Brak danych</div></div>';
+      } else {
+        html+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+        html+='<thead><tr><th style="color:rgba(255,255,255,0.4);text-align:left;padding:4px 8px 6px 0;font-weight:400;min-width:28px;font-size:11px"></th>';
+        activeHabits2.forEach(h=>html+=`<th style="color:rgba(255,255,255,0.7);font-size:11px;font-weight:500;padding:4px 3px;text-align:center;min-width:30px;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.name}</th>`);
+        html+='</tr></thead><tbody>';
+        for(const day of days7b){
+          const hasAny=activeHabits2.some(h=>isDone(state.daily?.[day.key]?.habits?.[h.id]));
+          if(!hasAny) continue;
+          html+=`<tr><td style="color:rgba(255,255,255,0.35);font-size:11px;padding:5px 8px 5px 0;font-weight:400;white-space:nowrap">${day.num}</td>`;
+          activeHabits2.forEach(h=>{
+            const val=state.daily?.[day.key]?.habits?.[h.id];
+            const done=isDone(val);
+            html+='<td style="text-align:center;padding:4px 3px">';
+            if(done){
+              if(h.type==='checkbox') html+='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(61,221,101,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+              else html+='<span style="font-size:10px;color:#fff">'+String(val).substring(0,4)+'</span>';
+            } else {
+              html+='<span style="color:rgba(255,255,255,0.1);font-size:9px">\u00b7</span>';
+            }
+            html+='</td>';
+          });
+          html+='</tr>';
+        }
+        html+='</tbody></table></div>';
+      }
+      html+='</div>';
     }
 
     html+=`</div>`; // end s-lock-panel stats
-
-    // Money stats — shown under stats when statsOpen
-    html+=`<div class="s-lock-panel" style="margin-top:10px;padding:4px 0">${renderMoneySettings()}</div>`;
   }
 
   // ARCHIVE panel
@@ -1919,19 +1987,24 @@ function toggleFold(key){
 function setCsvSector(id){ state._csvSectorId=id; save(); renderSettings(); }
 function setTimePeriod(p){ state._timePeriod=p; save(); renderSettings(); }
 function openCatColorPicker(type,id){
-  const existing=document.getElementById('catColorPickerOverlay');
-  if(existing){ existing.remove(); return; }
-  const palette=['#7dd3fc','#38bdf8','#60a5fa','#818cf8','#c4b5fd','#d8b4fe','#f9a8d4','#fb7185','#fca5a5','#fdba74','#fde68a','#6ee7b7','#bbf7d0','#67e8f9','#a5f3fc','#ffffff','#94a3b8','#475569','#f87171','#34d399'];
-  const ov=document.createElement('div');
-  ov.id='catColorPickerOverlay';
-  ov.style.cssText='position:fixed;inset:0;z-index:700;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:0 20px 40px';
-  const swatches=palette.map(c=>`<button onclick="pickCatColor('${type}','${id}','${c}')" style="width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,0.12);background:${c};cursor:pointer;padding:0;flex-shrink:0;touch-action:manipulation"></button>`).join('');
-  ov.innerHTML=`<div style="width:100%;max-width:400px;background:#1c1c1e;border-radius:20px;padding:22px"><div style="font-size:11px;color:rgba(255,255,255,0.3);text-align:center;margin-bottom:16px;letter-spacing:.07em;text-transform:uppercase">Kolor</div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;justify-items:center">${swatches}</div></div>`;
-  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
-  document.body.appendChild(ov);
+  let currentColor='#7dd3fc';
+  if(type==='tc'){ const c=(state.timeCategories||[]).find(x=>x.id===id); if(c?.color) currentColor=c.color; }
+  else { const c=(state.moneyCategories||[]).find(x=>x.id===id); if(c?.color) currentColor=c.color; }
+  const inp=document.createElement('input');
+  inp.type='color';
+  inp.value=(currentColor.startsWith('#')&&currentColor.length===7)?currentColor:'#7dd3fc';
+  inp.style.cssText='position:fixed;top:-999px;left:-999px;opacity:0;width:1px;height:1px';
+  document.body.appendChild(inp);
+  inp.addEventListener('change',()=>{
+    const col=inp.value;
+    try{ document.body.removeChild(inp); }catch(e){}
+    if(type==='tc') updateTimeCatColor(id,col);
+    else updateMoneyCatColor(id,col);
+  });
+  inp.addEventListener('cancel',()=>{ try{ document.body.removeChild(inp); }catch(e){} });
+  inp.click();
 }
 function pickCatColor(type,id,color){
-  document.getElementById('catColorPickerOverlay')?.remove();
   if(type==='tc') updateTimeCatColor(id,color);
   else updateMoneyCatColor(id,color);
 }
@@ -3214,79 +3287,92 @@ function getMoneyStats(days){
 function renderMoneySettings(){
   const cats=(state.moneyCategories||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
   const period=state._statPeriod||7;
-  const stats=getMoneyStats(period);
-  const total=Object.values(stats).reduce((s,v)=>s+v.total,0);
-
-  // Palette for categories
   const palette=['#60a5fa','#f472b6','#fb923c','#a78bfa','#34d399','#fbbf24','#f87171','#38bdf8'];
-
+  const catColor=(catId,i)=>{ const c=cats.find(x=>x.id===catId); return c?.color||(palette[i%palette.length]); };
+  const now=new Date();
+  const entries=(state.moneyEntries||[]).filter(e=>{
+    const d=new Date(e.date+'T00:00:00');
+    return (now-d)/(1000*60*60*24)<=period;
+  });
+  const total=entries.reduce((s,e)=>s+e.amount,0);
+  const dayNames=['Niedziela','Poniedzialek','Wtorek','Sroda','Czwartek','Piatek','Sobota'];
+  const dayNamesUTF=['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];
   let html='<div style="padding:8px 0">';
-
-  // period toggle is shared (shown once above)
-
   if(total===0){
-    html+=`<div style="text-align:center;color:rgba(255,255,255,0.25);font-size:13px;padding:16px 0">Brak wpisów</div>`;
+    html+='<div style="text-align:center;color:rgba(255,255,255,0.25);font-size:13px;padding:16px 0">Brak wpisów</div>';
   } else {
-    // Pie chart SVG
-    const R=64, cx=72, cy=72;
-    let svgPaths='', legendHtml='', startAngle=-Math.PI/2;
-    const catEntries=Object.entries(stats).filter(([,v])=>v.total>0);
-    if(catEntries.length===1){
-      // Single category — full circle
-      const [[catId,{total:catTotal}]]=catEntries;
-      const cat=cats.find(c=>c.id===catId);
-      const color=cat?.color||palette[0];
-      svgPaths=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="${color}" opacity="0.85"/>`;
-      legendHtml=`<div style="display:flex;align-items:center;gap:8px;padding:2px 0"><span style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block"></span><span style="flex:1;font-size:13px;color:rgba(255,255,255,0.7)">${cat?.name||catId}</span><span style="font-size:13px;font-weight:600;color:#fff">100%</span><span style="font-size:13px;color:rgba(255,255,255,0.5)">${Math.round(catTotal)} zł</span></div>`;
-    } else {
-      catEntries.forEach(([catId,{total:catTotal}],i)=>{
-        const cat=cats.find(c=>c.id===catId);
-        const color=cat?.color||palette[i%palette.length];
-        const angle=(catTotal/total)*Math.PI*2;
-        const endAngle=startAngle+angle;
-        const x1=cx+R*Math.cos(startAngle), y1=cy+R*Math.sin(startAngle);
-        const x2=cx+R*Math.cos(endAngle), y2=cy+R*Math.sin(endAngle);
-        const large=angle>Math.PI?1:0;
-        svgPaths+=`<path d="M${cx},${cy} L${x1.toFixed(1)},${y1.toFixed(1)} A${R},${R} 0 ${large},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${color}" opacity="0.85"/>`;
-        startAngle=endAngle;
-        const pct=Math.round(catTotal/total*100);
-        legendHtml+=`<div style="display:flex;align-items:center;gap:8px;padding:2px 0"><span style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block"></span><span style="flex:1;font-size:13px;color:rgba(255,255,255,0.7)">${cat?.name||catId}</span><span style="font-size:13px;font-weight:600;color:#fff">${pct}%</span><span style="font-size:13px;color:rgba(255,255,255,0.5)">${Math.round(catTotal)} zł</span></div>`;
+    // Total + stacked bar
+    const catTotals={};
+    entries.forEach(e=>{ catTotals[e.catId]=(catTotals[e.catId]||0)+e.amount; });
+    const sortedCats=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
+    const catIdx={};
+    sortedCats.forEach(([cid],i)=>catIdx[cid]=i);
+    const totalStr=total%1===0?Math.round(total):total.toFixed(2);
+    html+='<div style="margin-bottom:18px;padding:0 2px">';
+    html+='<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:12px">';
+    html+='<span style="font-size:28px;font-weight:200;color:#fff;letter-spacing:-.02em">'+totalStr+' zł</span>';
+    const periodLabel=period===30||period==='month'?'/ miesiąc':'/ '+period+' dni';
+    html+='<span style="font-size:12px;color:rgba(255,255,255,0.3)">'+periodLabel+'</span>';
+    html+='</div>';
+    // Stacked horizontal bar
+    html+='<div style="height:5px;border-radius:3px;overflow:hidden;display:flex;gap:1px;margin-bottom:10px">';
+    sortedCats.forEach(([cid,amt],i)=>{
+      const pct=(amt/total*100).toFixed(1);
+      const col=catColor(cid,i);
+      html+='<div style="height:5px;width:'+pct+'%;background:'+col+';opacity:0.85;flex-shrink:0"></div>';
+    });
+    html+='</div>';
+    // Legend pills
+    html+='<div style="display:flex;flex-wrap:wrap;gap:5px">';
+    sortedCats.forEach(([cid,amt],i)=>{
+      const cat=cats.find(c=>c.id===cid);
+      const col=catColor(cid,i);
+      const amtStr=amt%1===0?Math.round(amt):amt.toFixed(2);
+      html+='<div style="display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:20px;background:rgba(255,255,255,0.06)">';
+      html+='<span style="width:6px;height:6px;border-radius:50%;background:'+col+';flex-shrink:0;display:inline-block"></span>';
+      html+='<span style="font-size:12px;color:rgba(255,255,255,0.55)">'+(cat?.name||cid)+'</span>';
+      html+='<span style="font-size:12px;font-weight:600;color:#fff">'+amtStr+' zł</span>';
+      html+='</div>';
+    });
+    html+='</div></div>';
+    // Day-grouped list
+    const byDate={};
+    entries.forEach(e=>{ if(!byDate[e.date]) byDate[e.date]=[]; byDate[e.date].push(e); });
+    const sortedDates=Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
+    const todayKey=today();
+    sortedDates.forEach(date=>{
+      const dayEntries=byDate[date];
+      const d=new Date(date+'T00:00:00');
+      const dayTotal=dayEntries.reduce((s,e)=>s+e.amount,0);
+      const isToday=date===todayKey;
+      const dayLabel=isToday?'Dzi\u015b':dayNamesUTF[d.getDay()];
+      const dateStr=d.getDate()+'.'+(d.getMonth()+1).toString().padStart(2,'0');
+      const dayTotalStr=dayTotal%1===0?Math.round(dayTotal):dayTotal.toFixed(2);
+      html+='<div style="margin-bottom:10px">';
+      html+='<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:5px;padding:0 2px">';
+      const labelWeight=isToday?'600':'400';
+      const labelOpacity=isToday?'0.9':'0.45';
+      html+='<span style="font-size:13px;color:rgba(255,255,255,'+labelOpacity+');font-weight:'+labelWeight+'">'+dayLabel+'</span>';
+      html+='<span style="font-size:11px;color:rgba(255,255,255,0.22)">'+dateStr+'</span>';
+      html+='<span style="flex:1"></span>';
+      html+='<span style="font-size:12px;color:rgba(255,255,255,0.4)">'+dayTotalStr+' zł</span>';
+      html+='</div>';
+      [...dayEntries].sort((a,b)=>b.amount-a.amount).forEach(e=>{
+        const cat=cats.find(c=>c.id===e.catId);
+        const ci=sortedCats.findIndex(([cid])=>cid===e.catId);
+        const col=catColor(e.catId,ci>=0?ci:0);
+        const amtE=e.amount%1===0?Math.round(e.amount):e.amount.toFixed(2);
+        html+='<div style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:10px;background:rgba(255,255,255,0.05);margin-bottom:3px">';
+        html+='<span style="width:6px;height:6px;border-radius:50%;background:'+col+';flex-shrink:0;display:inline-block"></span>';
+        html+='<span style="font-size:12px;color:rgba(255,255,255,0.4);min-width:40px;flex-shrink:0">'+(cat?.name||'')+'</span>';
+        html+='<span style="flex:1;font-size:13px;color:rgba(255,255,255,0.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(e.note||'')+'</span>';
+        html+='<span style="font-size:14px;font-weight:500;color:#fff;flex-shrink:0">'+amtE+' zł</span>';
+        html+='</div>';
       });
-    }
-
-    html+=`<div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;justify-content:center">`;
-    html+=`<svg width="144" height="144" viewBox="0 0 144 144"><circle cx="72" cy="72" r="${R}" fill="rgba(255,255,255,0.05)"/>${svgPaths}<circle cx="72" cy="72" r="32" fill="#000"/><text x="72" y="68" text-anchor="middle" fill="#fff" font-size="16" font-weight="200" font-family="-apple-system,sans-serif">${Math.round(total)}</text><text x="72" y="84" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="10" font-family="-apple-system,sans-serif">zł</text></svg>`;
-    html+=`<div style="display:flex;flex-direction:column;gap:4px">${legendHtml}</div>`;
-    html+=`</div>`;
-
-    // Per-category breakdown: name header + day-of-week rows
-    const days=['Nd','Pn','Wt','Śr','Cz','Pt','So'];
-    catEntries.forEach(([catId,{total:catTotal,entries:catEnts}],i)=>{
-      const cat=cats.find(c=>c.id===catId);
-      const color=cat?.color||palette[i%palette.length];
-      html+=`<div style="margin-bottom:14px">`;
-      html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">`;
-      html+=`<span style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block"></span>`;
-      html+=`<span style="font-size:16px;font-weight:500;color:#fff;flex:1">${cat?.name||catId}</span>`;
-      html+=`<span style="font-size:16px;color:rgba(255,255,255,0.5)">${Math.round(catTotal)} zł</span>`;
-      html+=`</div>`;
-      const sorted=[...catEnts].sort((a,b)=>new Date(b.date)-new Date(a.date));
-      sorted.slice(0,5).forEach(e=>{
-        const d=new Date(e.date);
-        const dayLabel=days[d.getDay()];
-        const label=e.note||'';
-        html+=`<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,0.05);margin-bottom:4px">`;
-        html+=`<span style="font-size:13px;color:rgba(255,255,255,0.4);width:18px;text-align:center;flex-shrink:0">${dayLabel}</span>`;
-        html+=`<span style="flex:1;font-size:14px;color:rgba(255,255,255,0.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${label}</span>`;
-        html+=`<span style="font-size:14px;font-weight:500;color:#fff;flex-shrink:0">${Math.round(e.amount)} zł</span>`;
-        html+=`</div>`;
-      });
-      html+=`</div>`;
+      html+='</div>';
     });
   }
-
-
-  html+=`</div>`;
+  html+='</div>';
   return html;
 }
 
