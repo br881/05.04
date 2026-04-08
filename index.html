@@ -1092,7 +1092,11 @@ function saveExtraTime(){
     if(!state.timeEntries[k]) state.timeEntries[k]=[];
     state.timeEntries[k].push({id:'tt'+Date.now(),label:e.name,catId:e.trackCatId||(state.timeCategories||[])[0]?.id,blocks});
   }
-  save(); closeExtraTimeScreen(); openSheet();
+  const es=document.getElementById('extraTimeScreen');
+  save(); es.style.transition='none'; es.style.transform='translateY(100%)';
+  requestAnimationFrame(()=>{ es.style.transition=''; });
+  _extraTimeId=null; etSelBlocks.clear(); updateEtDuration();
+  openSheet();
 }
 function renderExtraTimeGrid(){
   const inner=document.getElementById('etGridInner'); if(!inner) return;
@@ -1922,9 +1926,9 @@ function openAddTimeCat(){
   const ov=document.createElement('div');
   ov.id='ttCatAddOverlay';
   ov.style.cssText='position:fixed;inset:0;z-index:400;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);padding:0 20px 40px';
-  ov.innerHTML=`<div style="width:100%;max-width:400px;background:#1a1a1a;border-radius:16px;padding:20px;">
-    <input id="ttCatAddInput" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:10px;padding:12px 14px;color:#fff;font-size:16px;font-family:inherit;outline:none;margin-bottom:12px" placeholder="" autocapitalize="sentences">
-    <button onclick="confirmAddTimeCat()" style="width:100%;background:rgba(61,221,101,0.18);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-family:inherit;cursor:pointer">Dodaj</button>
+  ov.innerHTML=`<div style="width:100%;max-width:400px;background:#1a1a1a;border-radius:16px;padding:20px">
+    <input id="ttCatAddInput" style="width:100%;background:rgba(255,255,255,0.1);border:none;border-radius:10px;padding:12px 14px;color:#fff;font-size:16px;font-family:inherit;outline:none;margin-bottom:12px;text-align:center" placeholder="" autocapitalize="sentences">
+    <button onclick="confirmAddTimeCat()" class="save-btn">Dodaj</button>
   </div>`;
   ov.addEventListener('click',e=>{ if(e.target===ov){ ov.remove(); } });
   document.body.appendChild(ov);
@@ -2297,6 +2301,7 @@ function closeHabitTimeScreen(){
   htHabitId=null; htSelBlocks.clear();
 }
 function saveHabitTime(){
+  const hs=document.getElementById('habitTimeScreen');
   if(!htHabitId||!htSelBlocks.size){ closeHabitTimeScreen(); completeHabit(htHabitId||'',true); renderHome(); return; }
   const h=state.habits.find(x=>x.id===htHabitId); if(!h) return;
   const blocks=Array.from(htSelBlocks).map(k=>{const[hh,q]=k.split(':');return{h:+hh,q:+q};});
@@ -2305,7 +2310,10 @@ function saveHabitTime(){
   if(!state.timeEntries[k]) state.timeEntries[k]=[];
   state.timeEntries[k].push({id:'tt'+Date.now(),label:h.name,catId:h.trackCatId||(state.timeCategories||[])[0]?.id,blocks});
   completeHabit(htHabitId,true);
-  save(); closeHabitTimeScreen(); renderHome();
+  save(); renderHome();
+  hs.style.transition='none'; hs.style.transform='translateY(100%)';
+  requestAnimationFrame(()=>{ hs.style.transition=''; });
+  htHabitId=null; htSelBlocks.clear();
 }
 function renderHabitTimeGrid(){
   const inner=document.getElementById('htGridInner'); if(!inner) return;
@@ -2596,7 +2604,18 @@ function saveTTHabitMode(){
     state.timeEntries[k].push({id:'tt'+Date.now(),label:h?.name||ttEntryLabel||'',catId:ttSelectedCat||h?.trackCatId||(state.timeCategories||[])[0]?.id,blocks});
     completeHabit(_ttHabitId,true); save();
   }
-  closeTimeTracker(); renderHome();
+  renderHome();
+  // Close time tracker immediately (no animation delay)
+  const tt=document.getElementById('timeTracker'),home=document.getElementById('home');
+  tt.style.transition='none'; tt.classList.remove('active');
+  home.style.transition='none'; home.classList.remove('slide-out'); home.style.transform='';
+  requestAnimationFrame(()=>{ tt.style.transition=''; tt.style.transform=''; home.style.transition=''; });
+  document.querySelector('.habits-scroll').style.overflow='';
+  closeTTEntry(); ttSelBlocks.clear(); ttSelecting=false;
+  _ttHabitId=null;
+  document.getElementById('ttSaveHabitBtn').style.display='none';
+  document.getElementById('ttBackBtn').style.display='block';
+  document.getElementById('ttHabitSaveBar').style.display='none';
   // Redirect to URL if set
   if(h?.url){ try{ window.open(h.url,'_blank'); }catch(e){} }
 }
