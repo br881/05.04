@@ -68,40 +68,49 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 /* PROGRESS BAR */
 #progressBar{
   position:fixed;
-  bottom:calc(var(--safe-bottom) + 26px);
+  bottom:calc(var(--safe-bottom) + 18px);
   left:28px;right:28px;
   z-index:50;pointer-events:none;
   opacity:0;transition:opacity .4s;
 }
 #progressBar.visible{opacity:1;}
-#progressBar .pb-track{
-  width:100%;height:6px;border-radius:6px;
-  background:rgba(255,255,255,0.08);
-  overflow:hidden;
-}
-#progressBar .pb-fill{
-  height:6px;border-radius:6px;
-  background:linear-gradient(90deg,#3ddd65,#a8f5c8,#3ddd65);
-  background-size:200% 100%;
-  box-shadow:0 0 12px rgba(61,221,101,0.55),0 0 32px rgba(61,221,101,0.2);
-  transition:width .55s cubic-bezier(.34,1.2,.64,1);
-  animation:pbShimmer 2.4s linear infinite;
-}
 #progressBar .pb-row{
   display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:7px;
+  margin-bottom:8px;
 }
 #progressBar .pb-label{
-  font-size:12px;font-weight:500;color:rgba(255,255,255,0.45);
-  font-variant-numeric:tabular-nums;letter-spacing:.02em;
+  font-size:11px;font-weight:600;color:rgba(255,255,255,0.35);
+  font-variant-numeric:tabular-nums;letter-spacing:.04em;
 }
 #progressBar .pb-pct{
-  font-size:12px;font-weight:600;color:rgba(61,221,101,0.8);
-  font-variant-numeric:tabular-nums;
+  font-size:11px;font-weight:700;color:rgba(61,221,101,0.7);
+  font-variant-numeric:tabular-nums;letter-spacing:.02em;
 }
-@keyframes pbShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
-@keyframes pbPop{0%{transform:scaleY(1);}40%{transform:scaleY(1.6);}70%{transform:scaleY(0.85);}100%{transform:scaleY(1);}}
-.pb-fill.pop{animation:pbShimmer 2.4s linear infinite,pbPop .4s cubic-bezier(.34,1.56,.64,1);}
+#progressBar .pb-dots{
+  display:flex;gap:5px;align-items:center;
+}
+.pb-dot{
+  flex:1;height:5px;border-radius:3px;
+  background:rgba(255,255,255,0.09);
+  transition:background .35s cubic-bezier(.34,1.2,.64,1),
+             box-shadow .35s cubic-bezier(.34,1.2,.64,1),
+             transform .35s cubic-bezier(.34,1.56,.64,1);
+  transform-origin:center;
+}
+.pb-dot.done{
+  background:#3ddd65;
+  box-shadow:0 0 8px rgba(61,221,101,0.7),0 0 20px rgba(61,221,101,0.3);
+}
+.pb-dot.done.popped{
+  animation:dotPop .45s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes dotPop{
+  0%{transform:scaleY(1);}
+  35%{transform:scaleY(2.2);}
+  65%{transform:scaleY(0.75);}
+  100%{transform:scaleY(1);}
+}
+
 @keyframes toastIn{0%{opacity:0;transform:translateX(-50%) translateY(10px);}100%{opacity:1;transform:translateX(-50%) translateY(0);}}
 @keyframes toastOut{0%{opacity:1;}100%{opacity:0;transform:translateX(-50%) translateY(8px);}}
 @keyframes doneIn{0%{opacity:0;transform:translateX(-40px) scale(.88);}60%{opacity:1;transform:translateX(4px) scale(1.02);}80%{transform:translateX(-2px) scale(.99);}100%{opacity:1;transform:translateX(0) scale(1);}}
@@ -116,7 +125,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .temp-overlay.open{opacity:1;pointer-events:all;}
 .temp-overlay-blur{position:absolute;inset:0;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(0,0,0,0.78);}
 .temp-card{position:relative;z-index:1;width:100%;max-width:440px;margin:0 auto;background:none;border:none;border-radius:0;padding:0;display:flex;flex-direction:column;gap:18px;align-items:center;}
-.temp-card-field{width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:20px;font-weight:400;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
+.temp-card-field{width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:20px;font-weight:600;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
 .temp-card-field:focus{border-color:var(--accent-border);}
 .temp-card-sectors{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
 .sector-pill{padding:8px 16px;border-radius:20px;border:none;background:rgba(255,255,255,0.05);color:var(--ui);font-size:14px;cursor:pointer;font-family:inherit;transition:all .15s;}
@@ -160,7 +169,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .input-sheet.open{transform:translateY(0);}
 .is-handle{width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);margin:0 auto 14px;}
 .is-label{font-size:14px;color:var(--ui);margin-bottom:8px;opacity:.7;font-weight:400;}
-.is-field{width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:20px;font-weight:400;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
+.is-field{width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:20px;font-weight:600;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
 .is-field:focus{background:rgba(255,255,255,0.38);}
 .is-confirm{width:100%;margin-top:10px;background:rgba(61,221,101,0.55);color:#fff;font-size:17px;font-weight:600;border:none;border-radius:12px;padding:14px;cursor:pointer;font-family:inherit;transition:opacity .15s;}
 .is-confirm:active{opacity:.7;}
@@ -194,7 +203,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .sector-edit-panel{display:none;}
 .sector-block.expanded .sector-edit-panel{display:block;}
 .sector-edit-card{background:rgba(255,255,255,0.13);border-radius:14px;padding:16px;margin-bottom:10px;}
-.sec-name-input{display:block;width:100%;background:none;border:none;border-bottom:1px solid rgba(255,255,255,0.25);color:#ffffff;font-size:20px;font-weight:500;font-family:inherit;outline:none;padding:4px 0 8px;text-align:center;margin-bottom:18px;}
+.sec-name-input{display:block;width:100%;background:none;border:none;border-bottom:1px solid rgba(255,255,255,0.25);color:#ffffff;font-size:20px;font-weight:600;font-family:inherit;outline:none;padding:4px 0 8px;text-align:center;margin-bottom:18px;}
 .sec-name-input:focus{border-bottom-color:var(--accent-border);}
 .sec-schedule-list{display:flex;flex-direction:column;gap:14px;}
 .sec-schedule-row{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;background:rgba(255,255,255,0.12);border-radius:10px;}
@@ -341,7 +350,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .type-selector{display:flex;gap:6px;}
 .type-btn{flex:1;padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.06);color:#ffffff;font-size:14px;cursor:pointer;font-family:inherit;transition:all .18s;text-align:center;display:flex;align-items:center;justify-content:center;}
 .type-btn.active{background:var(--accent-dim);color:var(--accent-bright);}
-.hd-name-input{flex:1;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:15px 18px;color:#ffffff;font-size:20px;font-weight:400;font-family:inherit;outline:none;text-align:center;transition:background .2s;letter-spacing:-.02em;}
+.hd-name-input{flex:1;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:15px 18px;color:#ffffff;font-size:20px;font-weight:600;font-family:inherit;outline:none;text-align:center;transition:background .2s;letter-spacing:-.02em;}
 .hd-name-input:focus{background:rgba(255,255,255,0.42);}
 .hd-name-input::placeholder{color:rgba(255,255,255,0.28);}
 
@@ -443,7 +452,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   border:none;
   border-radius:14px;padding:16px 18px;
-  color:#ffffff;font-size:20px;font-weight:400;
+  color:#ffffff;font-size:20px;font-weight:600;
   font-family:inherit;
   outline:none;transition:background .2s;margin-bottom:12px;
   text-align:center;letter-spacing:-.02em;
@@ -539,7 +548,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
       <span class="pb-label" id="pbLabel"></span>
       <span class="pb-pct" id="pbPct"></span>
     </div>
-    <div class="pb-track"><div class="pb-fill" id="pbFill" style="width:0%"></div></div>
+    <div class="pb-dots" id="pbDots"></div>
   </div>
   <!-- Habits -->
   <div class="habits-scroll">
@@ -610,7 +619,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
     <!-- Note field -->
     <input id="moneyNoteInput" type="text" inputmode="text" enterkeyhint="done" autocapitalize="sentences" autocomplete="off"
       placeholder=""
-      style="margin-top:10px;width:100%;max-width:400px;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:var(--radius);padding:16px 18px;color:#ffffff;font-size:18px;font-weight:400;text-align:center;font-family:inherit;outline:none;box-sizing:border-box;letter-spacing:-.02em;"
+      style="margin-top:10px;width:100%;max-width:400px;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:var(--radius);padding:16px 18px;color:#ffffff;font-size:18px;font-weight:600;text-align:center;font-family:inherit;outline:none;box-sizing:border-box;letter-spacing:-.02em;"
       onkeydown="if(event.key==='Enter'){event.preventDefault();saveMoney();}">
   </div>
 
@@ -687,7 +696,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div id="tempAddCard" style="position:relative;z-index:1;width:100%;max-width:440px;padding:0 24px 32px;display:flex;flex-direction:column;gap:20px;align-items:stretch">
     <div id="tempAddSectors" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"></div>
     <input id="tempAddField" enterkeyhint="done" inputmode="text" autocomplete="off" autocapitalize="sentences"
-      style="width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:16px;padding:18px 20px;color:#fff;font-size:20px;font-weight:400;font-family:inherit;outline:none;text-align:center;letter-spacing:-.02em;box-sizing:border-box;-webkit-user-select:text;user-select:text;">
+      style="width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:16px;padding:18px 20px;color:#fff;font-size:20px;font-weight:600;font-family:inherit;outline:none;text-align:center;letter-spacing:-.02em;box-sizing:border-box;-webkit-user-select:text;user-select:text;">
   </div>
 </div>
 
@@ -861,6 +870,7 @@ function renderHome(){
   if(!sector){
     Array.from(hList.children).forEach(r=>{ r.style.maxHeight=r.offsetHeight+'px'; r.classList.add('vanishing'); });
     setTimeout(()=>{ hList.innerHTML=''; ds.classList.add('show'); },420);
+    const _pb0=document.getElementById('progressBar'); if(_pb0) _pb0.classList.remove('visible');
     return;
   }
   const dd=getDayData(); const jsd=jsDay();
@@ -868,21 +878,35 @@ function renderHome(){
   habits.sort((a,b)=>(a.order||0)-(b.order||0));
   const remaining=habits.filter(h=>!isDone(dd.habits[h.id]));
 
-  // Update progress bar
+  // Update progress bar — segmented dots
   const _total=habits.length, _done=habits.length-remaining.length;
   const pb=document.getElementById('progressBar');
-  const pbFill=document.getElementById('pbFill');
+  const pbDots=document.getElementById('pbDots');
   const pbLabel=document.getElementById('pbLabel');
   const pbPct=document.getElementById('pbPct');
-  if(pb&&pbFill&&pbLabel&&pbPct&&_total>0){
+  if(_total===0&&pb){ pb.classList.remove('visible'); }
+  if(pb&&pbDots&&pbLabel&&pbPct&&_total>0){
     const pct=Math.round(_done/_total*100);
-    pbFill.style.width=pct+'%';
     pbLabel.textContent=_done+' / '+_total;
     pbPct.textContent=pct+'%';
-    // pop animation on each new completion
-    pbFill.classList.remove('pop');
-    void pbFill.offsetWidth;
-    pbFill.classList.add('pop');
+    // Rebuild dots if count changed
+    if(pbDots.children.length!==_total){
+      pbDots.innerHTML=Array.from({length:_total},(_,i)=>`<div class="pb-dot${i<_done?' done':''}" data-idx="${i}"></div>`).join('');
+    } else {
+      // Update existing dots — pop the newly completed one
+      Array.from(pbDots.children).forEach((dot,i)=>{
+        const wasDone=dot.classList.contains('done');
+        const isDoneNow=i<_done;
+        if(!wasDone&&isDoneNow){
+          dot.classList.add('done');
+          dot.classList.remove('popped');
+          void dot.offsetWidth;
+          dot.classList.add('popped');
+        } else if(wasDone&&!isDoneNow){
+          dot.classList.remove('done','popped');
+        }
+      });
+    }
     pb.classList.add('visible');
   }
   if(remaining.length===0){
@@ -1312,7 +1336,6 @@ function renderTempScreen(){
       if(ds) ds.classList.add('show');
     } else {
       if(ds) ds.classList.remove('show');
-      // No tasks at all — show blue checkmark (same as done)
       if(ds) ds.classList.add('show');
     }
     return;
@@ -1321,26 +1344,25 @@ function renderTempScreen(){
   list.innerHTML=tasks.map(t=>`<div class="habit-row row-visible" id="trow-${t.id}" style="animation:none" onclick="completeTempFromScreen('${t.id}')"><span class="habit-name">${t.name}</span></div>`).join('');
 }
 function completeTempFromScreen(tId){
+  const key='t'+tId;
   const row=document.getElementById('trow-'+tId);
-  if(row){
+  if(!row) return;
+  // Undo-aware completion with tapping animation
+  if(timers[key]){ clearTimeout(timers[key]); delete timers[key]; row.classList.remove('dimmed','tapping'); return; }
+  row.classList.add('dimmed','tapping');
+  timers[key]=setTimeout(()=>{
+    delete timers[key];
+    if(!row.isConnected){ renderTempScreen&&renderTempScreen(); return; }
     row.style.maxHeight=row.offsetHeight+'px';
-    row.classList.add('dimmed');
-    setTimeout(()=>{
-      const dd=getDayData(); if(!dd.temps) dd.temps={};
-      dd.temps[tId]=true;
-      const t=(state.tempTasks||[]).find(x=>x.id===tId);
-      if(t){ state.doneTasks.push({...t,doneDate:today()}); state.tempTasks=state.tempTasks.filter(x=>x.id!==tId); }
-      save(); renderHome();
-      requestAnimationFrame(()=>row.classList.add('vanishing'));
-      row.addEventListener('transitionend',()=>renderTempScreen(),{once:true});
-    },1400);
-    return;
-  }
-  const dd=getDayData(); if(!dd.temps) dd.temps={};
-  dd.temps[tId]=true;
-  const t=(state.tempTasks||[]).find(x=>x.id===tId);
-  if(t){ state.doneTasks.push({...t,doneDate:today()}); state.tempTasks=state.tempTasks.filter(x=>x.id!==tId); }
-  save(); renderHome(); renderTempScreen();
+    const name=row.querySelector('.habit-name')?.textContent||'';
+    const dd=getDayData(); if(!dd.temps) dd.temps={};
+    dd.temps[tId]=true;
+    const t=(state.tempTasks||[]).find(x=>x.id===tId);
+    if(t){ state.doneTasks.push({...t,doneDate:today()}); state.tempTasks=state.tempTasks.filter(x=>x.id!==tId); }
+    save(); renderHome();
+    requestAnimationFrame(()=>row.classList.add('vanishing'));
+    row.addEventListener('transitionend',()=>{ renderTempScreen&&renderTempScreen(); showUndoToast(name,key,null); },{once:true});
+  },800);
 }
 
 /* ══ ADD TASK OVERLAY ══ */
@@ -3177,7 +3199,7 @@ function saveTTEntry(){
     if(!moved){ moved=false; return; }
     moved=false;
     const dx=sx-e.changedTouches[0].clientX;
-    if(dx>50) openMoney();
+    if(dx>50) openMoney(true);
   },{passive:true});
 })();
 
@@ -3305,17 +3327,18 @@ function saveTTEntry(){
 let _moneySelCat=null;
 let _moneyAmount='0';
 
-function openMoney(){
+function openMoney(focusNow){
   _moneySelCat=(state.moneyCategories||[])[0]?.id||null;
   _moneyAmount='0';
   const inp=document.getElementById('moneyAmountInput');
   inp.value='';
   document.getElementById('moneyNoteInput').value='';
+  // Focus synchronously if called from a touch gesture — iOS opens keyboard immediately
+  if(focusNow) inp.focus();
   renderMoneyCats();
   document.getElementById('home').classList.add('slide-out');
   document.getElementById('moneyOverlay').style.transform='translateX(0)';
-  // Delay focus slightly so screen is visible — ensures iOS keyboard opens
-  setTimeout(()=>{ inp.focus(); },80);
+  if(!focusNow) setTimeout(()=>{ inp.focus(); },80);
 }
 
 function closeMoney(){
