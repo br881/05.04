@@ -45,9 +45,9 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .temps-tray-inner::-webkit-scrollbar{display:none;}
 
 /* HABIT TILE */
-.habit-row{display:flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;will-change:opacity,transform;transition:opacity .25s ease,max-height .35s ease,padding .35s ease,margin .35s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);outline:2px solid transparent;outline-offset:0px;}
-.habit-row.tapping{outline-color:var(--accent);animation:tapProgress .8s linear forwards;}
-@keyframes tapProgress{0%{outline-color:rgba(61,221,101,0);box-shadow:inset 0 0 0 0 rgba(61,221,101,0);}20%{outline-color:rgba(61,221,101,0.5);}100%{outline-color:rgba(61,221,101,0.9);background:rgba(61,221,101,0.18);}}
+.habit-row{display:flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;will-change:opacity,transform;transition:opacity .25s ease,max-height .35s ease,padding .35s ease,margin .35s ease,box-shadow .15s;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+.habit-row.tapping{animation:tapFill .8s linear forwards;}
+@keyframes tapFill{0%{box-shadow:inset 0 0 0 2px rgba(61,221,101,0);}15%{box-shadow:inset 0 0 0 2px rgba(61,221,101,0.5);}100%{box-shadow:inset 0 0 0 2px rgba(61,221,101,1),0 0 12px rgba(61,221,101,0.25);background:rgba(61,221,101,0.15);}}
 .habit-row.row-enter{opacity:0;transform:translateY(6px);}
 .habit-row.row-visible{opacity:1;transform:translateY(0);transition:opacity .32s ease,transform .32s cubic-bezier(.2,.8,.4,1);}
 .habit-row:active{opacity:.55;}
@@ -64,15 +64,14 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 
 /* DONE STATE */
 .done-state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .5s cubic-bezier(.4,0,.2,1);}
-/* PROGRESS RING */
-#progressRing{position:fixed;top:calc(var(--safe-top) + 8px);left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;opacity:0;transition:opacity .3s;}
-#progressRing.visible{opacity:1;}
-#progressRing svg{overflow:visible;}
-#progressRing .ring-track{fill:none;stroke:rgba(255,255,255,0.1);stroke-width:2.5;}
-#progressRing .ring-fill{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;transform-origin:center;transform:rotate(-90deg);transition:stroke-dashoffset .4s cubic-bezier(.4,0,.2,1);}
-#progressRing .ring-text{fill:rgba(255,255,255,0.6);font-size:9px;font-family:-apple-system,sans-serif;text-anchor:middle;dominant-baseline:middle;}
 .done-state.show{opacity:1;}
-@keyframes toastIn{0%{opacity:0;transform:translateX(-50%) translateY(12px);}100%{opacity:1;transform:translateX(-50%) translateY(0);}}
+/* PROGRESS BAR */
+#progressBar{position:fixed;top:calc(var(--safe-top) + 14px);left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;opacity:0;transition:opacity .3s;width:120px;}
+#progressBar.visible{opacity:1;}
+#progressBar .pb-track{width:100%;height:4px;border-radius:4px;background:rgba(255,255,255,0.1);}
+#progressBar .pb-fill{height:4px;border-radius:4px;background:linear-gradient(90deg,var(--accent),#a8f0c0);box-shadow:0 0 8px rgba(61,221,101,0.6);transition:width .45s cubic-bezier(.34,1.2,.64,1);}
+#progressBar .pb-label{text-align:center;font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:.02em;}
+@keyframes toastIn{0%{opacity:0;transform:translateX(-50%) translateY(10px);}100%{opacity:1;transform:translateX(-50%) translateY(0);}}
 @keyframes toastOut{0%{opacity:1;}100%{opacity:0;transform:translateX(-50%) translateY(8px);}}
 @keyframes doneIn{0%{opacity:0;transform:translateX(-40px) scale(.88);}60%{opacity:1;transform:translateX(4px) scale(1.02);}80%{transform:translateX(-2px) scale(.99);}100%{opacity:1;transform:translateX(0) scale(1);}}
 @keyframes checkDraw{0%{stroke-dashoffset:90;}70%{stroke-dashoffset:8;}100%{stroke-dashoffset:0;}}
@@ -500,20 +499,13 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 <!-- HOME -->
 <div id="home" class="screen active">
   <div class="done-state" id="doneState">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
-      <div class="done-mark">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-      </div>
-      <div id="doneSummary" style="display:flex;flex-direction:column;gap:6px;align-items:center;opacity:0;transition:opacity .5s .8s;max-width:260px"></div>
+    <div class="done-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
   </div>
-  <!-- Progress ring top-center -->
-  <div id="progressRing">
-    <svg width="36" height="36" viewBox="0 0 36 36">
-      <circle class="ring-track" cx="18" cy="18" r="15"/>
-      <circle class="ring-fill" id="ringFill" cx="18" cy="18" r="15"/>
-      <text class="ring-text" id="ringText" x="18" y="18.5"></text>
-    </svg>
+  <div id="progressBar">
+    <div class="pb-track"><div class="pb-fill" id="pbFill" style="width:0%"></div></div>
+    <div class="pb-label" id="pbLabel"></div>
   </div>
   <!-- Habits -->
   <div class="habits-scroll">
@@ -573,13 +565,12 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 
   <!-- Center content -->
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 24px;gap:0;min-height:0;padding-bottom:80px;">
-    <!-- Tappable number display — real input styled large -->
+    <!-- Visible tappable number input -->
     <input id="moneyAmountInput" type="text" inputmode="decimal" enterkeyhint="done"
-      autocomplete="off"
-      placeholder="0"
+      autocomplete="off" placeholder="0"
       oninput="moneyAmountOninput(this.value)"
       onkeydown="moneyAmountKeydown(event)"
-      style="font-size:68px;font-weight:200;color:#ffffff;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;text-align:center;line-height:1;margin-bottom:48px;background:none;border:none;outline:none;width:100%;max-width:400px;caret-color:var(--accent);font-family:-apple-system,sans-serif;-webkit-user-select:text;user-select:text;">
+      style="font-size:72px;font-weight:200;color:#fff;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;text-align:center;line-height:1;margin-bottom:44px;background:none;border:none;outline:none;width:100%;max-width:400px;caret-color:var(--accent);font-family:-apple-system,sans-serif;-webkit-user-select:text;user-select:text;">
     <!-- Categories -->
     <div id="moneyCatRow" style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:400px;"></div>
     <!-- Note field -->
@@ -843,19 +834,20 @@ function renderHome(){
   habits.sort((a,b)=>(a.order||0)-(b.order||0));
   const remaining=habits.filter(h=>!isDone(dd.habits[h.id]));
 
+  // Update progress bar
+  const _total=habits.length, _done=habits.length-remaining.length;
+  const pb=document.getElementById('progressBar');
+  const pbFill=document.getElementById('pbFill');
+  const pbLabel=document.getElementById('pbLabel');
+  if(pb&&pbFill&&pbLabel&&_total>0){
+    pbFill.style.width=(_done/_total*100)+'%';
+    pbLabel.textContent=_done+'/'+_total;
+    pb.classList.add('visible');
+  }
   if(remaining.length===0){
     Array.from(hList.children).forEach(r=>{ r.style.maxHeight=r.offsetHeight+'px'; r.classList.add('vanishing'); });
-    setTimeout(()=>{
-      hList.innerHTML=''; ds.classList.add('show');
-      // Populate done summary
-      const sumEl=document.getElementById('doneSummary');
-      if(sumEl){
-        const doneHabits=habits.filter(h=>isDone(dd.habits[h.id]));
-        sumEl.innerHTML=doneHabits.map(h=>`<div style="font-size:13px;color:rgba(255,255,255,0.45);letter-spacing:-.01em">${h.name}</div>`).join('');
-        requestAnimationFrame(()=>requestAnimationFrame(()=>sumEl.style.opacity='1'));
-      }
-    },400);
-    document.getElementById('progressRing')?.classList.remove('visible');
+    setTimeout(()=>{ hList.innerHTML=''; ds.classList.add('show'); },400);
+    pb&&pb.classList.remove('visible');
     return;
   }
   ds.classList.remove('show');
@@ -881,20 +873,6 @@ function renderHome(){
     });
   }
 
-  // Update progress ring
-  const total_h=habits.length, done_h=habits.length-remaining.length;
-  const ring=document.getElementById('progressRing');
-  const ringFill=document.getElementById('ringFill');
-  const ringText=document.getElementById('ringText');
-  if(ring&&ringFill&&ringText&&total_h>0){
-    const r=15, circ=2*Math.PI*r;
-    const pct=done_h/total_h;
-    ringFill.style.strokeDasharray=circ;
-    ringFill.style.strokeDashoffset=circ*(1-pct);
-    ringText.textContent=`${done_h}/${total_h}`;
-    ring.classList.add('visible');
-  }
-
   diffZone(hList, remaining.map(h=>({key:'h'+h.id,h})), item=>{
     const h=item.h, row=document.createElement('div');
     row.id='row-'+h.id; row.className='habit-row row-enter';
@@ -907,8 +885,6 @@ function renderHome(){
       row.innerHTML=`<span class="habit-name">${h.name}</span>`;
     } else if(h.type==='number'||h.type==='text'){
       row.innerHTML=`<span class="habit-name" style="flex:1">${h.name}</span><input class="habit-value-input" type="${h.type==='number'?'number':'text'}" inputmode="${h.type==='number'?'numeric':'text'}" placeholder="" onclick="event.stopPropagation()" onchange="completeHabitInput('${h.id}',this)">`;
-    } else if(h.url){
-      row.innerHTML=`<span class="habit-name" style="flex:1">${h.name}</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
     } else {
       row.innerHTML=`<span class="habit-name">${h.name}</span>`;
     }
@@ -933,22 +909,39 @@ function thingsTap(key,onConfirm){
     row.addEventListener('transitionend',()=>{ renderHome(); showUndoToast(name,key,onConfirm); },{once:true});
   },800);
 }
-let _undoTimer=null;
+let _undoTimer=null,_undoKey=null,_undoConfirm=null;
 function showUndoToast(name,key,onConfirm){
-  const existing=document.getElementById('undoToast'); if(existing) existing.remove();
+  const ex=document.getElementById('undoToast'); if(ex) ex.remove();
   if(_undoTimer){ clearTimeout(_undoTimer); _undoTimer=null; }
+  _undoKey=key; _undoConfirm=onConfirm;
   const t=document.createElement('div');
   t.id='undoToast';
-  t.style.cssText='position:fixed;bottom:calc(var(--safe-bottom)+110px);left:50%;transform:translateX(-50%);z-index:300;background:rgba(30,30,30,0.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:20px;padding:10px 18px 10px 16px;display:flex;align-items:center;gap:12px;font-size:14px;color:rgba(255,255,255,0.8);white-space:nowrap;animation:toastIn .25s cubic-bezier(.34,1.56,.64,1) forwards;';
-  t.innerHTML=`<span style="opacity:.6;max-width:160px;overflow:hidden;text-overflow:ellipsis">${name||'Gotowe'}</span><button onclick="dismissUndoToast()" style="background:none;border:none;color:var(--accent);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;padding:0;touch-action:manipulation">Cofnij</button>`;
+  t.style.cssText='position:fixed;bottom:calc(var(--safe-bottom)+110px);left:50%;transform:translateX(-50%);z-index:300;background:rgba(28,28,30,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:22px;padding:11px 20px 11px 16px;display:flex;align-items:center;gap:14px;font-size:14px;color:rgba(255,255,255,0.75);white-space:nowrap;animation:toastIn .25s cubic-bezier(.34,1.56,.64,1) forwards;box-shadow:0 4px 24px rgba(0,0,0,0.4);';
+  t.innerHTML=`<span style="opacity:.55;max-width:170px;overflow:hidden;text-overflow:ellipsis">${name||'Gotowe'}</span><button onclick="undoLastComplete()" style="background:none;border:none;color:var(--accent);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;padding:0;touch-action:manipulation">Cofnij</button>`;
   document.body.appendChild(t);
-  _undoTimer=setTimeout(dismissUndoToast,3000);
+  _undoTimer=setTimeout(dismissUndoToast,3200);
 }
 function dismissUndoToast(){
   if(_undoTimer){ clearTimeout(_undoTimer); _undoTimer=null; }
   const t=document.getElementById('undoToast'); if(!t) return;
   t.style.animation='toastOut .2s ease forwards';
   setTimeout(()=>t.remove(),220);
+  _undoKey=null; _undoConfirm=null;
+}
+function undoLastComplete(){
+  dismissUndoToast();
+  // Undo: for habits remove from daily, for tasks restore from doneTasks
+  if(!_undoKey) return;
+  if(_undoKey.startsWith('t')){
+    const tId=_undoKey.slice(1);
+    const t=state.doneTasks.find(x=>x.id===tId);
+    if(t){ state.doneTasks=state.doneTasks.filter(x=>x.id!==tId); state.tempTasks.push(t); }
+    const dd=getDayData(); if(dd.temps) delete dd.temps[tId];
+    save(); renderTempScreen&&renderTempScreen(); renderHome();
+  } else {
+    const hId=_undoKey;
+    const dd=getDayData(); delete dd.habits[hId]; updateStreak(hId,false); save(); renderHome();
+  }
 }
 function handleHabitTap(hId){
   const h=state.habits.find(x=>x.id===hId); if(!h) return;
@@ -987,7 +980,6 @@ function openInputSheetThenTime(h){
   setTimeout(()=>f.focus(),340);
 }
 function handleTempTap(tId){
-  // Tasks use shorter 600ms delay (instant-feel like Apple Reminders)
   const key=`t${tId}`;
   const row=document.getElementById(`row-${key}`);
   if(!row) return;
@@ -1002,12 +994,12 @@ function handleTempTap(tId){
   row.classList.add('dimmed','tapping');
   timers[key]=setTimeout(()=>{
     delete timers[key];
-    if(!row.isConnected){ renderHome(); renderTempScreen?.(); return; }
+    if(!row.isConnected){ renderTempScreen&&renderTempScreen(); return; }
     row.style.maxHeight=row.offsetHeight+'px';
     const name=row.querySelector('.habit-name')?.textContent||'';
     onConfirm();
     requestAnimationFrame(()=>row.classList.add('vanishing'));
-    row.addEventListener('transitionend',()=>{ renderTempScreen?.(); showUndoToast(name,key,onConfirm); },{once:true});
+    row.addEventListener('transitionend',()=>{ renderTempScreen&&renderTempScreen(); showUndoToast(name,key,onConfirm); },{once:true});
   },600);
 }
 function completeHabit(hId,val){ const dd=getDayData(); dd.habits[hId]=val; updateStreak(hId,true); save(); }
@@ -1624,7 +1616,7 @@ function closeSettings(){
 function renderSettings(){
   const scroll=document.getElementById('settingsScroll');
   if(!scroll) return;
-  const _scrollTop=scroll.scrollTop;
+  const _st=scroll.scrollTop;
   let html='';
   try{
 
@@ -1994,7 +1986,7 @@ function renderSettings(){
 
   html+=`<div style="height:60px"></div>`;
   scroll.innerHTML=html;
-  scroll.scrollTop=_scrollTop;
+  scroll.scrollTop=_st;
   }catch(err){ console.error('renderSettings error:',err,err.stack); scroll.innerHTML=`<div style="padding:40px 20px;color:rgba(255,100,100,.7);font-size:13px">Błąd: ${err.message}<br><pre style="font-size:10px;opacity:.6;white-space:pre-wrap">${err.stack?.split('\n').slice(0,4).join('\n')}</pre></div>`; }
 }
 
@@ -3281,8 +3273,8 @@ function openMoney(){
   renderMoneyCats();
   document.getElementById('home').classList.add('slide-out');
   document.getElementById('moneyOverlay').style.transform='translateX(0)';
-  // Focus with slight delay to ensure screen is visible — reliably opens keyboard on iOS
-  setTimeout(()=>{ inp.focus(); inp.select(); },80);
+  // Delay focus slightly so screen is visible — ensures iOS keyboard opens
+  setTimeout(()=>{ inp.focus(); },80);
 }
 
 function closeMoney(){
@@ -3294,7 +3286,7 @@ function closeMoney(){
 }
 
 function moneyAmountOninput(val){
-  const clean=val.replace(/[^0-9.,]/g,'').replace(',','.').replace(/(\..*)\./g,'$1');
+  const clean=val.replace(/[^0-9.,]/g,'').replace(',','.').replace(/(\.\.*)\./g,'$1');
   const inp=document.getElementById('moneyAmountInput');
   if(inp.value!==clean) inp.value=clean;
   _moneyAmount=clean||'0';
@@ -3530,7 +3522,6 @@ function mcReorder(fromId,toId){
 if('serviceWorker'in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 renderHome();
 setInterval(renderHome,60000);
-// Refresh home when app returns from background (new day, etc.)
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) renderHome(); });
 
 // Swipe from left edge to close habitDetail (slide-down screens)
