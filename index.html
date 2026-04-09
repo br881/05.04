@@ -543,7 +543,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 </div>
 
 <!-- MONEY SCREEN -->
-<div id="moneyOverlay" style="position:fixed;inset:0;z-index:500;background:#000;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .55s cubic-bezier(.16,1,.3,1);">
+<div id="moneyOverlay" style="position:fixed;inset:0;z-index:500;background:#000;display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .55s cubic-bezier(.16,1,.3,1);">
   <!-- Back arrow -->
   <div class="settings-header">
     <button class="btn-back" onclick="closeMoney()">‹</button>
@@ -1547,8 +1547,37 @@ function renderSettings(){
   let html='';
   try{
 
+  // LOCK ACCORDION STATE (declared early so stats render at top)
+  const lockOpen=state._lockOpen||false;
+  const archiveOpen=state._archiveOpen||false;
+  const timeStatsOpen=state._timeStatsOpen||false;
+  const statsOpen=state._statsOpen||false;
+  const moneyOpen=state._moneyOpen||false;
+
+  // ── LOCK BUTTON (top) ──
+  html+=`<div style="display:flex;justify-content:center;margin-top:24px;padding:0 18px">
+    <button onclick="toggleFold('lock')" style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.32);border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s${lockOpen?';background:rgba(255,255,255,0.4)':''}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </button>
+  </div>`;
+
+  if(lockOpen){
+    const habitColor='rgba(255,255,255,0.32)';
+    html+=`<div style="display:flex;justify-content:center;gap:12px;margin-top:14px;padding:0 18px">
+      <button onclick="toggleFold('stats')" style="width:52px;height:52px;border-radius:50%;background:${statsOpen?'var(--accent-dim)':habitColor};border:none;color:${statsOpen?'var(--accent-bright)':'rgba(255,255,255,0.7)'};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+      </button>
+      <button onclick="toggleFold('archive')" style="width:52px;height:52px;border-radius:50%;background:${archiveOpen?'var(--accent-dim)':habitColor};border:none;color:${archiveOpen?'var(--accent-bright)':'rgba(255,255,255,0.7)'};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l-.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button onclick="showExportSheet()" style="width:52px;height:52px;border-radius:50%;background:${habitColor};border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+    </div>`;
+  }
+
   // SECTORS
-  html+=`<div class="s-section">`;
+  html+=`<div class="s-section" style="margin-top:24px">`;
   for(const sec of state.sectors){
     const sh=state.habits.filter(h=>h.sectorId===sec.id&&!h.archived).sort((a,b)=>(a.order||0)-(b.order||0));
     html+=`<div class="sector-block${expandedSectors.has(sec.id)?' expanded':''}" id="sb-${sec.id}">
@@ -1627,36 +1656,7 @@ function renderSettings(){
   }
   html+=`<button class="add-sector-btn-icon" onclick="openExtraSheet()">${plusSVG}</button></div>`;
 
-  // LOCK ACCORDION — 3 icon buttons side by side, hidden behind lock icon
-  const lockOpen=state._lockOpen||false;
-  const archiveOpen=state._archiveOpen||false;
-  const timeStatsOpen=state._timeStatsOpen||false;
-  const statsOpen=state._statsOpen||false;
-  const moneyOpen=state._moneyOpen||false;
-
-  // Lock icon (same color as habits/extras tiles) — toggles buttons
-  html+=`<div style="display:flex;justify-content:center;margin-top:36px;padding:0 18px">
-    <button onclick="toggleFold('lock')" style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.32);border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s${lockOpen?';background:rgba(255,255,255,0.4)':''}">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-    </button>
-  </div>`;
-
-  if(lockOpen){
-    // 4 buttons row: stats | money | archive | download
-    const habitColor='rgba(255,255,255,0.32)';
-    html+=`<div style="display:flex;justify-content:center;gap:12px;margin-top:14px;padding:0 18px">
-      <button onclick="toggleFold('stats')" style="width:52px;height:52px;border-radius:50%;background:${statsOpen?'var(--accent-dim)':habitColor};border:none;color:${statsOpen?'var(--accent-bright)':'rgba(255,255,255,0.7)'};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
-      </button>
-
-      <button onclick="toggleFold('archive')" style="width:52px;height:52px;border-radius:50%;background:${archiveOpen?'var(--accent-dim)':habitColor};border:none;color:${archiveOpen?'var(--accent-bright)':'rgba(255,255,255,0.7)'};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </button>
-      <button onclick="showExportSheet()" style="width:52px;height:52px;border-radius:50%;background:${habitColor};border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      </button>
-    </div>`;
-  }
+  // STATS and ARCHIVE panels
 
   if(lockOpen){
 
@@ -3045,7 +3045,7 @@ function saveTTEntry(){
   },{passive:true});
 })();
 
-// Swipe from right edge on home → money overlay
+// Swipe from right edge on home → settings
 (()=>{
   let sx=0,sy=0,moved=false;
   const home=document.getElementById('home');
@@ -3062,27 +3062,28 @@ function saveTTEntry(){
     if(!moved){ moved=false; return; }
     moved=false;
     const dx=sx-e.changedTouches[0].clientX;
-    if(dx>50) openMoney();
+    if(dx>50) openSettings();
   },{passive:true});
 })();
 
-// Swipe from LEFT edge on home → extras/habits sheet
+// Swipe from LEFT edge on home → money overlay
 (()=>{
-  let sx=0, dragging=false;
+  let sx=0,sy=0,moved=false;
   const home=document.getElementById('home');
   home.addEventListener('touchstart',e=>{
-    sx=e.touches[0].clientX; dragging=false;
+    sx=e.touches[0].clientX; sy=e.touches[0].clientY; moved=false;
   },{passive:true});
   home.addEventListener('touchmove',e=>{
-    if(sx>32) return;
+    if(sx>36) return;
     const dx=e.touches[0].clientX-sx;
-    if(dx>20) dragging=true;
+    const dy=Math.abs(e.touches[0].clientY-sy);
+    if(dx>10&&dy<dx) moved=true;
   },{passive:true});
   home.addEventListener('touchend',e=>{
-    if(!dragging) return;
+    if(!moved){ moved=false; return; }
+    moved=false;
     const dx=e.changedTouches[0].clientX-sx;
-    if(dx>40) openSheet();
-    dragging=false;
+    if(dx>50) openMoney();
   },{passive:true});
 })();
 
@@ -3198,7 +3199,9 @@ function openMoney(){
   document.getElementById('moneyDisplay').textContent='0';
   renderMoneyCats();
   // Animate: money slides in, home slides back — no class juggling
-  document.getElementById('home').classList.add('slide-out');
+  const homeEl=document.getElementById('home');
+  homeEl.style.transition='transform .55s cubic-bezier(.16,1,.3,1)';
+  homeEl.style.transform='translateX(28%)';
   document.getElementById('moneyOverlay').style.transform='translateX(0)';
   // Focus numeric input — synchronous in gesture handler chain
   document.getElementById('moneyAmountInput').focus();
@@ -3206,9 +3209,11 @@ function openMoney(){
 
 function closeMoney(){
   document.activeElement?.blur();
-  document.getElementById('moneyOverlay').style.transform='translateX(100%)';
-  document.getElementById('home').classList.remove('slide-out');
-  document.getElementById('home').style.transform='';
+  document.getElementById('moneyOverlay').style.transform='translateX(-100%)';
+  const homeElC=document.getElementById('home');
+  homeElC.classList.remove('slide-out');
+  homeElC.style.transition='transform .55s cubic-bezier(.16,1,.3,1)';
+  homeElC.style.transform='';
   _moneySelCat=null;
 }
 
@@ -3253,16 +3258,16 @@ function saveMoney(){
   save(); closeMoney();
 }
 
-// Swipe right from left edge of money → close
+// Swipe left from right edge of money → close
 (()=>{
   let sx=0,sy=0,ok=false;
   const ov=document.getElementById('moneyOverlay');
   ov.addEventListener('touchstart',e=>{
-    sx=e.touches[0].clientX; sy=e.touches[0].clientY; ok=sx<28;
+    sx=e.touches[0].clientX; sy=e.touches[0].clientY; ok=sx>window.innerWidth-36;
   },{passive:true});
   ov.addEventListener('touchend',e=>{
     if(!ok) return; ok=false;
-    const dx=e.changedTouches[0].clientX-sx;
+    const dx=sx-e.changedTouches[0].clientX;
     const dy=Math.abs(e.changedTouches[0].clientY-sy);
     if(dx>52&&dy<80) closeMoney();
   },{passive:true});
