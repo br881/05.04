@@ -45,7 +45,9 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .temps-tray-inner::-webkit-scrollbar{display:none;}
 
 /* HABIT TILE */
-.habit-row{display:flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;will-change:opacity,transform;transition:opacity .25s ease,max-height .35s ease,padding .35s ease,margin .35s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+.habit-row{display:flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;will-change:opacity,transform;transition:opacity .25s ease,max-height .35s ease,padding .35s ease,margin .35s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);outline:2px solid transparent;outline-offset:0px;}
+.habit-row.tapping{outline-color:var(--accent);animation:tapProgress .8s linear forwards;}
+@keyframes tapProgress{0%{outline-color:rgba(61,221,101,0);box-shadow:inset 0 0 0 0 rgba(61,221,101,0);}20%{outline-color:rgba(61,221,101,0.5);}100%{outline-color:rgba(61,221,101,0.9);background:rgba(61,221,101,0.18);}}
 .habit-row.row-enter{opacity:0;transform:translateY(6px);}
 .habit-row.row-visible{opacity:1;transform:translateY(0);transition:opacity .32s ease,transform .32s cubic-bezier(.2,.8,.4,1);}
 .habit-row:active{opacity:.55;}
@@ -62,7 +64,16 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 
 /* DONE STATE */
 .done-state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .5s cubic-bezier(.4,0,.2,1);}
+/* PROGRESS RING */
+#progressRing{position:fixed;top:calc(var(--safe-top) + 8px);left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;opacity:0;transition:opacity .3s;}
+#progressRing.visible{opacity:1;}
+#progressRing svg{overflow:visible;}
+#progressRing .ring-track{fill:none;stroke:rgba(255,255,255,0.1);stroke-width:2.5;}
+#progressRing .ring-fill{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;transform-origin:center;transform:rotate(-90deg);transition:stroke-dashoffset .4s cubic-bezier(.4,0,.2,1);}
+#progressRing .ring-text{fill:rgba(255,255,255,0.6);font-size:9px;font-family:-apple-system,sans-serif;text-anchor:middle;dominant-baseline:middle;}
 .done-state.show{opacity:1;}
+@keyframes toastIn{0%{opacity:0;transform:translateX(-50%) translateY(12px);}100%{opacity:1;transform:translateX(-50%) translateY(0);}}
+@keyframes toastOut{0%{opacity:1;}100%{opacity:0;transform:translateX(-50%) translateY(8px);}}
 @keyframes doneIn{0%{opacity:0;transform:translateX(-40px) scale(.88);}60%{opacity:1;transform:translateX(4px) scale(1.02);}80%{transform:translateX(-2px) scale(.99);}100%{opacity:1;transform:translateX(0) scale(1);}}
 @keyframes checkDraw{0%{stroke-dashoffset:90;}70%{stroke-dashoffset:8;}100%{stroke-dashoffset:0;}}
 .done-mark{display:flex;align-items:center;justify-content:center;opacity:0;}
@@ -489,9 +500,20 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 <!-- HOME -->
 <div id="home" class="screen active">
   <div class="done-state" id="doneState">
-    <div class="done-mark">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
+      <div class="done-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div id="doneSummary" style="display:flex;flex-direction:column;gap:6px;align-items:center;opacity:0;transition:opacity .5s .8s;max-width:260px"></div>
     </div>
+  </div>
+  <!-- Progress ring top-center -->
+  <div id="progressRing">
+    <svg width="36" height="36" viewBox="0 0 36 36">
+      <circle class="ring-track" cx="18" cy="18" r="15"/>
+      <circle class="ring-fill" id="ringFill" cx="18" cy="18" r="15"/>
+      <text class="ring-text" id="ringText" x="18" y="18.5"></text>
+    </svg>
   </div>
   <!-- Habits -->
   <div class="habits-scroll">
@@ -543,7 +565,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 </div>
 
 <!-- MONEY SCREEN -->
-<div id="moneyOverlay" style="position:fixed;inset:0;z-index:500;background:#000;display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .55s cubic-bezier(.16,1,.3,1);">
+<div id="moneyOverlay" style="position:fixed;inset:0;z-index:500;background:#000;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .55s cubic-bezier(.16,1,.3,1);">
   <!-- Back arrow -->
   <div class="settings-header">
     <button class="btn-back" onclick="closeMoney()">‹</button>
@@ -551,11 +573,16 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 
   <!-- Center content -->
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 24px;gap:0;min-height:0;padding-bottom:80px;">
-    <!-- Big number -->
-    <div id="moneyDisplay" style="font-size:68px;font-weight:200;color:#ffffff;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;text-align:center;line-height:1;margin-bottom:48px;">0</div>
+    <!-- Tappable number display — real input styled large -->
+    <input id="moneyAmountInput" type="text" inputmode="decimal" enterkeyhint="done"
+      autocomplete="off"
+      placeholder="0"
+      oninput="moneyAmountOninput(this.value)"
+      onkeydown="moneyAmountKeydown(event)"
+      style="font-size:68px;font-weight:200;color:#ffffff;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;text-align:center;line-height:1;margin-bottom:48px;background:none;border:none;outline:none;width:100%;max-width:400px;caret-color:var(--accent);font-family:-apple-system,sans-serif;-webkit-user-select:text;user-select:text;">
     <!-- Categories -->
     <div id="moneyCatRow" style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:400px;"></div>
-    <!-- Extra note field — shown below categories, always visible, plain keyboard -->
+    <!-- Note field -->
     <input id="moneyNoteInput" type="text" inputmode="text" enterkeyhint="done" autocapitalize="sentences" autocomplete="off"
       placeholder=""
       style="margin-top:10px;width:100%;max-width:400px;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:var(--radius);padding:16px 18px;color:#ffffff;font-size:18px;font-weight:400;text-align:center;font-family:inherit;outline:none;box-sizing:border-box;letter-spacing:-.02em;"
@@ -566,12 +593,6 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div style="position:absolute;bottom:0;left:0;right:0;padding:16px 20px;padding-bottom:calc(var(--safe-bottom)+16px);">
     <button class="save-btn" onclick="saveMoney()">Zapisz</button>
   </div>
-
-  <!-- Hidden decimal input -->
-  <input id="moneyAmountInput" type="text" inputmode="decimal" enterkeyhint="done"
-    style="position:fixed;top:-300px;left:-300px;width:1px;height:1px;opacity:0;border:none;outline:none;"
-    oninput="moneyAmountOninput(this.value)"
-    onkeydown="moneyAmountKeydown(event)">
 </div>
 
 <!-- TIME TRACKER -->
@@ -824,7 +845,17 @@ function renderHome(){
 
   if(remaining.length===0){
     Array.from(hList.children).forEach(r=>{ r.style.maxHeight=r.offsetHeight+'px'; r.classList.add('vanishing'); });
-    setTimeout(()=>{ hList.innerHTML=''; ds.classList.add('show'); },400);
+    setTimeout(()=>{
+      hList.innerHTML=''; ds.classList.add('show');
+      // Populate done summary
+      const sumEl=document.getElementById('doneSummary');
+      if(sumEl){
+        const doneHabits=habits.filter(h=>isDone(dd.habits[h.id]));
+        sumEl.innerHTML=doneHabits.map(h=>`<div style="font-size:13px;color:rgba(255,255,255,0.45);letter-spacing:-.01em">${h.name}</div>`).join('');
+        requestAnimationFrame(()=>requestAnimationFrame(()=>sumEl.style.opacity='1'));
+      }
+    },400);
+    document.getElementById('progressRing')?.classList.remove('visible');
     return;
   }
   ds.classList.remove('show');
@@ -850,6 +881,20 @@ function renderHome(){
     });
   }
 
+  // Update progress ring
+  const total_h=habits.length, done_h=habits.length-remaining.length;
+  const ring=document.getElementById('progressRing');
+  const ringFill=document.getElementById('ringFill');
+  const ringText=document.getElementById('ringText');
+  if(ring&&ringFill&&ringText&&total_h>0){
+    const r=15, circ=2*Math.PI*r;
+    const pct=done_h/total_h;
+    ringFill.style.strokeDasharray=circ;
+    ringFill.style.strokeDashoffset=circ*(1-pct);
+    ringText.textContent=`${done_h}/${total_h}`;
+    ring.classList.add('visible');
+  }
+
   diffZone(hList, remaining.map(h=>({key:'h'+h.id,h})), item=>{
     const h=item.h, row=document.createElement('div');
     row.id='row-'+h.id; row.className='habit-row row-enter';
@@ -862,6 +907,8 @@ function renderHome(){
       row.innerHTML=`<span class="habit-name">${h.name}</span>`;
     } else if(h.type==='number'||h.type==='text'){
       row.innerHTML=`<span class="habit-name" style="flex:1">${h.name}</span><input class="habit-value-input" type="${h.type==='number'?'number':'text'}" inputmode="${h.type==='number'?'numeric':'text'}" placeholder="" onclick="event.stopPropagation()" onchange="completeHabitInput('${h.id}',this)">`;
+    } else if(h.url){
+      row.innerHTML=`<span class="habit-name" style="flex:1">${h.name}</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
     } else {
       row.innerHTML=`<span class="habit-name">${h.name}</span>`;
     }
@@ -874,16 +921,34 @@ const timers={};
 function thingsTap(key,onConfirm){
   const row=document.getElementById(`row-${key}`);
   if(!row) return;
-  if(timers[key]){ clearTimeout(timers[key]); delete timers[key]; row.classList.remove('dimmed'); return; }
-  row.classList.add('dimmed');
+  if(timers[key]){ clearTimeout(timers[key]); delete timers[key]; row.classList.remove('dimmed','tapping'); return; }
+  row.classList.add('dimmed','tapping');
   timers[key]=setTimeout(()=>{
     delete timers[key];
     if(!row.isConnected){ renderHome(); return; }
     row.style.maxHeight=row.offsetHeight+'px';
+    const name=row.querySelector('.habit-name')?.textContent||'';
     onConfirm();
     requestAnimationFrame(()=>row.classList.add('vanishing'));
-    row.addEventListener('transitionend',()=>renderHome(),{once:true});
-  },1400);
+    row.addEventListener('transitionend',()=>{ renderHome(); showUndoToast(name,key,onConfirm); },{once:true});
+  },800);
+}
+let _undoTimer=null;
+function showUndoToast(name,key,onConfirm){
+  const existing=document.getElementById('undoToast'); if(existing) existing.remove();
+  if(_undoTimer){ clearTimeout(_undoTimer); _undoTimer=null; }
+  const t=document.createElement('div');
+  t.id='undoToast';
+  t.style.cssText='position:fixed;bottom:calc(var(--safe-bottom)+110px);left:50%;transform:translateX(-50%);z-index:300;background:rgba(30,30,30,0.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:20px;padding:10px 18px 10px 16px;display:flex;align-items:center;gap:12px;font-size:14px;color:rgba(255,255,255,0.8);white-space:nowrap;animation:toastIn .25s cubic-bezier(.34,1.56,.64,1) forwards;';
+  t.innerHTML=`<span style="opacity:.6;max-width:160px;overflow:hidden;text-overflow:ellipsis">${name||'Gotowe'}</span><button onclick="dismissUndoToast()" style="background:none;border:none;color:var(--accent);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;padding:0;touch-action:manipulation">Cofnij</button>`;
+  document.body.appendChild(t);
+  _undoTimer=setTimeout(dismissUndoToast,3000);
+}
+function dismissUndoToast(){
+  if(_undoTimer){ clearTimeout(_undoTimer); _undoTimer=null; }
+  const t=document.getElementById('undoToast'); if(!t) return;
+  t.style.animation='toastOut .2s ease forwards';
+  setTimeout(()=>t.remove(),220);
 }
 function handleHabitTap(hId){
   const h=state.habits.find(x=>x.id===hId); if(!h) return;
@@ -922,13 +987,28 @@ function openInputSheetThenTime(h){
   setTimeout(()=>f.focus(),340);
 }
 function handleTempTap(tId){
-  thingsTap(`t${tId}`,()=>{
+  // Tasks use shorter 600ms delay (instant-feel like Apple Reminders)
+  const key=`t${tId}`;
+  const row=document.getElementById(`row-${key}`);
+  if(!row) return;
+  const onConfirm=()=>{
     const dd=getDayData(); if(!dd.temps) dd.temps={};
     dd.temps[tId]=true;
     const t=(state.tempTasks||[]).find(x=>x.id===tId);
     if(t){ state.doneTasks.push({...t,doneDate:today()}); state.tempTasks=state.tempTasks.filter(x=>x.id!==tId); }
     save();
-  });
+  };
+  if(timers[key]){ clearTimeout(timers[key]); delete timers[key]; row.classList.remove('dimmed','tapping'); return; }
+  row.classList.add('dimmed','tapping');
+  timers[key]=setTimeout(()=>{
+    delete timers[key];
+    if(!row.isConnected){ renderHome(); renderTempScreen?.(); return; }
+    row.style.maxHeight=row.offsetHeight+'px';
+    const name=row.querySelector('.habit-name')?.textContent||'';
+    onConfirm();
+    requestAnimationFrame(()=>row.classList.add('vanishing'));
+    row.addEventListener('transitionend',()=>{ renderTempScreen?.(); showUndoToast(name,key,onConfirm); },{once:true});
+  },600);
 }
 function completeHabit(hId,val){ const dd=getDayData(); dd.habits[hId]=val; updateStreak(hId,true); save(); }
 function completeHabitInput(hId,input){
@@ -1544,40 +1624,12 @@ function closeSettings(){
 function renderSettings(){
   const scroll=document.getElementById('settingsScroll');
   if(!scroll) return;
+  const _scrollTop=scroll.scrollTop;
   let html='';
   try{
 
-  // LOCK ACCORDION STATE (declared early so stats render at top)
-  const lockOpen=state._lockOpen||false;
-  const archiveOpen=state._archiveOpen||false;
-  const timeStatsOpen=state._timeStatsOpen||false;
-  const statsOpen=state._statsOpen||false;
-  const moneyOpen=state._moneyOpen||false;
-
-  // ── LOCK BUTTON (top) ──
-  html+=`<div style="display:flex;justify-content:center;margin-top:24px;padding:0 18px">
-    <button onclick="toggleFold('lock')" style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.32);border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s${lockOpen?';background:rgba(255,255,255,0.4)':''}">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-    </button>
-  </div>`;
-
-  if(lockOpen){
-    const habitColor='rgba(255,255,255,0.32)';
-    html+=`<div style="display:flex;justify-content:center;gap:12px;margin-top:14px;padding:0 18px">
-      <button onclick="toggleFold('stats')" style="width:52px;height:52px;border-radius:50%;background:${statsOpen?'var(--accent-dim)':habitColor};border:none;color:${statsOpen?'var(--accent-bright)':'rgba(255,255,255,0.7)'};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
-      </button>
-      <button onclick="toggleFold('archive')" style="width:52px;height:52px;border-radius:50%;background:${archiveOpen?'var(--accent-dim)':habitColor};border:none;color:${archiveOpen?'var(--accent-bright)':'rgba(255,255,255,0.7)'};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l-.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </button>
-      <button onclick="showExportSheet()" style="width:52px;height:52px;border-radius:50%;background:${habitColor};border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      </button>
-    </div>`;
-  }
-
   // SECTORS
-  html+=`<div class="s-section" style="margin-top:24px">`;
+  html+=`<div class="s-section">`;
   for(const sec of state.sectors){
     const sh=state.habits.filter(h=>h.sectorId===sec.id&&!h.archived).sort((a,b)=>(a.order||0)-(b.order||0));
     html+=`<div class="sector-block${expandedSectors.has(sec.id)?' expanded':''}" id="sb-${sec.id}">
@@ -1656,7 +1708,36 @@ function renderSettings(){
   }
   html+=`<button class="add-sector-btn-icon" onclick="openExtraSheet()">${plusSVG}</button></div>`;
 
-  // STATS and ARCHIVE panels
+  // LOCK ACCORDION — 3 icon buttons side by side, hidden behind lock icon
+  const lockOpen=state._lockOpen||false;
+  const archiveOpen=state._archiveOpen||false;
+  const timeStatsOpen=state._timeStatsOpen||false;
+  const statsOpen=state._statsOpen||false;
+  const moneyOpen=state._moneyOpen||false;
+
+  // Lock icon (same color as habits/extras tiles) — toggles buttons
+  html+=`<div style="display:flex;justify-content:center;margin-top:36px;padding:0 18px">
+    <button onclick="toggleFold('lock')" style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.32);border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s${lockOpen?';background:rgba(255,255,255,0.4)':''}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </button>
+  </div>`;
+
+  if(lockOpen){
+    // 4 buttons row: stats | money | archive | download
+    const habitColor='rgba(255,255,255,0.32)';
+    html+=`<div style="display:flex;justify-content:center;gap:12px;margin-top:14px;padding:0 18px">
+      <button onclick="toggleFold('stats')" style="width:52px;height:52px;border-radius:50%;background:${statsOpen?'var(--accent-dim)':habitColor};border:none;color:${statsOpen?'var(--accent-bright)':'rgba(255,255,255,0.7)'};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+      </button>
+
+      <button onclick="toggleFold('archive')" style="width:52px;height:52px;border-radius:50%;background:${archiveOpen?'var(--accent-dim)':habitColor};border:none;color:${archiveOpen?'var(--accent-bright)':'rgba(255,255,255,0.7)'};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button onclick="showExportSheet()" style="width:52px;height:52px;border-radius:50%;background:${habitColor};border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+    </div>`;
+  }
 
   if(lockOpen){
 
@@ -1913,6 +1994,7 @@ function renderSettings(){
 
   html+=`<div style="height:60px"></div>`;
   scroll.innerHTML=html;
+  scroll.scrollTop=_scrollTop;
   }catch(err){ console.error('renderSettings error:',err,err.stack); scroll.innerHTML=`<div style="padding:40px 20px;color:rgba(255,100,100,.7);font-size:13px">Błąd: ${err.message}<br><pre style="font-size:10px;opacity:.6;white-space:pre-wrap">${err.stack?.split('\n').slice(0,4).join('\n')}</pre></div>`; }
 }
 
@@ -3045,7 +3127,7 @@ function saveTTEntry(){
   },{passive:true});
 })();
 
-// Swipe from right edge on home → settings
+// Swipe from right edge on home → money overlay
 (()=>{
   let sx=0,sy=0,moved=false;
   const home=document.getElementById('home');
@@ -3062,28 +3144,27 @@ function saveTTEntry(){
     if(!moved){ moved=false; return; }
     moved=false;
     const dx=sx-e.changedTouches[0].clientX;
-    if(dx>50) openSettings();
+    if(dx>50) openMoney();
   },{passive:true});
 })();
 
-// Swipe from LEFT edge on home → money overlay
+// Swipe from LEFT edge on home → extras/habits sheet
 (()=>{
-  let sx=0,sy=0,moved=false;
+  let sx=0, dragging=false;
   const home=document.getElementById('home');
   home.addEventListener('touchstart',e=>{
-    sx=e.touches[0].clientX; sy=e.touches[0].clientY; moved=false;
+    sx=e.touches[0].clientX; dragging=false;
   },{passive:true});
   home.addEventListener('touchmove',e=>{
-    if(sx>36) return;
+    if(sx>32) return;
     const dx=e.touches[0].clientX-sx;
-    const dy=Math.abs(e.touches[0].clientY-sy);
-    if(dx>10&&dy<dx) moved=true;
+    if(dx>20) dragging=true;
   },{passive:true});
   home.addEventListener('touchend',e=>{
-    if(!moved){ moved=false; return; }
-    moved=false;
+    if(!dragging) return;
     const dx=e.changedTouches[0].clientX-sx;
-    if(dx>50) openMoney();
+    if(dx>40) openSheet();
+    dragging=false;
   },{passive:true});
 })();
 
@@ -3194,26 +3275,21 @@ let _moneyAmount='0';
 function openMoney(){
   _moneySelCat=(state.moneyCategories||[])[0]?.id||null;
   _moneyAmount='0';
-  document.getElementById('moneyAmountInput').value='';
+  const inp=document.getElementById('moneyAmountInput');
+  inp.value='';
   document.getElementById('moneyNoteInput').value='';
-  document.getElementById('moneyDisplay').textContent='0';
   renderMoneyCats();
-  // Animate: money slides in, home slides back — no class juggling
-  const homeEl=document.getElementById('home');
-  homeEl.style.transition='transform .55s cubic-bezier(.16,1,.3,1)';
-  homeEl.style.transform='translateX(28%)';
+  document.getElementById('home').classList.add('slide-out');
   document.getElementById('moneyOverlay').style.transform='translateX(0)';
-  // Focus numeric input — synchronous in gesture handler chain
-  document.getElementById('moneyAmountInput').focus();
+  // Focus with slight delay to ensure screen is visible — reliably opens keyboard on iOS
+  setTimeout(()=>{ inp.focus(); inp.select(); },80);
 }
 
 function closeMoney(){
   document.activeElement?.blur();
-  document.getElementById('moneyOverlay').style.transform='translateX(-100%)';
-  const homeElC=document.getElementById('home');
-  homeElC.classList.remove('slide-out');
-  homeElC.style.transition='transform .55s cubic-bezier(.16,1,.3,1)';
-  homeElC.style.transform='';
+  document.getElementById('moneyOverlay').style.transform='translateX(100%)';
+  document.getElementById('home').classList.remove('slide-out');
+  document.getElementById('home').style.transform='';
   _moneySelCat=null;
 }
 
@@ -3222,7 +3298,6 @@ function moneyAmountOninput(val){
   const inp=document.getElementById('moneyAmountInput');
   if(inp.value!==clean) inp.value=clean;
   _moneyAmount=clean||'0';
-  document.getElementById('moneyDisplay').textContent=_moneyAmount;
 }
 
 function moneyAmountKeydown(e){
@@ -3258,16 +3333,16 @@ function saveMoney(){
   save(); closeMoney();
 }
 
-// Swipe left from right edge of money → close
+// Swipe right from left edge of money → close
 (()=>{
   let sx=0,sy=0,ok=false;
   const ov=document.getElementById('moneyOverlay');
   ov.addEventListener('touchstart',e=>{
-    sx=e.touches[0].clientX; sy=e.touches[0].clientY; ok=sx>window.innerWidth-36;
+    sx=e.touches[0].clientX; sy=e.touches[0].clientY; ok=sx<28;
   },{passive:true});
   ov.addEventListener('touchend',e=>{
     if(!ok) return; ok=false;
-    const dx=sx-e.changedTouches[0].clientX;
+    const dx=e.changedTouches[0].clientX-sx;
     const dy=Math.abs(e.changedTouches[0].clientY-sy);
     if(dx>52&&dy<80) closeMoney();
   },{passive:true});
@@ -3455,6 +3530,8 @@ function mcReorder(fromId,toId){
 if('serviceWorker'in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 renderHome();
 setInterval(renderHome,60000);
+// Refresh home when app returns from background (new day, etc.)
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) renderHome(); });
 
 // Swipe from left edge to close habitDetail (slide-down screens)
 (()=>{
