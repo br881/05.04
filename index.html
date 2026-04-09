@@ -66,11 +66,42 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .done-state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .5s cubic-bezier(.4,0,.2,1);}
 .done-state.show{opacity:1;}
 /* PROGRESS BAR */
-#progressBar{position:fixed;top:calc(var(--safe-top) + 14px);left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;opacity:0;transition:opacity .3s;width:120px;}
+#progressBar{
+  position:fixed;
+  bottom:calc(var(--safe-bottom) + 26px);
+  left:28px;right:28px;
+  z-index:50;pointer-events:none;
+  opacity:0;transition:opacity .4s;
+}
 #progressBar.visible{opacity:1;}
-#progressBar .pb-track{width:100%;height:4px;border-radius:4px;background:rgba(255,255,255,0.1);}
-#progressBar .pb-fill{height:4px;border-radius:4px;background:linear-gradient(90deg,var(--accent),#a8f0c0);box-shadow:0 0 8px rgba(61,221,101,0.6);transition:width .45s cubic-bezier(.34,1.2,.64,1);}
-#progressBar .pb-label{text-align:center;font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:.02em;}
+#progressBar .pb-track{
+  width:100%;height:6px;border-radius:6px;
+  background:rgba(255,255,255,0.08);
+  overflow:hidden;
+}
+#progressBar .pb-fill{
+  height:6px;border-radius:6px;
+  background:linear-gradient(90deg,#3ddd65,#a8f5c8,#3ddd65);
+  background-size:200% 100%;
+  box-shadow:0 0 12px rgba(61,221,101,0.55),0 0 32px rgba(61,221,101,0.2);
+  transition:width .55s cubic-bezier(.34,1.2,.64,1);
+  animation:pbShimmer 2.4s linear infinite;
+}
+#progressBar .pb-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:7px;
+}
+#progressBar .pb-label{
+  font-size:12px;font-weight:500;color:rgba(255,255,255,0.45);
+  font-variant-numeric:tabular-nums;letter-spacing:.02em;
+}
+#progressBar .pb-pct{
+  font-size:12px;font-weight:600;color:rgba(61,221,101,0.8);
+  font-variant-numeric:tabular-nums;
+}
+@keyframes pbShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+@keyframes pbPop{0%{transform:scaleY(1);}40%{transform:scaleY(1.6);}70%{transform:scaleY(0.85);}100%{transform:scaleY(1);}}
+.pb-fill.pop{animation:pbShimmer 2.4s linear infinite,pbPop .4s cubic-bezier(.34,1.56,.64,1);}
 @keyframes toastIn{0%{opacity:0;transform:translateX(-50%) translateY(10px);}100%{opacity:1;transform:translateX(-50%) translateY(0);}}
 @keyframes toastOut{0%{opacity:1;}100%{opacity:0;transform:translateX(-50%) translateY(8px);}}
 @keyframes doneIn{0%{opacity:0;transform:translateX(-40px) scale(.88);}60%{opacity:1;transform:translateX(4px) scale(1.02);}80%{transform:translateX(-2px) scale(.99);}100%{opacity:1;transform:translateX(0) scale(1);}}
@@ -504,8 +535,11 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
     </div>
   </div>
   <div id="progressBar">
+    <div class="pb-row">
+      <span class="pb-label" id="pbLabel"></span>
+      <span class="pb-pct" id="pbPct"></span>
+    </div>
     <div class="pb-track"><div class="pb-fill" id="pbFill" style="width:0%"></div></div>
-    <div class="pb-label" id="pbLabel"></div>
   </div>
   <!-- Habits -->
   <div class="habits-scroll">
@@ -839,9 +873,16 @@ function renderHome(){
   const pb=document.getElementById('progressBar');
   const pbFill=document.getElementById('pbFill');
   const pbLabel=document.getElementById('pbLabel');
-  if(pb&&pbFill&&pbLabel&&_total>0){
-    pbFill.style.width=(_done/_total*100)+'%';
-    pbLabel.textContent=_done+'/'+_total;
+  const pbPct=document.getElementById('pbPct');
+  if(pb&&pbFill&&pbLabel&&pbPct&&_total>0){
+    const pct=Math.round(_done/_total*100);
+    pbFill.style.width=pct+'%';
+    pbLabel.textContent=_done+' / '+_total;
+    pbPct.textContent=pct+'%';
+    // pop animation on each new completion
+    pbFill.classList.remove('pop');
+    void pbFill.offsetWidth;
+    pbFill.classList.add('pop');
     pb.classList.add('visible');
   }
   if(remaining.length===0){
