@@ -68,35 +68,34 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 /* PROGRESS BAR */
 #progressBar{
   position:fixed;
-  bottom:calc(var(--safe-bottom) + 26px);
+  bottom:calc(var(--safe-bottom) + 14px);
   left:28px;right:28px;
   z-index:50;pointer-events:none;
   opacity:0;transition:opacity .4s;
 }
 #progressBar.visible{opacity:1;}
 #progressBar .pb-track{
-  width:100%;height:6px;border-radius:6px;
+  width:100%;height:10px;border-radius:10px;
   background:rgba(255,255,255,0.08);
   overflow:hidden;
 }
 #progressBar .pb-fill{
-  height:6px;border-radius:6px;
-  background:linear-gradient(90deg,#3ddd65,#a8f5c8,#3ddd65);
+  height:10px;border-radius:10px;
+  background:linear-gradient(90deg,rgba(255,255,255,0.45),rgba(255,255,255,0.8),rgba(255,255,255,0.45));
   background-size:200% 100%;
-  box-shadow:0 0 12px rgba(61,221,101,0.55),0 0 32px rgba(61,221,101,0.2);
+  box-shadow:0 0 10px rgba(255,255,255,0.15);
   transition:width .55s cubic-bezier(.34,1.2,.64,1);
   animation:pbShimmer 2.4s linear infinite;
 }
 #progressBar .pb-row{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:7px;
+  display:flex;align-items:center;justify-content:flex-end;
+  margin-bottom:6px;
 }
 #progressBar .pb-label{
-  font-size:12px;font-weight:500;color:rgba(255,255,255,0.45);
-  font-variant-numeric:tabular-nums;letter-spacing:.02em;
+  display:none;
 }
 #progressBar .pb-pct{
-  font-size:12px;font-weight:600;color:rgba(61,221,101,0.8);
+  font-size:13px;font-weight:700;color:rgba(255,255,255,0.5);
   font-variant-numeric:tabular-nums;
 }
 @keyframes pbShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
@@ -116,7 +115,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .temp-overlay.open{opacity:1;pointer-events:all;}
 .temp-overlay-blur{position:absolute;inset:0;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(0,0,0,0.78);}
 .temp-card{position:relative;z-index:1;width:100%;max-width:440px;margin:0 auto;background:none;border:none;border-radius:0;padding:0;display:flex;flex-direction:column;gap:18px;align-items:center;}
-.temp-card-field{width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:20px;font-weight:400;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
+.temp-card-field{width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:20px;font-weight:600;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
 .temp-card-field:focus{border-color:var(--accent-border);}
 .temp-card-sectors{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
 .sector-pill{padding:8px 16px;border-radius:20px;border:none;background:rgba(255,255,255,0.05);color:var(--ui);font-size:14px;cursor:pointer;font-family:inherit;transition:all .15s;}
@@ -160,7 +159,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .input-sheet.open{transform:translateY(0);}
 .is-handle{width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);margin:0 auto 14px;}
 .is-label{font-size:14px;color:var(--ui);margin-bottom:8px;opacity:.7;font-weight:400;}
-.is-field{width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:20px;font-weight:400;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
+.is-field{width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:20px;font-weight:600;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
 .is-field:focus{background:rgba(255,255,255,0.38);}
 .is-confirm{width:100%;margin-top:10px;background:rgba(61,221,101,0.55);color:#fff;font-size:17px;font-weight:600;border:none;border-radius:12px;padding:14px;cursor:pointer;font-family:inherit;transition:opacity .15s;}
 .is-confirm:active{opacity:.7;}
@@ -604,13 +603,13 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
       autocomplete="off" placeholder="0"
       oninput="moneyAmountOninput(this.value)"
       onkeydown="moneyAmountKeydown(event)"
-      style="font-size:72px;font-weight:200;color:#fff;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;text-align:center;line-height:1;margin-bottom:44px;background:none;border:none;outline:none;width:100%;max-width:400px;caret-color:var(--accent);font-family:-apple-system,sans-serif;-webkit-user-select:text;user-select:text;">
+      style="font-size:72px;font-weight:600;color:#fff;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;text-align:center;line-height:1;margin-bottom:44px;background:none;border:none;outline:none;width:100%;max-width:400px;caret-color:var(--accent);font-family:-apple-system,sans-serif;-webkit-user-select:text;user-select:text;">
     <!-- Categories -->
     <div id="moneyCatRow" style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:400px;"></div>
     <!-- Note field -->
     <input id="moneyNoteInput" type="text" inputmode="text" enterkeyhint="done" autocapitalize="sentences" autocomplete="off"
       placeholder=""
-      style="margin-top:10px;width:100%;max-width:400px;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:var(--radius);padding:16px 18px;color:#ffffff;font-size:18px;font-weight:400;text-align:center;font-family:inherit;outline:none;box-sizing:border-box;letter-spacing:-.02em;"
+      style="margin-top:10px;width:100%;max-width:400px;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:var(--radius);padding:16px 18px;color:#ffffff;font-size:18px;font-weight:600;text-align:center;font-family:inherit;outline:none;box-sizing:border-box;letter-spacing:-.02em;"
       onkeydown="if(event.key==='Enter'){event.preventDefault();saveMoney();}">
   </div>
 
@@ -687,7 +686,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div id="tempAddCard" style="position:relative;z-index:1;width:100%;max-width:440px;padding:0 24px 32px;display:flex;flex-direction:column;gap:20px;align-items:stretch">
     <div id="tempAddSectors" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"></div>
     <input id="tempAddField" enterkeyhint="done" inputmode="text" autocomplete="off" autocapitalize="sentences"
-      style="width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:16px;padding:18px 20px;color:#fff;font-size:20px;font-weight:400;font-family:inherit;outline:none;text-align:center;letter-spacing:-.02em;box-sizing:border-box;-webkit-user-select:text;user-select:text;">
+      style="width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:16px;padding:18px 20px;color:#fff;font-size:20px;font-weight:600;font-family:inherit;outline:none;text-align:center;letter-spacing:-.02em;box-sizing:border-box;-webkit-user-select:text;user-select:text;">
   </div>
 </div>
 
@@ -877,8 +876,8 @@ function renderHome(){
   if(pb&&pbFill&&pbLabel&&pbPct&&_total>0){
     const pct=Math.round(_done/_total*100);
     pbFill.style.width=pct+'%';
-    pbLabel.textContent=_done+' / '+_total;
-    pbPct.textContent=pct+'%';
+    pbLabel.textContent='';
+    pbPct.textContent=String(remaining.length);
     // pop animation on each new completion
     pbFill.classList.remove('pop');
     void pbFill.offsetWidth;
@@ -1323,17 +1322,21 @@ function renderTempScreen(){
 function completeTempFromScreen(tId){
   const row=document.getElementById('trow-'+tId);
   if(row){
+    const name=row.querySelector('.habit-name')?.textContent||'';
     row.style.maxHeight=row.offsetHeight+'px';
-    row.classList.add('dimmed');
-    setTimeout(()=>{
+    row.classList.add('dimmed','tapping');
+    const doComplete=()=>{
       const dd=getDayData(); if(!dd.temps) dd.temps={};
       dd.temps[tId]=true;
       const t=(state.tempTasks||[]).find(x=>x.id===tId);
       if(t){ state.doneTasks.push({...t,doneDate:today()}); state.tempTasks=state.tempTasks.filter(x=>x.id!==tId); }
       save(); renderHome();
+    };
+    setTimeout(()=>{
+      doComplete();
       requestAnimationFrame(()=>row.classList.add('vanishing'));
-      row.addEventListener('transitionend',()=>renderTempScreen(),{once:true});
-    },1400);
+      row.addEventListener('transitionend',()=>{ renderTempScreen(); showUndoToast(name,'t'+tId,doComplete); },{once:true});
+    },600);
     return;
   }
   const dd=getDayData(); if(!dd.temps) dd.temps={};
@@ -1780,9 +1783,9 @@ function renderSettings(){
 
     // Period toggle
     const sharedPeriod=state._statPeriod||7;
-    html+=`<div style="display:flex;justify-content:center;gap:8px;margin-bottom:20px">`;
-    html+=`<button onclick="setStatPeriod(7)" style="padding:5px 18px;border-radius:20px;border:none;font-size:13px;font-family:inherit;cursor:pointer;background:${sharedPeriod===7?'rgba(255,255,255,0.18)':'rgba(255,255,255,0.05)'};color:${sharedPeriod===7?'#fff':'rgba(255,255,255,0.35)'}">7 dni</button>`;
-    html+=`<button onclick="setStatPeriod(30)" style="padding:5px 18px;border-radius:20px;border:none;font-size:13px;font-family:inherit;cursor:pointer;background:${sharedPeriod===30?'rgba(255,255,255,0.18)':'rgba(255,255,255,0.05)'};color:${sharedPeriod===30?'#fff':'rgba(255,255,255,0.35)'}">30 dni</button>`;
+    html+=`<div style="display:flex;justify-content:center;gap:12px;margin-bottom:24px">`;
+    html+=`<button onclick="setStatPeriod(7)" style="padding:14px 32px;border-radius:16px;border:none;font-size:18px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation;background:${sharedPeriod===7?'rgba(255,255,255,0.32)':'rgba(255,255,255,0.08)'};color:${sharedPeriod===7?'#fff':'rgba(255,255,255,0.4)'}">7 dni</button>`;
+    html+=`<button onclick="setStatPeriod(30)" style="padding:14px 32px;border-radius:16px;border:none;font-size:18px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation;background:${sharedPeriod===30?'rgba(255,255,255,0.32)':'rgba(255,255,255,0.08)'};color:${sharedPeriod===30?'#fff':'rgba(255,255,255,0.4)'}">30 dni</button>`;
     html+=`</div>`;
 
     // — Money —
@@ -1832,7 +1835,7 @@ function renderSettings(){
       const period2=state._statPeriod||7;
       if(state.sectors.length>1){
         html+='<div style="display:flex;gap:6px;justify-content:center;margin-top:20px;flex-wrap:wrap">';
-        state.sectors.forEach(sec=>html+=`<div class="sector-pill${sec.id===(state._csvSectorId||state.sectors[0]?.id)?' active':''}" onclick="setCsvSector('${sec.id}')" style="font-size:13px;padding:5px 14px">${sec.name}</div>`);
+        state.sectors.forEach(sec=>html+=`<div class="sector-pill${sec.id===(state._csvSectorId||state.sectors[0]?.id)?' active':''}" onclick="setCsvSector('${sec.id}')" style="font-size:18px;padding:14px 28px;font-weight:600;border-radius:16px">${sec.name}</div>`);
         html+='</div>';
       }
       const habitsInSec=selSec?state.habits.filter(h=>!h.archived&&h.sectorId===selSec.id).sort((a,b)=>(a.order||0)-(b.order||0)):[];
@@ -3298,8 +3301,9 @@ function openMoney(){
   renderMoneyCats();
   document.getElementById('home').classList.add('slide-out');
   document.getElementById('moneyOverlay').style.transform='translateX(0)';
-  // Delay focus slightly so screen is visible — ensures iOS keyboard opens
+  inp.focus();
   setTimeout(()=>{ inp.focus(); },80);
+  setTimeout(()=>{ inp.focus(); },320);
 }
 
 function closeMoney(){
