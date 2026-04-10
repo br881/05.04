@@ -1862,9 +1862,10 @@ function renderSettings(){
     html+=`</div>`; // end stats
   }
 
-  // ARCHIVE panel — categories only (habits/sectors shown at page bottom)
+  // ARCHIVE panel — category editors only
   if(archiveOpen){
     html+=`<div class="s-section s-lock-panel" style="margin-top:12px"><div class="s-panel-body">`;
+    html+=`</div>`;
 
     // ── Kategorie: Czas ──
     html+=`<div style="padding:12px 16px 8px">`;
@@ -1915,25 +1916,22 @@ function renderSettings(){
 
   } // end lockOpen
 
-  // Always-visible archive: habits & sectors at very bottom
+  // Archive habits & sectors — always visible at bottom
   {
     const _arch=state.habits.filter(h=>h.archived);
     const _archSecs=state.sectors.filter(s=>s.archived);
     if(_arch.length||_archSecs.length){
       html+=`<div class="s-section" style="margin-top:28px">`;
-      _archSecs.forEach(s=>{
-        html+=`<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
-          <span style="flex:1;font-size:16px;color:rgba(255,255,255,0.45)">${s.name}</span>
-          <button style="background:none;border:none;color:rgba(61,221,101,0.7);font-size:13px;cursor:pointer;font-family:inherit;padding:4px 0" onclick="toggleSectorArchive('${s.id}')">Przywróć</button>
-        </div>`;
-      });
+      _archSecs.forEach(s=>html+=`<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <span style="flex:1;font-size:16px;color:rgba(255,255,255,0.45)">${s.name}</span>
+        <button style="background:none;border:none;color:rgba(61,221,101,0.7);font-size:13px;cursor:pointer;font-family:inherit;padding:4px 0;touch-action:manipulation" onclick="toggleSectorArchive('${s.id}')">Przywróć</button>
+      </div>`);
       for(const sec of state.sectors){
-        const sa=_arch.filter(h=>h.sectorId===sec.id);
-        if(!sa.length) continue;
+        const sa=_arch.filter(h=>h.sectorId===sec.id); if(!sa.length) continue;
         if(state.sectors.length>1) html+=`<div style="font-size:10px;color:rgba(255,255,255,0.22);letter-spacing:.06em;text-transform:uppercase;padding:10px 0 4px">${sec.name}</div>`;
         sa.forEach(h=>html+=`<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
           <span style="flex:1;font-size:16px;color:rgba(255,255,255,0.45)">${h.name}</span>
-          <button style="background:none;border:none;color:rgba(61,221,101,0.7);font-size:13px;cursor:pointer;font-family:inherit;padding:4px 0" onclick="unarchiveHabit('${h.id}')">Przywróć</button>
+          <button style="background:none;border:none;color:rgba(61,221,101,0.7);font-size:13px;cursor:pointer;font-family:inherit;padding:4px 0;touch-action:manipulation" onclick="unarchiveHabit('${h.id}')">Przywróć</button>
         </div>`);
       }
       html+=`</div>`;
@@ -2020,17 +2018,17 @@ function openCatColorPicker(type,id){
   const existing=document.getElementById('catColorOverlay');
   if(existing){ existing.remove(); return; }
   const colors=['#ef4444','#f97316','#eab308','#22c55e','#3ddd65','#14b8a6','#06b6d4','#3b82f6','#8b5cf6','#ec4899','#f472b6','#a78bfa','#60a5fa','#34d399','#fbbf24','#fb923c','#ffffff','#a1a1aa'];
-  let currentColor='#3ddd65';
-  if(type==='tc'){ const c=(state.timeCategories||[]).find(x=>x.id===id); if(c?.color) currentColor=c.color; }
-  else { const c=(state.moneyCategories||[]).find(x=>x.id===id); if(c?.color) currentColor=c.color; }
+  let cur='#3ddd65';
+  if(type==='tc'){ const c=(state.timeCategories||[]).find(x=>x.id===id); if(c?.color) cur=c.color; }
+  else { const c=(state.moneyCategories||[]).find(x=>x.id===id); if(c?.color) cur=c.color; }
   const ov=document.createElement('div');
   ov.id='catColorOverlay';
-  ov.style.cssText='position:fixed;inset:0;z-index:800;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)';
-  const swatches=colors.map(c=>`<div onclick="pickCatColor('${type}','${id}','${c}');document.getElementById('catColorOverlay')?.remove()" style="width:36px;height:36px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${c===currentColor?'#fff':'transparent'};box-sizing:border-box;flex-shrink:0" ontouchstart="this.style.opacity='.7'" ontouchend="this.style.opacity=''"></div>`).join('');
-  ov.innerHTML=`<div style="width:100%;max-width:420px;background:#111;border-radius:24px 24px 0 0;padding:20px 24px calc(env(safe-area-inset-bottom,20px)+20px)">
+  ov.style.cssText='position:fixed;inset:0;z-index:800;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)';
+  const sw=colors.map(c=>`<div onclick="pickCatColor('${type}','${id}','${c}');document.getElementById('catColorOverlay').remove()" style="width:38px;height:38px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${c.toLowerCase()===cur.toLowerCase()?'#fff':'transparent'};box-sizing:border-box;flex-shrink:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation"></div>`).join('');
+  ov.innerHTML=`<div style="width:100%;max-width:420px;background:#111;border-radius:24px 24px 0 0;padding:20px 24px calc(env(safe-area-inset-bottom,20px)+20px);box-sizing:border-box">
     <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 20px"></div>
-    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">${swatches}</div>
-    <button onclick="document.getElementById('catColorOverlay')?.remove()" style="width:100%;margin-top:20px;background:none;border:none;color:rgba(255,255,255,0.35);font-size:14px;cursor:pointer;font-family:inherit;padding:8px">Anuluj</button>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:0 4px">${sw}</div>
+    <button onclick="document.getElementById('catColorOverlay').remove()" style="width:100%;margin-top:20px;background:none;border:none;color:rgba(255,255,255,0.35);font-size:14px;cursor:pointer;font-family:inherit;padding:8px;touch-action:manipulation">Anuluj</button>
   </div>`;
   ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
   document.body.appendChild(ov);
@@ -2548,8 +2546,8 @@ function showExportSheet(){
   ov.style.cssText='position:fixed;inset:0;z-index:700;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)';
   ov.innerHTML=`<div style="width:100%;max-width:480px;background:#111;border-radius:24px 24px 0 0;padding:20px 24px calc(env(safe-area-inset-bottom,20px)+24px);box-sizing:border-box">
     <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 20px"></div>
-    <button onclick="exportCSV();document.getElementById('exportSheet')?.remove()" style="width:100%;background:rgba(61,221,101,0.55);color:#fff;font-size:16px;font-weight:600;border:none;border-radius:14px;padding:16px;cursor:pointer;font-family:inherit;margin-bottom:10px">Pobierz CSV</button>
-    <button onclick="document.getElementById('exportSheet')?.remove()" style="width:100%;background:none;border:none;color:rgba(255,255,255,0.35);font-size:14px;cursor:pointer;font-family:inherit;padding:10px">Anuluj</button>
+    <button onclick="exportCSV();document.getElementById('exportSheet').remove()" style="width:100%;background:rgba(61,221,101,0.55);color:#fff;font-size:16px;font-weight:600;border:none;border-radius:14px;padding:16px;cursor:pointer;font-family:inherit;margin-bottom:10px">Pobierz CSV</button>
+    <button onclick="document.getElementById('exportSheet').remove()" style="width:100%;background:none;border:none;color:rgba(255,255,255,0.35);font-size:14px;cursor:pointer;font-family:inherit;padding:10px">Anuluj</button>
   </div>`;
   ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
   document.body.appendChild(ov);
