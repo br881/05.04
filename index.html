@@ -1862,33 +1862,9 @@ function renderSettings(){
     html+=`</div>`; // end stats
   }
 
-  // ARCHIVE panel
+  // ARCHIVE panel — categories only (habits/sectors shown at page bottom)
   if(archiveOpen){
     html+=`<div class="s-section s-lock-panel" style="margin-top:12px"><div class="s-panel-body">`;
-    const arch=state.habits.filter(h=>h.archived);
-    const archSectors=state.sectors.filter(s=>s.archived);
-    if(archSectors.length){
-      html+=`<div style="font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:.07em;text-transform:uppercase;padding:4px 0 8px">Sektory</div>`;
-      archSectors.forEach(s=>html+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 0">
-        <span style="flex:1;font-size:16px;color:#fff">${s.name}</span>
-        <button style="background:rgba(61,221,101,0.12);border:none;border-radius:8px;padding:6px 12px;font-size:12px;color:rgba(61,221,101,0.8);cursor:pointer;font-family:inherit" onclick="toggleSectorArchive('${s.id}')">Przywróć</button>
-      </div>`);
-      html+=`<div style="height:8px"></div>`;
-    }
-    if(!arch.length&&!archSectors.length){
-      html+=`<div class="empty"><div class="empty-text">Brak</div></div>`;
-    } else if(arch.length){
-      html+=`<div style="font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:.07em;text-transform:uppercase;padding:4px 0 8px">Habits</div>`;
-      for(const sec of state.sectors){
-        const sa=arch.filter(h=>h.sectorId===sec.id); if(!sa.length) continue;
-        html+=`<div style="padding:4px 0 4px;font-size:11px;color:rgba(255,255,255,0.35)">${sec.name}</div>`;
-        sa.forEach(h=>html+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 0">
-          <span style="flex:1;font-size:16px;color:#fff">${h.name}</span>
-          <button style="background:rgba(61,221,101,0.12);border:none;border-radius:8px;padding:6px 12px;font-size:12px;color:rgba(61,221,101,0.8);cursor:pointer;font-family:inherit" onclick="unarchiveHabit('${h.id}')">Przywróć</button>
-        </div>`);
-      }
-    }
-    html+=`</div>`;
 
     // ── Kategorie: Czas ──
     html+=`<div style="padding:12px 16px 8px">`;
@@ -1939,6 +1915,31 @@ function renderSettings(){
 
   } // end lockOpen
 
+  // Always-visible archive: habits & sectors at very bottom
+  {
+    const _arch=state.habits.filter(h=>h.archived);
+    const _archSecs=state.sectors.filter(s=>s.archived);
+    if(_arch.length||_archSecs.length){
+      html+=`<div class="s-section" style="margin-top:28px">`;
+      _archSecs.forEach(s=>{
+        html+=`<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+          <span style="flex:1;font-size:16px;color:rgba(255,255,255,0.45)">${s.name}</span>
+          <button style="background:none;border:none;color:rgba(61,221,101,0.7);font-size:13px;cursor:pointer;font-family:inherit;padding:4px 0" onclick="toggleSectorArchive('${s.id}')">Przywróć</button>
+        </div>`;
+      });
+      for(const sec of state.sectors){
+        const sa=_arch.filter(h=>h.sectorId===sec.id);
+        if(!sa.length) continue;
+        if(state.sectors.length>1) html+=`<div style="font-size:10px;color:rgba(255,255,255,0.22);letter-spacing:.06em;text-transform:uppercase;padding:10px 0 4px">${sec.name}</div>`;
+        sa.forEach(h=>html+=`<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+          <span style="flex:1;font-size:16px;color:rgba(255,255,255,0.45)">${h.name}</span>
+          <button style="background:none;border:none;color:rgba(61,221,101,0.7);font-size:13px;cursor:pointer;font-family:inherit;padding:4px 0" onclick="unarchiveHabit('${h.id}')">Przywróć</button>
+        </div>`);
+      }
+      html+=`</div>`;
+    }
+  }
+
   html+=`<div style="height:60px"></div>`;
   scroll.innerHTML=html;
   scroll.scrollTop=_st;
@@ -1973,7 +1974,7 @@ function openAddTimeCat(){
   ov.style.cssText='position:fixed;inset:0;z-index:400;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);padding:0 20px 40px';
   ov.innerHTML=`<div style="width:100%;max-width:400px;background:#1a1a1a;border-radius:16px;padding:20px;">
     <input id="ttCatAddInput" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:10px;padding:12px 14px;color:#fff;font-size:16px;font-family:inherit;outline:none;margin-bottom:12px" placeholder="" autocapitalize="sentences">
-    <button onclick="confirmAddTimeCat()" style="width:100%;background:rgba(61,221,101,0.18);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-family:inherit;cursor:pointer">Dodaj</button>
+    <button onclick="confirmAddTimeCat()" style="width:100%;background:rgba(61,221,101,0.18);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-family:inherit;cursor:pointer">Zapisz</button>
   </div>`;
   ov.addEventListener('click',e=>{ if(e.target===ov){ ov.remove(); } });
   document.body.appendChild(ov);
@@ -2016,22 +2017,23 @@ function toggleFold(key){
 function setCsvSector(id){ state._csvSectorId=id; save(); renderSettings(); }
 function setTimePeriod(p){ state._timePeriod=p; save(); renderSettings(); }
 function openCatColorPicker(type,id){
-  let currentColor='#7dd3fc';
+  const existing=document.getElementById('catColorOverlay');
+  if(existing){ existing.remove(); return; }
+  const colors=['#ef4444','#f97316','#eab308','#22c55e','#3ddd65','#14b8a6','#06b6d4','#3b82f6','#8b5cf6','#ec4899','#f472b6','#a78bfa','#60a5fa','#34d399','#fbbf24','#fb923c','#ffffff','#a1a1aa'];
+  let currentColor='#3ddd65';
   if(type==='tc'){ const c=(state.timeCategories||[]).find(x=>x.id===id); if(c?.color) currentColor=c.color; }
   else { const c=(state.moneyCategories||[]).find(x=>x.id===id); if(c?.color) currentColor=c.color; }
-  const inp=document.createElement('input');
-  inp.type='color';
-  inp.value=(currentColor.startsWith('#')&&currentColor.length===7)?currentColor:'#7dd3fc';
-  inp.style.cssText='position:fixed;top:-999px;left:-999px;opacity:0;width:1px;height:1px';
-  document.body.appendChild(inp);
-  inp.addEventListener('change',()=>{
-    const col=inp.value;
-    try{ document.body.removeChild(inp); }catch(e){}
-    if(type==='tc') updateTimeCatColor(id,col);
-    else updateMoneyCatColor(id,col);
-  });
-  inp.addEventListener('cancel',()=>{ try{ document.body.removeChild(inp); }catch(e){} });
-  inp.click();
+  const ov=document.createElement('div');
+  ov.id='catColorOverlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:800;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)';
+  const swatches=colors.map(c=>`<div onclick="pickCatColor('${type}','${id}','${c}');document.getElementById('catColorOverlay')?.remove()" style="width:36px;height:36px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${c===currentColor?'#fff':'transparent'};box-sizing:border-box;flex-shrink:0" ontouchstart="this.style.opacity='.7'" ontouchend="this.style.opacity=''"></div>`).join('');
+  ov.innerHTML=`<div style="width:100%;max-width:420px;background:#111;border-radius:24px 24px 0 0;padding:20px 24px calc(env(safe-area-inset-bottom,20px)+20px)">
+    <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 20px"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">${swatches}</div>
+    <button onclick="document.getElementById('catColorOverlay')?.remove()" style="width:100%;margin-top:20px;background:none;border:none;color:rgba(255,255,255,0.35);font-size:14px;cursor:pointer;font-family:inherit;padding:8px">Anuluj</button>
+  </div>`;
+  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+  document.body.appendChild(ov);
 }
 function pickCatColor(type,id,color){
   if(type==='tc') updateTimeCatColor(id,color);
@@ -2541,23 +2543,11 @@ function exportCSV(){
 function showExportSheet(){
   const existing=document.getElementById('exportSheet');
   if(existing){ existing.remove(); return; }
-  const habitDays=Object.keys(state.daily||{}).length;
-  const timeEntryCount=Object.values(state.timeEntries||{}).reduce((s,d)=>s+d.filter(e=>!e.empty).length,0);
-  const moneyCount=(state.moneyEntries||[]).length;
-  const tasksDone=(state.doneTasks||[]).length;
-  const tasksActive=(state.tempTasks||[]).length;
   const ov=document.createElement('div');
   ov.id='exportSheet';
   ov.style.cssText='position:fixed;inset:0;z-index:700;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)';
   ov.innerHTML=`<div style="width:100%;max-width:480px;background:#111;border-radius:24px 24px 0 0;padding:20px 24px calc(env(safe-area-inset-bottom,20px)+24px);box-sizing:border-box">
     <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 20px"></div>
-    <div style="font-size:15px;color:rgba(255,255,255,0.5);text-align:center;margin-bottom:20px;letter-spacing:.02em">Eksport danych</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px">
-      <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:14px 16px"><div style="font-size:22px;font-weight:200;color:#fff">${habitDays}</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px">dni z nawykami</div></div>
-      <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:14px 16px"><div style="font-size:22px;font-weight:200;color:#fff">${timeEntryCount}</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px">wpisy czasu</div></div>
-      <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:14px 16px"><div style="font-size:22px;font-weight:200;color:#fff">${moneyCount}</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px">wydatki</div></div>
-      <div style="background:rgba(255,255,255,0.05);border-radius:14px;padding:14px 16px"><div style="font-size:22px;font-weight:200;color:#fff">${tasksActive+tasksDone}</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px">tasks (${tasksActive} aktywne)</div></div>
-    </div>
     <button onclick="exportCSV();document.getElementById('exportSheet')?.remove()" style="width:100%;background:rgba(61,221,101,0.55);color:#fff;font-size:16px;font-weight:600;border:none;border-radius:14px;padding:16px;cursor:pointer;font-family:inherit;margin-bottom:10px">Pobierz CSV</button>
     <button onclick="document.getElementById('exportSheet')?.remove()" style="width:100%;background:none;border:none;color:rgba(255,255,255,0.35);font-size:14px;cursor:pointer;font-family:inherit;padding:10px">Anuluj</button>
   </div>`;
@@ -3361,7 +3351,7 @@ function openAddMoneyCat(){
   ov.style.cssText='position:fixed;inset:0;z-index:600;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);padding:0 20px 40px';
   ov.innerHTML=`<div style="width:100%;max-width:400px;background:#1a1a1a;border-radius:16px;padding:20px">
     <input id="mcAddInput" style="width:100%;background:rgba(255,255,255,0.1);border:none;border-radius:10px;padding:12px 14px;color:#fff;font-size:16px;font-family:inherit;outline:none;margin-bottom:12px;text-align:center" placeholder="" autocapitalize="sentences">
-    <button onclick="confirmAddMoneyCat()" class="save-btn">Dodaj</button>
+    <button onclick="confirmAddMoneyCat()" class="save-btn">Zapisz</button>
   </div>`;
   ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
   document.body.appendChild(ov);
