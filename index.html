@@ -1881,7 +1881,7 @@ function renderSettings(){
         <div style="cursor:grab;touch-action:none;flex:1;display:flex;align-items:center;gap:12px;user-select:none;-webkit-user-select:none"
           draggable="true" ondragstart="tcDragStart(event,'${cat.id}')" ondragover="tcDragOver(event,'${cat.id}')" ondrop="tcDragDrop(event,'${cat.id}')" ondragend="tcDragEnd()"
           ontouchstart="tcTouchStart(event,'${cat.id}')" ontouchmove="tcTouchMove(event)" ontouchend="tcTouchEnd(event,'${cat.id}')">
-          <button onclick="openCatColorPicker('tc','${cat.id}')" style="width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);background:${safeCol};cursor:pointer;flex-shrink:0;padding:0;touch-action:manipulation"></button>
+          <label style="width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);background:${safeCol};cursor:pointer;flex-shrink:0;display:block;box-sizing:border-box;touch-action:manipulation;position:relative;overflow:hidden"><input type="color" value="${safeCol}" oninput="pickCatColor('tc','${cat.id}',this.value,false)" onchange="pickCatColor('tc','${cat.id}',this.value,true)" style="position:absolute;inset:0;width:200%;height:200%;opacity:0;cursor:pointer;border:none;padding:0;margin:0"></label>
           <span style="font-size:16px;color:#fff">${cat.name}</span>
         </div>
         <button onclick="deleteTimeCat('${cat.id}')" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;padding:4px 6px;line-height:1;touch-action:manipulation;flex-shrink:0">×</button>
@@ -1903,7 +1903,7 @@ function renderSettings(){
         <div style="cursor:grab;touch-action:none;flex:1;display:flex;align-items:center;gap:12px;user-select:none;-webkit-user-select:none"
           draggable="true" ondragstart="mcDragStart(event,'${mc.id}')" ondragover="mcDragOver(event,'${mc.id}')" ondrop="mcDragDrop(event,'${mc.id}')" ondragend="mcDragEnd()"
           ontouchstart="mcTouchStart(event,'${mc.id}')" ontouchmove="mcTouchMove(event)" ontouchend="mcTouchEnd(event,'${mc.id}')">
-          <button onclick="openCatColorPicker('mc','${mc.id}')" style="width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);background:${safeMcol};cursor:pointer;flex-shrink:0;padding:0;touch-action:manipulation"></button>
+          <label style="width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);background:${safeMcol};cursor:pointer;flex-shrink:0;display:block;box-sizing:border-box;touch-action:manipulation;position:relative;overflow:hidden"><input type="color" value="${safeMcol}" oninput="pickCatColor('mc','${mc.id}',this.value,false)" onchange="pickCatColor('mc','${mc.id}',this.value,true)" style="position:absolute;inset:0;width:200%;height:200%;opacity:0;cursor:pointer;border:none;padding:0;margin:0"></label>
           <span style="font-size:16px;color:#fff">${mc.name}</span>
         </div>
         <button onclick="deleteMoneyCat('${mc.id}')" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;padding:4px 6px;line-height:1;touch-action:manipulation;flex-shrink:0">×</button>
@@ -2032,9 +2032,15 @@ function openCatColorPicker(type,id){
   document.body.appendChild(inp);
   inp.click();
 }
-function pickCatColor(type,id,color){
-  if(type==='tc') updateTimeCatColor(id,color);
-  else updateMoneyCatColor(id,color);
+function pickCatColor(type,id,color,isFinal){
+  // update state
+  if(type==='tc'){ const cat=(state.timeCategories||[]).find(c=>c.id===id); if(cat) cat.color=color; }
+  else { const cat=(state.moneyCategories||[]).find(c=>c.id===id); if(cat) cat.color=color; }
+  // update the label color live without full re-render
+  const row=document.getElementById((type==='tc'?'tcr-':'mcr-')+id);
+  if(row){ const lbl=row.querySelector('label'); if(lbl) lbl.style.background=color; }
+  // only save & re-render when done (onchange), not on every oninput tick
+  if(isFinal){ save(); renderSettings(); }
 }
 function updateTimeCatColor(id,color){
   const cat=(state.timeCategories||[]).find(c=>c.id===id);
