@@ -1881,7 +1881,7 @@ function renderSettings(){
         <div style="cursor:grab;touch-action:none;flex:1;display:flex;align-items:center;gap:12px;user-select:none;-webkit-user-select:none"
           draggable="true" ondragstart="tcDragStart(event,'${cat.id}')" ondragover="tcDragOver(event,'${cat.id}')" ondrop="tcDragDrop(event,'${cat.id}')" ondragend="tcDragEnd()"
           ontouchstart="tcTouchStart(event,'${cat.id}')" ontouchmove="tcTouchMove(event)" ontouchend="tcTouchEnd(event,'${cat.id}')">
-          <label style="width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);background:${safeCol};cursor:pointer;flex-shrink:0;display:block;box-sizing:border-box;touch-action:manipulation;position:relative;overflow:hidden"><input type="color" value="${safeCol}" oninput="pickCatColor('tc','${cat.id}',this.value,false)" onchange="pickCatColor('tc','${cat.id}',this.value,true)" style="position:absolute;inset:0;width:200%;height:200%;opacity:0;cursor:pointer;border:none;padding:0;margin:0"></label>
+          <button onclick="openCatColorPicker('tc','${cat.id}')" style="width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);background:${safeCol};cursor:pointer;flex-shrink:0;padding:0;touch-action:manipulation"></button>
           <span style="font-size:16px;color:#fff">${cat.name}</span>
         </div>
         <button onclick="deleteTimeCat('${cat.id}')" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;padding:4px 6px;line-height:1;touch-action:manipulation;flex-shrink:0">×</button>
@@ -1903,7 +1903,7 @@ function renderSettings(){
         <div style="cursor:grab;touch-action:none;flex:1;display:flex;align-items:center;gap:12px;user-select:none;-webkit-user-select:none"
           draggable="true" ondragstart="mcDragStart(event,'${mc.id}')" ondragover="mcDragOver(event,'${mc.id}')" ondrop="mcDragDrop(event,'${mc.id}')" ondragend="mcDragEnd()"
           ontouchstart="mcTouchStart(event,'${mc.id}')" ontouchmove="mcTouchMove(event)" ontouchend="mcTouchEnd(event,'${mc.id}')">
-          <label style="width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);background:${safeMcol};cursor:pointer;flex-shrink:0;display:block;box-sizing:border-box;touch-action:manipulation;position:relative;overflow:hidden"><input type="color" value="${safeMcol}" oninput="pickCatColor('mc','${mc.id}',this.value,false)" onchange="pickCatColor('mc','${mc.id}',this.value,true)" style="position:absolute;inset:0;width:200%;height:200%;opacity:0;cursor:pointer;border:none;padding:0;margin:0"></label>
+          <button onclick="openCatColorPicker('mc','${mc.id}')" style="width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);background:${safeMcol};cursor:pointer;flex-shrink:0;padding:0;touch-action:manipulation"></button>
           <span style="font-size:16px;color:#fff">${mc.name}</span>
         </div>
         <button onclick="deleteMoneyCat('${mc.id}')" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;padding:4px 6px;line-height:1;touch-action:manipulation;flex-shrink:0">×</button>
@@ -2015,22 +2015,63 @@ function toggleFold(key){
 function setCsvSector(id){ state._csvSectorId=id; save(); renderSettings(); }
 function setTimePeriod(p){ state._timePeriod=p; save(); renderSettings(); }
 function openCatColorPicker(type,id){
-  // Remove any existing picker
-  document.getElementById('_nativeCatColorInput')?.remove();
-  // Find current color
+  const existing=document.getElementById('catColorOverlay');
+  if(existing){ existing.remove(); return; }
   let cur='#3ddd65';
   if(type==='tc'){ const c=(state.timeCategories||[]).find(x=>x.id===id); if(c?.color) cur=c.color; }
   else { const c=(state.moneyCategories||[]).find(x=>x.id===id); if(c?.color) cur=c.color; }
-  // Create hidden native color input
-  const inp=document.createElement('input');
-  inp.type='color';
-  inp.id='_nativeCatColorInput';
-  inp.value=cur.startsWith('#')&&cur.length===7?cur:'#3ddd65';
-  inp.style.cssText='position:fixed;top:-999px;left:-999px;width:1px;height:1px;opacity:0;pointer-events:none;';
-  inp.addEventListener('change',()=>{ pickCatColor(type,id,inp.value); inp.remove(); });
-  inp.addEventListener('blur',()=>{ setTimeout(()=>inp.remove(),500); });
-  document.body.appendChild(inp);
-  inp.click();
+  const colors=[
+    '#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e',
+    '#3ddd65','#10b981','#14b8a6','#06b6d4','#3b82f6','#6366f1',
+    '#8b5cf6','#a855f7','#ec4899','#f43f5e','#ffffff','#d4d4d8',
+    '#a1a1aa','#71717a','#52525b','#000000','#7dd3fc','#f9a8d4',
+    '#fdba74','#fde68a','#bbf7d0','#c4b5fd','#fca5a5','#67e8f9'
+  ];
+  const ov=document.createElement('div');
+  ov.id='catColorOverlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:800;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)';
+  const sw=colors.map(c=>`<div data-color="${c}" onclick="catColorSwatchTap(this,'${type}','${id}')" style="width:36px;height:36px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${c.toLowerCase()===cur.toLowerCase()?'#fff':'transparent'};box-sizing:border-box;flex-shrink:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:border-color .1s"></div>`).join('');
+  ov.innerHTML=`<div style="width:100%;max-width:420px;background:#1a1a1a;border-radius:24px 24px 0 0;padding:20px 20px calc(env(safe-area-inset-bottom,20px)+20px);box-sizing:border-box">
+    <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 18px"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:0 4px">${sw}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:18px">
+      <div id="ccPreview" style="width:40px;height:40px;border-radius:50%;background:${cur};flex-shrink:0;border:2px solid rgba(255,255,255,0.2)"></div>
+      <input id="ccHex" maxlength="7" value="${cur}" autocomplete="off" autocorrect="off" spellcheck="false"
+        style="flex:1;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:10px 14px;color:#fff;font-size:16px;font-family:inherit;outline:none;letter-spacing:.05em"
+        oninput="catColorHexInput(this,'${type}','${id}')">
+      <button onclick="catColorConfirm('${type}','${id}')" style="padding:10px 18px;background:rgba(61,221,101,0.25);border:none;border-radius:10px;color:#fff;font-size:15px;font-family:inherit;cursor:pointer;touch-action:manipulation;white-space:nowrap">OK</button>
+    </div>
+  </div>`;
+  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+  document.body.appendChild(ov);
+}
+function catColorSwatchTap(el,type,id){
+  const color=el.dataset.color;
+  document.querySelectorAll('#catColorOverlay [data-color]').forEach(d=>d.style.borderColor='transparent');
+  el.style.borderColor='#fff';
+  const hex=document.getElementById('ccHex');
+  const prev=document.getElementById('ccPreview');
+  if(hex) hex.value=color;
+  if(prev) prev.style.background=color;
+}
+function catColorHexInput(inp,type,id){
+  let v=inp.value.trim();
+  if(!v.startsWith('#')) v='#'+v;
+  const prev=document.getElementById('ccPreview');
+  if(/^#[0-9a-fA-F]{6}$/.test(v)&&prev) prev.style.background=v;
+}
+function catColorConfirm(type,id){
+  const hex=document.getElementById('ccHex');
+  const prev=document.getElementById('ccPreview');
+  let color=prev?.style.background||'#3ddd65';
+  // prefer hex field if valid
+  if(hex){
+    let v=hex.value.trim();
+    if(!v.startsWith('#')) v='#'+v;
+    if(/^#[0-9a-fA-F]{6}$/.test(v)) color=v;
+  }
+  document.getElementById('catColorOverlay')?.remove();
+  pickCatColor(type,id,color,true);
 }
 function pickCatColor(type,id,color,isFinal){
   // update state
