@@ -1876,15 +1876,10 @@ function renderSettings(){
     _aCats.forEach((cat,i)=>{
       const col=cat.color||(_aPal[i%_aPal.length]);
       const safeCol=col.startsWith('#')?col:_aPal[0];
-      html+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,0.06)"
-        id="tcr-${cat.id}" data-tcid="${cat.id}">
-        <div style="cursor:grab;touch-action:none;flex:1;display:flex;align-items:center;gap:12px;user-select:none;-webkit-user-select:none"
-          draggable="true" ondragstart="tcDragStart(event,'${cat.id}')" ondragover="tcDragOver(event,'${cat.id}')" ondrop="tcDragDrop(event,'${cat.id}')" ondragend="tcDragEnd()"
-          ontouchstart="tcTouchStart(event,'${cat.id}')" ontouchmove="tcTouchMove(event)" ontouchend="tcTouchEnd(event,'${cat.id}')">
-          <button onclick="openCatColorPicker('tc','${cat.id}')" style="width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);background:${safeCol};cursor:pointer;flex-shrink:0;padding:0;touch-action:manipulation"></button>
-          <span style="font-size:16px;color:#fff">${cat.name}</span>
-        </div>
-        <button onclick="deleteTimeCat('${cat.id}')" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;padding:4px 6px;line-height:1;touch-action:manipulation;flex-shrink:0">×</button>
+      html+=`<div id="tcr-${cat.id}" data-tcid="${cat.id}" onclick="openCatEditOverlay('tc','${cat.id}')"
+        style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.06);cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;border-left:4px solid ${safeCol}">
+        <span style="font-size:16px;color:#fff;flex:1">${cat.name}</span>
+        <button onclick="event.stopPropagation();deleteTimeCat('${cat.id}')" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:22px;cursor:pointer;padding:4px 8px;line-height:1;touch-action:manipulation;flex-shrink:0">×</button>
       </div>`;
     });
     html+=`</div>`;
@@ -1898,15 +1893,10 @@ function renderSettings(){
     _mCats2.forEach((mc,i)=>{
       const mcol=mc.color||_mPal2[i%_mPal2.length];
       const safeMcol=mcol.startsWith('#')?mcol:_mPal2[0];
-      html+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,0.06)"
-        id="mcr-${mc.id}" data-mcid="${mc.id}">
-        <div style="cursor:grab;touch-action:none;flex:1;display:flex;align-items:center;gap:12px;user-select:none;-webkit-user-select:none"
-          draggable="true" ondragstart="mcDragStart(event,'${mc.id}')" ondragover="mcDragOver(event,'${mc.id}')" ondrop="mcDragDrop(event,'${mc.id}')" ondragend="mcDragEnd()"
-          ontouchstart="mcTouchStart(event,'${mc.id}')" ontouchmove="mcTouchMove(event)" ontouchend="mcTouchEnd(event,'${mc.id}')">
-          <button onclick="openCatColorPicker('mc','${mc.id}')" style="width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);background:${safeMcol};cursor:pointer;flex-shrink:0;padding:0;touch-action:manipulation"></button>
-          <span style="font-size:16px;color:#fff">${mc.name}</span>
-        </div>
-        <button onclick="deleteMoneyCat('${mc.id}')" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;padding:4px 6px;line-height:1;touch-action:manipulation;flex-shrink:0">×</button>
+      html+=`<div id="mcr-${mc.id}" data-mcid="${mc.id}" onclick="openCatEditOverlay('mc','${mc.id}')"
+        style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.06);cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;border-left:4px solid ${safeMcol}">
+        <span style="font-size:16px;color:#fff;flex:1">${mc.name}</span>
+        <button onclick="event.stopPropagation();deleteMoneyCat('${mc.id}')" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:22px;cursor:pointer;padding:4px 8px;line-height:1;touch-action:manipulation;flex-shrink:0">×</button>
       </div>`;
     });
     html+=`</div>`;
@@ -2014,6 +2004,52 @@ function toggleFold(key){
 }
 function setCsvSector(id){ state._csvSectorId=id; save(); renderSettings(); }
 function setTimePeriod(p){ state._timePeriod=p; save(); renderSettings(); }
+function openCatEditOverlay(type,id){
+  document.getElementById('catColorOverlay')?.remove();
+  const cats=type==='tc'?(state.timeCategories||[]):(state.moneyCategories||[]);
+  const cat=cats.find(c=>c.id===id);
+  if(!cat) return;
+  const pal=['#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e',
+    '#3ddd65','#10b981','#14b8a6','#06b6d4','#3b82f6','#6366f1',
+    '#8b5cf6','#a855f7','#ec4899','#f43f5e','#ffffff','#d4d4d8',
+    '#a1a1aa','#71717a','#52525b','#000000','#7dd3fc','#f9a8d4',
+    '#fdba74','#fde68a','#bbf7d0','#c4b5fd','#fca5a5','#67e8f9'];
+  const cur=cat.color||pal[0];
+  const ov=document.createElement('div');
+  ov.id='catColorOverlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:800;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)';
+  const sw=pal.map(c=>`<div data-color="${c}" onclick="ceoSwatchTap(this)" style="width:36px;height:36px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${c.toLowerCase()===cur.toLowerCase()?'#fff':'transparent'};box-sizing:border-box;flex-shrink:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation"></div>`).join('');
+  ov.innerHTML=`<div style="width:100%;max-width:420px;background:#1a1a1a;border-radius:24px 24px 0 0;padding:20px 20px calc(env(safe-area-inset-bottom,20px)+20px);box-sizing:border-box">
+    <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 18px"></div>
+    <input id="ceoName" value="${cat.name.replace(/"/g,'&quot;')}" autocapitalize="sentences" autocomplete="off"
+      style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);border-radius:12px;padding:12px 16px;color:#fff;font-size:18px;font-family:inherit;outline:none;margin-bottom:16px;box-sizing:border-box;text-align:center">
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:0 4px">${sw}</div>
+    <div style="display:flex;gap:10px;margin-top:18px">
+      <div id="ceoPreview" style="width:44px;height:44px;border-radius:50%;background:${cur};flex-shrink:0;border:2px solid rgba(255,255,255,0.2)"></div>
+      <button onclick="ceoConfirm('${type}','${id}')" style="flex:1;padding:12px;background:rgba(61,221,101,0.25);border:none;border-radius:12px;color:#fff;font-size:17px;font-family:inherit;cursor:pointer;touch-action:manipulation">Zapisz</button>
+    </div>
+  </div>`;
+  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+  document.body.appendChild(ov);
+}
+function ceoSwatchTap(el){
+  document.querySelectorAll('#catColorOverlay [data-color]').forEach(d=>d.style.borderColor='transparent');
+  el.style.borderColor='#fff';
+  const prev=document.getElementById('ceoPreview');
+  if(prev) prev.style.background=el.dataset.color;
+}
+function ceoConfirm(type,id){
+  const name=document.getElementById('ceoName')?.value.trim();
+  const color=document.getElementById('ceoPreview')?.style.background||'#3ddd65';
+  document.getElementById('catColorOverlay')?.remove();
+  const cats=type==='tc'?(state.timeCategories||[]):(state.moneyCategories||[]);
+  const cat=cats.find(c=>c.id===id);
+  if(!cat) return;
+  if(name) cat.name=name;
+  cat.color=color;
+  save(); renderSettings();
+}
+
 function openCatColorPicker(type,id){
   const existing=document.getElementById('catColorOverlay');
   if(existing){ existing.remove(); return; }
