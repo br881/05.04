@@ -68,7 +68,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 /* PROGRESS BAR */
 #progressBar{
   position:fixed;
-  bottom:calc(var(--safe-bottom) + 14px);
+  bottom:calc(var(--safe-bottom) + 8px);
   left:28px;right:28px;
   z-index:50;pointer-events:none;
   opacity:0;transition:opacity .4s;
@@ -81,26 +81,18 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 }
 #progressBar .pb-fill{
   height:10px;border-radius:10px;
-  background:linear-gradient(90deg,rgba(255,255,255,0.45),rgba(255,255,255,0.8),rgba(255,255,255,0.45));
-  background-size:200% 100%;
-  box-shadow:0 0 10px rgba(255,255,255,0.15);
+  background:#3ddd65;
+  box-shadow:0 0 10px rgba(61,221,101,0.35);
   transition:width .55s cubic-bezier(.34,1.2,.64,1);
-  animation:pbShimmer 2.4s linear infinite;
 }
 #progressBar .pb-row{
-  display:flex;align-items:center;justify-content:flex-end;
-  margin-bottom:6px;
-}
-#progressBar .pb-label{
   display:none;
 }
-#progressBar .pb-pct{
-  font-size:13px;font-weight:700;color:rgba(255,255,255,0.5);
-  font-variant-numeric:tabular-nums;
-}
+#progressBar .pb-label{ display:none; }
+#progressBar .pb-pct{ display:none; }
 @keyframes pbShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
 @keyframes pbPop{0%{transform:scaleY(1);}40%{transform:scaleY(1.6);}70%{transform:scaleY(0.85);}100%{transform:scaleY(1);}}
-.pb-fill.pop{animation:pbShimmer 2.4s linear infinite,pbPop .4s cubic-bezier(.34,1.56,.64,1);}
+.pb-fill.pop{animation:pbPop .4s cubic-bezier(.34,1.56,.64,1);}
 @keyframes toastIn{0%{opacity:0;transform:translateX(-50%) translateY(10px);}100%{opacity:1;transform:translateX(-50%) translateY(0);}}
 @keyframes toastOut{0%{opacity:1;}100%{opacity:0;transform:translateX(-50%) translateY(8px);}}
 @keyframes doneIn{0%{opacity:0;transform:translateX(-40px) scale(.88);}60%{opacity:1;transform:translateX(4px) scale(1.02);}80%{transform:translateX(-2px) scale(.99);}100%{opacity:1;transform:translateX(0) scale(1);}}
@@ -603,7 +595,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
       autocomplete="off" placeholder="0"
       oninput="moneyAmountOninput(this.value)"
       onkeydown="moneyAmountKeydown(event)"
-      style="font-size:72px;font-weight:600;color:#fff;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;text-align:center;line-height:1;margin-bottom:44px;background:none;border:none;outline:none;width:100%;max-width:400px;caret-color:var(--accent);font-family:-apple-system,sans-serif;-webkit-user-select:text;user-select:text;">
+      style="font-size:72px;font-weight:300;color:#fff;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;text-align:center;line-height:1;margin-bottom:44px;background:none;border:none;outline:none;width:100%;max-width:400px;caret-color:var(--accent);font-family:Georgia,'Times New Roman',serif;-webkit-user-select:text;user-select:text;">
     <!-- Categories -->
     <div id="moneyCatRow" style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:400px;"></div>
     <!-- Note field -->
@@ -1788,54 +1780,13 @@ function renderSettings(){
     html+=`<button onclick="setStatPeriod(30)" style="padding:14px 32px;border-radius:16px;border:none;font-size:18px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation;background:${sharedPeriod===30?'rgba(255,255,255,0.32)':'rgba(255,255,255,0.08)'};color:${sharedPeriod===30?'#fff':'rgba(255,255,255,0.4)'}">30 dni</button>`;
     html+=`</div>`;
 
-    // — Money —
-    html+=renderMoneySettings();
-
-    // — Czas (time) — total only + category breakdown bars
-    {
-      const timeCats=state.timeCategories||[];
-      const timePeriod=state._statPeriod||7;
-      const now2=new Date();
-      const tCatTotal={}; let totalMins2=0;
-      for(const[k,entries] of Object.entries(state.timeEntries||{})){
-        const d=new Date(k);
-        if((now2-d)/(1000*60*60*24)>timePeriod) continue;
-        for(const e of (entries||[])){
-          if(e.empty||!e.blocks?.length) continue;
-          const mins=e.blocks.length*15;
-          tCatTotal[e.catId]=(tCatTotal[e.catId]||0)+mins;
-          totalMins2+=mins;
-        }
-      }
-      if(totalMins2>0){
-        const totH=Math.floor(totalMins2/60),totM=totalMins2%60;
-        const totStr=(totH>0?totH+'h':'')+(totM>0?' '+totM+'m':'');
-        const sorted2=Object.entries(tCatTotal).sort((a,b)=>b[1]-a[1]);
-        html+='<div style="margin-top:20px">';
-        html+='<div style="font-size:32px;font-weight:200;color:#fff;letter-spacing:-.03em;text-align:center;margin-bottom:16px">'+totStr.trim()+'</div>';
-        html+='<div style="display:flex;flex-direction:column;gap:6px">';
-        sorted2.forEach(([cid,mins])=>{
-          const cat=timeCats.find(c=>c.id===cid);
-          const pct=Math.round(mins/totalMins2*100);
-          const hh=Math.floor(mins/60),m=mins%60;
-          const dur=(hh>0?hh+'h':'')+(m>0?' '+m+'m':'');
-          html+='<div style="display:flex;align-items:center;gap:10px">';
-          html+='<span style="font-size:15px;min-width:32px;text-align:center">'+(cat?.name||'')+'</span>';
-          html+='<div style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden"><div style="height:3px;width:'+pct+'%;background:rgba(255,255,255,0.5);border-radius:2px"></div></div>';
-          html+='<span style="font-size:14px;font-weight:500;color:#fff;min-width:40px;text-align:right">'+dur.trim()+'</span>';
-          html+='</div>';
-        });
-        html+='</div></div>';
-      }
-    }
-
     // — Habits — streak dots per habit, no table
     {
       const selSec=state.sectors.find(s=>s.id===(state._csvSectorId||state.sectors[0]?.id))||state.sectors[0];
       const period2=state._statPeriod||7;
       if(state.sectors.length>1){
         html+='<div style="display:flex;gap:6px;justify-content:center;margin-top:20px;flex-wrap:wrap">';
-        state.sectors.forEach(sec=>html+=`<div class="sector-pill${sec.id===(state._csvSectorId||state.sectors[0]?.id)?' active':''}" onclick="setCsvSector('${sec.id}')" style="font-size:18px;padding:14px 28px;font-weight:600;border-radius:16px">${sec.name}</div>`);
+        state.sectors.forEach(sec=>html+=`<div class="sector-pill${sec.id===(state._csvSectorId||state.sectors[0]?.id)?' active':''}" onclick="setCsvSector('${sec.id}')">${sec.name}</div>`);
         html+='</div>';
       }
       const habitsInSec=selSec?state.habits.filter(h=>!h.archived&&h.sectorId===selSec.id).sort((a,b)=>(a.order||0)-(b.order||0)):[];
