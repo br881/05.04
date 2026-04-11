@@ -68,28 +68,13 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 /* PROGRESS BAR */
 #progressBar{
   position:fixed;
-  top:calc(var(--safe-top) + 10px);
-  left:28px;right:28px;
+  bottom:calc(var(--safe-bottom) + 38px);
+  left:50%;transform:translateX(-50%);
   z-index:50;pointer-events:none;
   opacity:0;transition:opacity .4s;
+  width:52px;height:52px;
 }
 #progressBar.visible{opacity:1;}
-#progressBar .pb-track{
-  width:100%;height:10px;border-radius:10px;
-  background:rgba(255,255,255,0.08);
-  overflow:hidden;
-}
-#progressBar .pb-fill{
-  height:10px;border-radius:10px;
-  background:rgba(255,255,255,0.55);
-  box-shadow:none;
-  transition:width .55s cubic-bezier(.34,1.2,.64,1);
-}
-#progressBar .pb-row{
-  display:none;
-}
-#progressBar .pb-label{ display:none; }
-#progressBar .pb-pct{ display:none; }
 @keyframes pbShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
 @keyframes pbPop{0%{transform:scaleY(1);}40%{transform:scaleY(1.6);}70%{transform:scaleY(0.85);}100%{transform:scaleY(1);}}
 .pb-fill.pop{animation:pbPop .4s cubic-bezier(.34,1.56,.64,1);}
@@ -332,7 +317,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .type-selector{display:flex;gap:6px;}
 .type-btn{flex:1;padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.06);color:#ffffff;font-size:14px;cursor:pointer;font-family:inherit;transition:all .18s;text-align:center;display:flex;align-items:center;justify-content:center;}
 .type-btn.active{background:var(--accent-dim);color:var(--accent-bright);}
-.hd-name-input{flex:1;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:15px 18px;color:#ffffff;font-size:20px;font-weight:400;font-family:inherit;outline:none;text-align:center;transition:background .2s;letter-spacing:-.02em;}
+.hd-name-input{flex:1;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:15px 18px;color:#ffffff;font-size:20px;font-weight:600;font-family:inherit;outline:none;text-align:center;transition:background .2s;letter-spacing:-.02em;}
 .hd-name-input:focus{background:rgba(255,255,255,0.42);}
 .hd-name-input::placeholder{color:rgba(255,255,255,0.28);}
 
@@ -526,11 +511,12 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
     </div>
   </div>
   <div id="progressBar">
-    <div class="pb-row">
-      <span class="pb-label" id="pbLabel"></span>
-      <span class="pb-pct" id="pbPct"></span>
-    </div>
-    <div class="pb-track"><div class="pb-fill" id="pbFill" style="width:0%"></div></div>
+    <svg id="pbCircle" width="52" height="52" viewBox="0 0 52 52">
+      <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3.5"/>
+      <circle id="pbArc" cx="26" cy="26" r="22" fill="none" stroke="#2a7a45" stroke-width="3.5"
+        stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="138.2"
+        transform="rotate(-90 26 26)" style="transition:stroke-dashoffset .55s cubic-bezier(.34,1.2,.64,1)"/>
+    </svg>
   </div>
   <!-- Habits -->
   <div class="habits-scroll">
@@ -589,13 +575,13 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   </div>
 
   <!-- Center content -->
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 24px;gap:0;min-height:0;padding-bottom:80px;">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 24px;gap:0;min-height:0;padding-bottom:calc(var(--safe-bottom)+20px);">
     <!-- Visible tappable number input -->
     <input id="moneyAmountInput" type="text" inputmode="decimal" enterkeyhint="done"
       autocomplete="off" placeholder="0"
       oninput="moneyAmountOninput(this.value)"
       onkeydown="moneyAmountKeydown(event)"
-      style="font-size:72px;font-weight:400;color:#fff;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;text-align:center;line-height:1;margin-bottom:44px;background:none;border:none;outline:none;width:100%;max-width:400px;caret-color:var(--accent);font-family:'SF Pro Rounded','Nunito','Varela Round',ui-rounded,system-ui,sans-serif;-webkit-user-select:text;user-select:text;">
+      style="font-size:62px;font-weight:400;color:#fff;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;text-align:center;line-height:1;margin-bottom:44px;background:none;border:none;outline:none;width:100%;max-width:400px;caret-color:var(--accent);font-family:'SF Pro Rounded','Nunito','Varela Round',ui-rounded,system-ui,sans-serif;-webkit-user-select:text;user-select:text;">
     <!-- Categories -->
     <div id="moneyCatRow" style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:400px;"></div>
     <!-- Note field -->
@@ -605,10 +591,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
       onkeydown="if(event.key==='Enter'){event.preventDefault();saveMoney();}">
   </div>
 
-  <!-- Save at bottom -->
-  <div style="position:absolute;bottom:0;left:0;right:0;padding:16px 20px;padding-bottom:calc(var(--safe-bottom)+16px);">
-    <button class="save-btn" onclick="saveMoney()">Zapisz</button>
-  </div>
+
 </div>
 
 <!-- TIME TRACKER -->
@@ -862,18 +845,10 @@ function renderHome(){
   // Update progress bar
   const _total=habits.length, _done=habits.length-remaining.length;
   const pb=document.getElementById('progressBar');
-  const pbFill=document.getElementById('pbFill');
-  const pbLabel=document.getElementById('pbLabel');
-  const pbPct=document.getElementById('pbPct');
-  if(pb&&pbFill&&pbLabel&&pbPct&&_total>0){
+  if(pb&&_total>0){
     const pct=Math.round(_done/_total*100);
-    pbFill.style.width=pct+'%';
-    pbLabel.textContent='';
-    pbPct.textContent=String(remaining.length);
-    // pop animation on each new completion
-    pbFill.classList.remove('pop');
-    void pbFill.offsetWidth;
-    pbFill.classList.add('pop');
+    const arc=document.getElementById('pbArc');
+    if(arc){ const circ=138.2; arc.style.strokeDashoffset=String(circ-(circ*pct/100)); }
     pb.classList.add('visible');
   }
   if(remaining.length===0){
@@ -1779,43 +1754,22 @@ function renderSettings(){
   }
   html+=`<button class="add-sector-btn-icon" onclick="openExtraSheet()">${plusSVG}</button></div>`;
 
-  // LOCK ACCORDION — 3 icon buttons side by side, hidden behind lock icon
-  const lockOpen=state._lockOpen||false;
-  const archiveOpen=state._archiveOpen||false;
-  const timeStatsOpen=state._timeStatsOpen||false;
-  const statsOpen=true; // zawsze widoczne na górze
-  const moneyOpen=state._moneyOpen||false;
+  const settingsOpen=state._settingsOpen!==false;
+  const statsOpen=state._statsOpen!==false;
+  const archiveOpen=false;
 
-  // Lock icon (same color as habits/extras tiles) — toggles buttons
-  html+=`<div style="display:flex;justify-content:center;margin-top:36px;padding:0 18px">
-    <button onclick="toggleFold('lock')" style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.32);border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s${lockOpen?';background:rgba(255,255,255,0.4)':''}">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  // ── Guzik Ustawienia — zwija sektory+extras+kategorie ──
+  html+=`<div style="display:flex;justify-content:center;margin-top:8px">
+    <button onclick="toggleFold('settings')" style="display:flex;align-items:center;gap:7px;background:none;border:none;color:rgba(255,255,255,0.28);font-size:11px;font-family:inherit;cursor:pointer;padding:10px 16px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;letter-spacing:.07em;text-transform:uppercase">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(${settingsOpen?'0':'180'}deg);transition:transform .2s"><polyline points="18 15 12 9 6 15"/></svg>
+      Ustawienia
     </button>
   </div>`;
 
-  if(lockOpen){
-    // 4 buttons row: stats | money | archive | download
-    const habitColor='rgba(255,255,255,0.32)';
-    html+=`<div style="display:flex;justify-content:center;gap:12px;margin-top:14px;padding:0 18px">
-      <button onclick="toggleFold('stats')" style="width:52px;height:52px;border-radius:50%;background:${statsOpen?'var(--accent-dim)':habitColor};border:none;color:${statsOpen?'var(--accent-bright)':'rgba(255,255,255,0.7)'};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
-      </button>
-
-      <button onclick="toggleFold('archive')" style="width:52px;height:52px;border-radius:50%;background:${archiveOpen?'var(--accent-dim)':habitColor};border:none;color:${archiveOpen?'var(--accent-bright)':'rgba(255,255,255,0.7)'};cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </button>
-      <button onclick="showExportSheet()" style="width:52px;height:52px;border-radius:50%;background:${habitColor};border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      </button>
-    </div>`;
-  }
-
-  if(lockOpen){
-
-  // ARCHIVE panel — category editors only
-  if(archiveOpen){
-    html+=`<div class="s-section s-lock-panel" style="margin-top:12px"><div class="s-panel-body">`;
-    html+=`</div>`;
+  if(settingsOpen){
+  // kategorie Czas + Money
+  {
+    html+=`<div class="s-section" style="margin-top:4px"><div style="padding:0 0 8px">`;
 
     // ── Kategorie: Czas ──
     html+=`<div style="padding:12px 16px 8px">`;
@@ -1853,8 +1807,15 @@ function renderSettings(){
     html+=`<button onclick="openAddMoneyCat()" style="display:flex;align-items:center;justify-content:center;width:100%;padding:10px;margin-top:6px;border:none;border-radius:12px;background:none;color:rgba(255,255,255,0.3);cursor:pointer;">${plusSVG}</button>`;
     html+=`</div></div>`;
   }
+  } // end settingsOpen
 
-  } // end lockOpen
+  // ── Guzik Pobierz ──
+  html+=`<div style="display:flex;justify-content:center;margin-top:20px">
+    <button onclick="showExportSheet()" style="display:flex;align-items:center;gap:7px;background:none;border:none;color:rgba(255,255,255,0.22);font-size:11px;font-family:inherit;cursor:pointer;padding:10px 16px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;letter-spacing:.07em;text-transform:uppercase">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Pobierz
+    </button>
+  </div>`;
 
   // Archive habits & sectors — always visible at bottom
   {
@@ -1944,6 +1905,8 @@ function tcTouchEnd(e,id){ clearTimeout(tcTTimer); if(tcTActive&&tcTMoved&&tcTOv
 function tcReorder(fromId,toId){ if(!fromId||!toId||fromId===toId){ renderSettings(); return; } const arr=state.timeCategories||[]; const fi=arr.findIndex(c=>c.id===fromId),ti=arr.findIndex(c=>c.id===toId); if(fi<0||ti<0){ renderSettings(); return; } const [item]=arr.splice(fi,1); arr.splice(ti,0,item); arr.forEach((c,i)=>c.order=i); save(); renderSettings(); }
 
 function toggleFold(key){
+  if(key==='settings'){ state._settingsOpen=state._settingsOpen===false?true:false; save(); renderSettings(); return; }
+  if(key==='stats'){ state._statsOpen=state._statsOpen===false?true:false; save(); renderSettings(); return; }
   if(key==='lock'){ state._lockOpen=!state._lockOpen; save(); renderSettings(); return; }
   if(key==='csv'){ state._csvOpen=!state._csvOpen; save(); renderSettings(); return; }
   if(key==='stats'){ state._statsOpen=!state._statsOpen; if(state._statsOpen){ state._archiveOpen=false; } save(); renderSettings(); return; }
