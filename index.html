@@ -68,7 +68,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 /* PROGRESS BAR */
 #progressBar{
   position:fixed;
-  bottom:calc(var(--safe-bottom) + 8px);
+  top:calc(var(--safe-top) + 10px);
   left:28px;right:28px;
   z-index:50;pointer-events:none;
   opacity:0;transition:opacity .4s;
@@ -81,8 +81,8 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 }
 #progressBar .pb-fill{
   height:10px;border-radius:10px;
-  background:#3ddd65;
-  box-shadow:0 0 10px rgba(61,221,101,0.35);
+  background:rgba(255,255,255,0.55);
+  box-shadow:none;
   transition:width .55s cubic-bezier(.34,1.2,.64,1);
 }
 #progressBar .pb-row{
@@ -434,7 +434,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   border:none;
   border-radius:14px;padding:16px 18px;
-  color:#ffffff;font-size:20px;font-weight:400;
+  color:#ffffff;font-size:20px;font-weight:600;
   font-family:inherit;
   outline:none;transition:background .2s;margin-bottom:12px;
   text-align:center;letter-spacing:-.02em;
@@ -595,7 +595,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
       autocomplete="off" placeholder="0"
       oninput="moneyAmountOninput(this.value)"
       onkeydown="moneyAmountKeydown(event)"
-      style="font-size:72px;font-weight:300;color:#fff;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;text-align:center;line-height:1;margin-bottom:44px;background:none;border:none;outline:none;width:100%;max-width:400px;caret-color:var(--accent);font-family:Georgia,'Times New Roman',serif;-webkit-user-select:text;user-select:text;">
+      style="font-size:72px;font-weight:400;color:#fff;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;text-align:center;line-height:1;margin-bottom:44px;background:none;border:none;outline:none;width:100%;max-width:400px;caret-color:var(--accent);font-family:'SF Pro Rounded','Nunito','Varela Round',ui-rounded,system-ui,sans-serif;-webkit-user-select:text;user-select:text;">
     <!-- Categories -->
     <div id="moneyCatRow" style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:400px;"></div>
     <!-- Note field -->
@@ -1656,6 +1656,49 @@ function renderSettings(){
   let html='';
   try{
 
+  // STATS — zawsze na górze
+  {
+    const sharedPeriod=state._statPeriod||7;
+    html+=`<div class="s-section" style="margin-top:8px">`;
+    html+=`<div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px">`;
+    html+=`<button onclick="setStatPeriod(7)" class="sector-pill${sharedPeriod===7?' active':''}" style="font-size:13px">7 dni</button>`;
+    html+=`<button onclick="setStatPeriod(30)" class="sector-pill${sharedPeriod===30?' active':''}" style="font-size:13px">30 dni</button>`;
+    html+=`</div>`;
+    {
+      const selSec=state.sectors.find(s=>s.id===(state._csvSectorId||state.sectors[0]?.id))||state.sectors[0];
+      const period2=sharedPeriod;
+      if(state.sectors.length>1){
+        html+='<div style="display:flex;gap:6px;justify-content:center;margin-bottom:14px;flex-wrap:wrap">';
+        state.sectors.forEach(sec=>html+=`<div class="sector-pill${sec.id===(state._csvSectorId||state.sectors[0]?.id)?' active':''}" onclick="setCsvSector('${sec.id}')">${sec.name}</div>`);
+        html+='</div>';
+      }
+      const habitsInSec=selSec?state.habits.filter(h=>!h.archived&&h.sectorId===selSec.id).sort((a,b)=>(a.order||0)-(b.order||0)):[];
+      const now3=new Date();
+      const days=[];
+      for(let i=period2-1;i>=0;i--){ const d=new Date(now3); d.setDate(now3.getDate()-i); days.push(fmtDate(d)); }
+      const activeHabits=habitsInSec.filter(h=>days.some(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])));
+      if(activeHabits.length){
+        html+='<div style="display:flex;flex-direction:column;gap:10px">';
+        activeHabits.forEach(h=>{
+          const doneCount=days.filter(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])).length;
+          html+='<div style="display:flex;align-items:center;gap:10px">';
+          html+='<span style="font-size:14px;color:rgba(255,255,255,0.65);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+h.name+'</span>';
+          html+='<div style="display:flex;gap:3px;flex-shrink:0">';
+          days.forEach(dk=>{
+            const done=isDone(state.daily?.[dk]?.habits?.[h.id]);
+            html+='<div style="width:6px;height:6px;border-radius:50%;background:'+(done?'rgba(61,221,101,0.85)':'rgba(255,255,255,0.1)')+'"></div>';
+          });
+          html+='</div>';
+          html+='<span style="font-size:12px;color:rgba(255,255,255,0.3);min-width:28px;text-align:right">'+doneCount+'</span>';
+          html+='</div>';
+        });
+        html+='</div>';
+      }
+    }
+    html+=`</div>`;
+    html+=`<div style="height:1px;background:rgba(255,255,255,0.06);margin:8px 18px"></div>`;
+  }
+
   // SECTORS
   html+=`<div class="s-section">`;
   for(const sec of state.sectors){
@@ -1740,7 +1783,7 @@ function renderSettings(){
   const lockOpen=state._lockOpen||false;
   const archiveOpen=state._archiveOpen||false;
   const timeStatsOpen=state._timeStatsOpen||false;
-  const statsOpen=state._statsOpen||false;
+  const statsOpen=true; // zawsze widoczne na górze
   const moneyOpen=state._moneyOpen||false;
 
   // Lock icon (same color as habits/extras tiles) — toggles buttons
@@ -1768,53 +1811,6 @@ function renderSettings(){
   }
 
   if(lockOpen){
-
-  // STATS panel — minimal
-  if(statsOpen){
-    html+=`<div class="s-section" style="margin-top:12px">`;
-
-    // Period toggle
-    const sharedPeriod=state._statPeriod||7;
-    html+=`<div style="display:flex;justify-content:center;gap:12px;margin-bottom:24px">`;
-    html+=`<button onclick="setStatPeriod(7)" style="padding:14px 32px;border-radius:16px;border:none;font-size:18px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation;background:${sharedPeriod===7?'rgba(255,255,255,0.32)':'rgba(255,255,255,0.08)'};color:${sharedPeriod===7?'#fff':'rgba(255,255,255,0.4)'}">7 dni</button>`;
-    html+=`<button onclick="setStatPeriod(30)" style="padding:14px 32px;border-radius:16px;border:none;font-size:18px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation;background:${sharedPeriod===30?'rgba(255,255,255,0.32)':'rgba(255,255,255,0.08)'};color:${sharedPeriod===30?'#fff':'rgba(255,255,255,0.4)'}">30 dni</button>`;
-    html+=`</div>`;
-
-    // — Habits — streak dots per habit, no table
-    {
-      const selSec=state.sectors.find(s=>s.id===(state._csvSectorId||state.sectors[0]?.id))||state.sectors[0];
-      const period2=state._statPeriod||7;
-      if(state.sectors.length>1){
-        html+='<div style="display:flex;gap:6px;justify-content:center;margin-top:20px;flex-wrap:wrap">';
-        state.sectors.forEach(sec=>html+=`<div class="sector-pill${sec.id===(state._csvSectorId||state.sectors[0]?.id)?' active':''}" onclick="setCsvSector('${sec.id}')">${sec.name}</div>`);
-        html+='</div>';
-      }
-      const habitsInSec=selSec?state.habits.filter(h=>!h.archived&&h.sectorId===selSec.id).sort((a,b)=>(a.order||0)-(b.order||0)):[];
-      const now3=new Date();
-      const days=[];
-      for(let i=period2-1;i>=0;i--){ const d=new Date(now3); d.setDate(now3.getDate()-i); days.push(fmtDate(d)); }
-      const activeHabits=habitsInSec.filter(h=>days.some(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])));
-      if(activeHabits.length){
-        html+='<div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">';
-        activeHabits.forEach(h=>{
-          const doneCount=days.filter(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])).length;
-          html+='<div style="display:flex;align-items:center;gap:10px">';
-          html+='<span style="font-size:14px;color:rgba(255,255,255,0.65);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+h.name+'</span>';
-          html+='<div style="display:flex;gap:3px;flex-shrink:0">';
-          days.forEach(dk=>{
-            const done=isDone(state.daily?.[dk]?.habits?.[h.id]);
-            html+='<div style="width:6px;height:6px;border-radius:50%;background:'+(done?'rgba(61,221,101,0.85)':'rgba(255,255,255,0.1)')+'"></div>';
-          });
-          html+='</div>';
-          html+='<span style="font-size:12px;color:rgba(255,255,255,0.3);min-width:28px;text-align:right">'+doneCount+'</span>';
-          html+='</div>';
-        });
-        html+='</div>';
-      }
-    }
-
-    html+=`</div>`; // end stats
-  }
 
   // ARCHIVE panel — category editors only
   if(archiveOpen){
@@ -2901,7 +2897,7 @@ function updateTTSelectionBar(){
   const mins=ttSelBlocks.size*15;
   const hh=Math.floor(mins/60),m=mins%60;
   const dur=hh>0?`${hh}h${m>0?' '+m+'m':''}`:mins+'m';
-  document.getElementById('ttEntryDuration').innerHTML=`<span style="font-size:22px;font-weight:300;letter-spacing:0.02em">${range}</span><span style="display:block;font-size:13px;color:rgba(255,255,255,0.5);margin-top:2px">${dur}</span>`;
+  document.getElementById('ttEntryDuration').innerHTML=`<span style="display:block;font-size:36px;font-weight:600;letter-spacing:-0.01em;color:#fff">${dur}</span><span style="display:block;font-size:14px;color:rgba(255,255,255,0.38);margin-top:3px;font-weight:400">${range}</span>`;
   const hd=document.getElementById('ttHabitDuration');
   const hds=document.getElementById('ttHabitDurationSub');
   if(hd) hd.textContent=range; if(hds) hds.textContent=dur;
