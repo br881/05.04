@@ -68,7 +68,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 /* PROGRESS BAR */
 #progressBar{
   position:fixed;
-  bottom:calc(var(--safe-bottom) + 38px);
+  top:calc(var(--safe-top) + 8px);
   left:50%;transform:translateX(-50%);
   z-index:50;pointer-events:none;
   opacity:0;transition:opacity .4s;
@@ -92,7 +92,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .temp-overlay.open{opacity:1;pointer-events:all;}
 .temp-overlay-blur{position:absolute;inset:0;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(0,0,0,0.78);}
 .temp-card{position:relative;z-index:1;width:100%;max-width:440px;margin:0 auto;background:none;border:none;border-radius:0;padding:0;display:flex;flex-direction:column;gap:18px;align-items:center;}
-.temp-card-field{width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:20px;font-weight:600;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
+.temp-card-field{width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:21px;font-weight:400;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
 .temp-card-field:focus{border-color:var(--accent-border);}
 .temp-card-sectors{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
 .sector-pill{padding:8px 16px;border-radius:20px;border:none;background:rgba(255,255,255,0.05);color:var(--ui);font-size:14px;cursor:pointer;font-family:inherit;transition:all .15s;}
@@ -136,7 +136,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .input-sheet.open{transform:translateY(0);}
 .is-handle{width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);margin:0 auto 14px;}
 .is-label{font-size:14px;color:var(--ui);margin-bottom:8px;opacity:.7;font-weight:400;}
-.is-field{width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:20px;font-weight:600;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
+.is-field{width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:16px 18px;color:#ffffff;font-size:21px;font-weight:400;font-family:inherit;outline:none;transition:background .2s;text-align:center;letter-spacing:-.02em;}
 .is-field:focus{background:rgba(255,255,255,0.38);}
 .is-confirm{width:100%;margin-top:10px;background:rgba(61,221,101,0.55);color:#fff;font-size:17px;font-weight:600;border:none;border-radius:12px;padding:14px;cursor:pointer;font-family:inherit;transition:opacity .15s;}
 .is-confirm:active{opacity:.7;}
@@ -170,7 +170,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .sector-edit-panel{display:none;}
 .sector-block.expanded .sector-edit-panel{display:block;}
 .sector-edit-card{background:rgba(255,255,255,0.13);border-radius:14px;padding:16px;margin-bottom:10px;}
-.sec-name-input{display:block;width:100%;background:none;border:none;border-bottom:1px solid rgba(255,255,255,0.25);color:#ffffff;font-size:20px;font-weight:500;font-family:inherit;outline:none;padding:4px 0 8px;text-align:center;margin-bottom:18px;}
+.sec-name-input{display:block;width:100%;background:none;border:none;border-bottom:1px solid rgba(255,255,255,0.25);color:#ffffff;font-size:21px;font-weight:400;font-family:inherit;outline:none;padding:4px 0 8px;text-align:center;margin-bottom:18px;}
 .sec-name-input:focus{border-bottom-color:var(--accent-border);}
 .sec-schedule-list{display:flex;flex-direction:column;gap:14px;}
 .sec-schedule-row{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;background:rgba(255,255,255,0.12);border-radius:10px;}
@@ -317,7 +317,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .type-selector{display:flex;gap:6px;}
 .type-btn{flex:1;padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.06);color:#ffffff;font-size:14px;cursor:pointer;font-family:inherit;transition:all .18s;text-align:center;display:flex;align-items:center;justify-content:center;}
 .type-btn.active{background:var(--accent-dim);color:var(--accent-bright);}
-.hd-name-input{flex:1;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:15px 18px;color:#ffffff;font-size:20px;font-weight:600;font-family:inherit;outline:none;text-align:center;transition:background .2s;letter-spacing:-.02em;}
+.hd-name-input{flex:1;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:14px;padding:15px 18px;color:#ffffff;font-size:21px;font-weight:400;font-family:inherit;outline:none;text-align:center;transition:background .2s;letter-spacing:-.02em;}
 .hd-name-input:focus{background:rgba(255,255,255,0.42);}
 .hd-name-input::placeholder{color:rgba(255,255,255,0.28);}
 
@@ -419,7 +419,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   border:none;
   border-radius:14px;padding:16px 18px;
-  color:#ffffff;font-size:20px;font-weight:600;
+  color:#ffffff;font-size:21px;font-weight:400;
   font-family:inherit;
   outline:none;transition:background .2s;margin-bottom:12px;
   text-align:center;letter-spacing:-.02em;
@@ -528,15 +528,16 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div class="bottom-bar">
     <!-- Left: time tracker — clock face as ring/outline -->
     <button class="btn-ghost-zone" id="btnTime" onclick="openTimeTracker()">
-      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="48" height="48" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="22" cy="22" r="19" stroke-width="2.2"/>
         <polyline points="22 12 22 22 28 26" stroke-width="2.2"/>
       </svg>
     </button>
-    <!-- Right: temp tasks — circle ring outline -->
+    <!-- Right: temp tasks — same clock icon as left -->
     <button class="btn-ghost-zone" id="btnTasks" onclick="openTempScreen()">
-      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
+      <svg width="48" height="48" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="22" cy="22" r="19" stroke-width="2.2"/>
+        <polyline points="22 12 22 22 28 26" stroke-width="2.2"/>
       </svg>
     </button>
   </div>
@@ -544,10 +545,13 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <!-- Ghost tap zones -->
   <!-- Left half top → extras/habits sheet -->
   <div style="position:fixed;top:0;left:0;width:50%;height:calc(var(--safe-top)+52px);z-index:50;cursor:pointer;" onclick="openSheet()"></div>
-  <!-- Settings gear — bottom center, visible -->
-  <button onclick="openSettings()" style="position:fixed;bottom:calc(var(--safe-bottom)+52px);left:50%;transform:translateX(-50%);z-index:11;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.13);border:none;color:rgba(255,255,255,0.6);cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-  </button>
+  <!-- Settings: full area below both buttons is tappable, 2-line icon centered -->
+  <div onclick="openSettings()" style="position:fixed;bottom:0;left:0;right:0;height:calc(var(--safe-bottom)+52px);z-index:9;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:5px;padding-bottom:calc(var(--safe-bottom)+6px);pointer-events:none">
+      <span style="width:22px;height:2px;border-radius:1px;background:rgba(255,255,255,0.14);display:block"></span>
+      <span style="width:22px;height:2px;border-radius:1px;background:rgba(255,255,255,0.14);display:block"></span>
+    </div>
+  </div>
 </div>
 
 <!-- ADD TEMP overlay (triggered by left-ghost or swipe-up) -->
@@ -587,7 +591,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
     <!-- Note field -->
     <input id="moneyNoteInput" type="text" inputmode="text" enterkeyhint="done" autocapitalize="sentences" autocomplete="off"
       placeholder=""
-      style="margin-top:10px;width:100%;max-width:400px;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:var(--radius);padding:16px 18px;color:#ffffff;font-size:18px;font-weight:600;text-align:center;font-family:inherit;outline:none;box-sizing:border-box;letter-spacing:-.02em;"
+      style="margin-top:10px;width:100%;max-width:400px;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:var(--radius);padding:16px 18px;color:#ffffff;font-size:19px;font-weight:400;text-align:center;font-family:inherit;outline:none;box-sizing:border-box;letter-spacing:-.02em;"
       onkeydown="if(event.key==='Enter'){event.preventDefault();saveMoney();}">
   </div>
 
@@ -660,7 +664,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div id="tempAddCard" style="position:relative;z-index:1;width:100%;max-width:440px;padding:0 24px 32px;display:flex;flex-direction:column;gap:20px;align-items:stretch">
     <div id="tempAddSectors" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"></div>
     <input id="tempAddField" enterkeyhint="done" inputmode="text" autocomplete="off" autocapitalize="sentences"
-      style="width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:16px;padding:18px 20px;color:#fff;font-size:20px;font-weight:600;font-family:inherit;outline:none;text-align:center;letter-spacing:-.02em;box-sizing:border-box;-webkit-user-select:text;user-select:text;">
+      style="width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:16px;padding:18px 20px;color:#fff;font-size:21px;font-weight:400;font-family:inherit;outline:none;text-align:center;letter-spacing:-.02em;box-sizing:border-box;-webkit-user-select:text;user-select:text;">
   </div>
 </div>
 
@@ -1632,7 +1636,7 @@ function renderSettings(){
   const sharedPeriod=state._statPeriod||7;
 
   // ══ ROW 1: STATS header bar — icon only, centered ══
-  html+=`<div onclick="state._statsOpen=!statsOpen;save();renderSettings()" style="display:flex;align-items:center;justify-content:center;padding:14px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;border-bottom:1px solid rgba(255,255,255,0.05);opacity:${statsOpen?'1':'0.4'};transition:opacity .2s">
+  html+=`<div onclick="toggleFold('stats')" style="display:flex;align-items:center;justify-content:center;padding:14px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;border-bottom:1px solid rgba(255,255,255,0.05);opacity:${statsOpen?'1':'0.4'};transition:opacity .2s">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:rgba(255,255,255,0.7)"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
   </div>`;
 
@@ -1643,14 +1647,88 @@ function renderSettings(){
     html+=`<button onclick="event.stopPropagation();setStatPeriod(7)" class="sector-pill${sharedPeriod===7?' active':''}" style="font-size:12px;padding:5px 14px">7</button>`;
     html+=`<button onclick="event.stopPropagation();setStatPeriod(30)" class="sector-pill${sharedPeriod===30?' active':''}" style="font-size:12px;padding:5px 14px">30</button>`;
     html+=`</div>`;
+
+    // Money total
+    {
+      const now_m=new Date();
+      const mEntries=(state.moneyEntries||[]).filter(e=>{
+        const d=new Date(e.date+'T00:00:00');
+        return (now_m-d)/(1000*60*60*24)<=sharedPeriod;
+      });
+      const mTotal=mEntries.reduce((s,e)=>s+e.amount,0);
+      if(mTotal>0){
+        const mCats=state.moneyCategories||[];
+        const mBycat={};
+        mEntries.forEach(e=>{ mBycat[e.catId]=(mBycat[e.catId]||0)+e.amount; });
+        const mSorted=Object.entries(mBycat).sort((a,b)=>b[1]-a[1]);
+        const mTotalStr=mTotal%1===0?Math.round(mTotal):mTotal.toFixed(2);
+        html+='<div style="margin-bottom:14px">';
+        html+='<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">';
+        html+='<span style="font-size:24px;font-weight:200;color:#fff;letter-spacing:-.02em">'+mTotalStr+'</span>';
+        html+='<span style="font-size:13px;color:rgba(255,255,255,0.35)">zł</span>';
+        html+='</div>';
+        html+='<div style="display:flex;flex-direction:column;gap:5px">';
+        mSorted.forEach(([cid,amt])=>{
+          const cat=mCats.find(c=>c.id===cid);
+          const pct=Math.round(amt/mTotal*100);
+          const amtStr=amt%1===0?Math.round(amt):amt.toFixed(2);
+          html+='<div style="display:flex;align-items:center;gap:8px">';
+          html+='<span style="font-size:13px;color:rgba(255,255,255,0.5);min-width:20px">'+(cat?.name||'')+'</span>';
+          html+='<div style="flex:1;height:2px;border-radius:1px;background:rgba(255,255,255,0.07)"><div style="height:2px;width:'+pct+'%;background:rgba(255,255,255,0.4);border-radius:1px"></div></div>';
+          html+='<span style="font-size:12px;color:rgba(255,255,255,0.45);min-width:36px;text-align:right">'+amtStr+'</span>';
+          html+='</div>';
+        });
+        html+='</div></div>';
+      }
+    }
+
+    // Time total
+    {
+      const now_t=new Date();
+      const tCats=state.timeCategories||[];
+      let totalMins=0; const tByCat={};
+      for(const[k,entries] of Object.entries(state.timeEntries||{})){
+        const d=new Date(k);
+        if((now_t-d)/(1000*60*60*24)>sharedPeriod) continue;
+        for(const e of (entries||[])){
+          if(e.empty||!e.blocks?.length) continue;
+          const mins=e.blocks.length*15;
+          tByCat[e.catId]=(tByCat[e.catId]||0)+mins;
+          totalMins+=mins;
+        }
+      }
+      if(totalMins>0){
+        const totH=Math.floor(totalMins/60),totM=totalMins%60;
+        const totStr=(totH>0?totH+'h':'')+(totM>0?' '+totM+'m':'');
+        const tSorted=Object.entries(tByCat).sort((a,b)=>b[1]-a[1]);
+        html+='<div style="margin-bottom:14px">';
+        html+='<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">';
+        html+='<span style="font-size:24px;font-weight:200;color:#fff;letter-spacing:-.02em">'+totStr.trim()+'</span>';
+        html+='</div>';
+        html+='<div style="display:flex;flex-direction:column;gap:5px">';
+        tSorted.forEach(([cid,mins])=>{
+          const cat=tCats.find(c=>c.id===cid);
+          const pct=Math.round(mins/totalMins*100);
+          const hh=Math.floor(mins/60),m=mins%60;
+          const dur=(hh>0?hh+'h':'')+(m>0?' '+m+'m':'');
+          html+='<div style="display:flex;align-items:center;gap:8px">';
+          html+='<span style="font-size:13px;color:rgba(255,255,255,0.5);min-width:20px">'+(cat?.name||'')+'</span>';
+          html+='<div style="flex:1;height:2px;border-radius:1px;background:rgba(255,255,255,0.07)"><div style="height:2px;width:'+pct+'%;background:rgba(255,255,255,0.4);border-radius:1px"></div></div>';
+          html+='<span style="font-size:12px;color:rgba(255,255,255,0.45);min-width:36px;text-align:right">'+dur.trim()+'</span>';
+          html+='</div>';
+        });
+        html+='</div></div>';
+      }
+    }
+
     // Habits from all sectors
     const now3=new Date(); const days=[];
     for(let i=sharedPeriod-1;i>=0;i--){ const d=new Date(now3); d.setDate(now3.getDate()-i); days.push(fmtDate(d)); }
     const activeHabits=state.habits.filter(h=>!h.archived&&days.some(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])));
     if(activeHabits.length){
+      html+='<div style="margin-top:4px;display:flex;flex-direction:column;gap:10px">';
       const bySec={};
       activeHabits.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
-      html+='<div style="display:flex;flex-direction:column;gap:10px">';
       state.sectors.forEach(sec=>{
         const hh=(bySec[sec.id]||[]).sort((a,b)=>(a.order||0)-(b.order||0));
         if(!hh.length) return;
@@ -1667,14 +1745,12 @@ function renderSettings(){
         });
       });
       html+='</div>';
-    } else {
-      html+='<div style="color:rgba(255,255,255,0.2);font-size:13px;padding:8px 0">—</div>';
     }
     html+=`</div>`;
   }
 
   // ══ ROW 2: SETTINGS header bar — icon only, centered ══
-  html+=`<div onclick="state._settingsOpen=!settingsOpen;save();renderSettings()" style="display:flex;align-items:center;justify-content:center;padding:14px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;border-bottom:1px solid rgba(255,255,255,0.05);margin-top:1px;opacity:${settingsOpen?'1':'0.4'};transition:opacity .2s">
+  html+=`<div onclick="toggleFold('settings')" style="display:flex;align-items:center;justify-content:center;padding:14px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;border-bottom:1px solid rgba(255,255,255,0.05);margin-top:1px;opacity:${settingsOpen?'1':'0.4'};transition:opacity .2s">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:rgba(255,255,255,0.7)"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </div>`;
 
@@ -2855,7 +2931,7 @@ function showTTEntryPanel(){
   row.innerHTML=`<div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;justify-content:center">`
     +cats.map(c=>`<div class="tt-cat-pill${ttSelectedCat===c.id?' active':''}" onclick="selectTTCat('${c.id}',this)" style="font-size:20px;padding:8px 16px">${c.name}</div>`).join('')
     +`</div>`
-    +`<button onclick="cancelTTSelection()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.12);border:none;color:rgba(255,255,255,0.6);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;font-weight:300">×</button>`;
+    +`<button onclick="cancelTTSelection()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.06);border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;font-weight:300">×</button>`;
   document.getElementById('ttEntryField').value=ttEntryLabel;
 
   // Check if any selected blocks are filled — show clear button
