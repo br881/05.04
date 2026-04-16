@@ -54,7 +54,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
 .habit-row.vanishing{overflow:hidden;pointer-events:none;opacity:0;max-height:0!important;padding-top:0!important;padding-bottom:0!important;margin:0!important;border-width:0!important;transition:opacity .26s ease,max-height .36s .08s cubic-bezier(.4,0,1,1),padding .36s .04s ease,margin .36s .04s ease,border-width .36s .04s ease!important;}
 .habit-row.temp-row .habit-name{color:rgba(120,235,120,1);font-weight:500;}
-.habit-name{font-size:18px;font-weight:600;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;}
+.habit-name{font-size:18px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;}
 .habit-value-input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.38);color:#ffffff;font-size:17px;font-family:inherit;outline:none;width:72px;text-align:right;padding:2px 0 4px;transition:border-color .2s;font-weight:600;}
 .habit-value-input:focus{border-bottom-color:var(--accent-border);}
 .habit-value-input::placeholder{color:transparent;}
@@ -108,10 +108,10 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   position:absolute;
   width:58px;height:58px;border-radius:50%;
   background:transparent;
-  border:none;
+  border:1.5px solid rgba(255,255,255,0.28);
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;pointer-events:all;
-  color:rgba(255,255,255,0.9);
+  color:rgba(255,255,255,0.75);
   transition:all .2s cubic-bezier(.34,1.56,.64,1);
   bottom:calc(var(--safe-bottom) + 56px);
   transform:translateX(-50%);
@@ -565,9 +565,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 
 <!-- SETTINGS -->
 <div id="settings" class="screen" style="overflow:visible;display:flex;flex-direction:column;">
-  <div class="settings-header">
-    <button class="btn-back" onclick="closeSettings()">‹</button>
-  </div>
+  <div style="height:calc(var(--safe-top)+8px);flex-shrink:0"></div>
   <div class="settings-scroll" id="settingsScroll"></div>
 </div>
 
@@ -708,17 +706,11 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 
 <!-- HABIT DETAIL -->
 <div class="habit-detail-screen" id="habitDetail">
-  <div class="hd-header">
-    <button class="btn-back" onclick="closeHabitDetail()">‹</button>
-  </div>
   <div class="hd-body" id="hdBody"></div>
 </div>
 
 <!-- EXTRA DETAIL -->
 <div class="extra-detail-screen" id="extraDetail">
-  <div class="hd-header">
-    <button class="btn-back" onclick="closeExtraDetail()">‹</button>
-  </div>
   <div class="hd-body" id="extraDetailBody"></div>
 </div>
 
@@ -1631,8 +1623,8 @@ function renderSettings(){
   let html='';
   try{
 
-  const statsOpen=state._statsOpen!==false;  // default open
-  const settingsOpen=state._settingsOpen!==false; // default open
+  const statsOpen=state._statsOpen!==false;   // default open
+  const settingsOpen=state._settingsOpen===true; // default closed
   const sharedPeriod=state._statPeriod||7;
 
   // ══ ROW 1: STATS header bar — icon only, centered ══
@@ -1641,110 +1633,36 @@ function renderSettings(){
   </div>`;
 
   if(statsOpen){
-    html+=`<div style="padding:16px 20px 8px">`;
-    // Period toggle
-    html+=`<div style="display:flex;gap:6px;margin-bottom:16px;justify-content:center">`;
+    html+=`<div style="padding:12px 20px 10px">`;
+    html+=`<div style="display:flex;gap:6px;margin-bottom:14px;justify-content:center">`;
     html+=`<button onclick="event.stopPropagation();setStatPeriod(7)" class="sector-pill${sharedPeriod===7?' active':''}" style="font-size:12px;padding:5px 14px">7</button>`;
     html+=`<button onclick="event.stopPropagation();setStatPeriod(30)" class="sector-pill${sharedPeriod===30?' active':''}" style="font-size:12px;padding:5px 14px">30</button>`;
     html+=`</div>`;
-
-    // Money total
-    {
-      const now_m=new Date();
-      const mEntries=(state.moneyEntries||[]).filter(e=>{
-        const d=new Date(e.date+'T00:00:00');
-        return (now_m-d)/(1000*60*60*24)<=sharedPeriod;
-      });
-      const mTotal=mEntries.reduce((s,e)=>s+e.amount,0);
-      if(mTotal>0){
-        const mCats=state.moneyCategories||[];
-        const mBycat={};
-        mEntries.forEach(e=>{ mBycat[e.catId]=(mBycat[e.catId]||0)+e.amount; });
-        const mSorted=Object.entries(mBycat).sort((a,b)=>b[1]-a[1]);
-        const mTotalStr=mTotal%1===0?Math.round(mTotal):mTotal.toFixed(2);
-        html+='<div style="margin-bottom:14px">';
-        html+='<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">';
-        html+='<span style="font-size:24px;font-weight:200;color:#fff;letter-spacing:-.02em">'+mTotalStr+'</span>';
-        html+='<span style="font-size:13px;color:rgba(255,255,255,0.35)">zł</span>';
-        html+='</div>';
-        html+='<div style="display:flex;flex-direction:column;gap:5px">';
-        mSorted.forEach(([cid,amt])=>{
-          const cat=mCats.find(c=>c.id===cid);
-          const pct=Math.round(amt/mTotal*100);
-          const amtStr=amt%1===0?Math.round(amt):amt.toFixed(2);
-          html+='<div style="display:flex;align-items:center;gap:8px">';
-          html+='<span style="font-size:13px;color:rgba(255,255,255,0.5);min-width:20px">'+(cat?.name||'')+'</span>';
-          html+='<div style="flex:1;height:2px;border-radius:1px;background:rgba(255,255,255,0.07)"><div style="height:2px;width:'+pct+'%;background:rgba(255,255,255,0.4);border-radius:1px"></div></div>';
-          html+='<span style="font-size:12px;color:rgba(255,255,255,0.45);min-width:36px;text-align:right">'+amtStr+'</span>';
-          html+='</div>';
-        });
-        html+='</div></div>';
-      }
-    }
-
-    // Time total
-    {
-      const now_t=new Date();
-      const tCats=state.timeCategories||[];
-      let totalMins=0; const tByCat={};
-      for(const[k,entries] of Object.entries(state.timeEntries||{})){
-        const d=new Date(k);
-        if((now_t-d)/(1000*60*60*24)>sharedPeriod) continue;
-        for(const e of (entries||[])){
-          if(e.empty||!e.blocks?.length) continue;
-          const mins=e.blocks.length*15;
-          tByCat[e.catId]=(tByCat[e.catId]||0)+mins;
-          totalMins+=mins;
-        }
-      }
-      if(totalMins>0){
-        const totH=Math.floor(totalMins/60),totM=totalMins%60;
-        const totStr=(totH>0?totH+'h':'')+(totM>0?' '+totM+'m':'');
-        const tSorted=Object.entries(tByCat).sort((a,b)=>b[1]-a[1]);
-        html+='<div style="margin-bottom:14px">';
-        html+='<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">';
-        html+='<span style="font-size:24px;font-weight:200;color:#fff;letter-spacing:-.02em">'+totStr.trim()+'</span>';
-        html+='</div>';
-        html+='<div style="display:flex;flex-direction:column;gap:5px">';
-        tSorted.forEach(([cid,mins])=>{
-          const cat=tCats.find(c=>c.id===cid);
-          const pct=Math.round(mins/totalMins*100);
-          const hh=Math.floor(mins/60),m=mins%60;
-          const dur=(hh>0?hh+'h':'')+(m>0?' '+m+'m':'');
-          html+='<div style="display:flex;align-items:center;gap:8px">';
-          html+='<span style="font-size:13px;color:rgba(255,255,255,0.5);min-width:20px">'+(cat?.name||'')+'</span>';
-          html+='<div style="flex:1;height:2px;border-radius:1px;background:rgba(255,255,255,0.07)"><div style="height:2px;width:'+pct+'%;background:rgba(255,255,255,0.4);border-radius:1px"></div></div>';
-          html+='<span style="font-size:12px;color:rgba(255,255,255,0.45);min-width:36px;text-align:right">'+dur.trim()+'</span>';
-          html+='</div>';
-        });
-        html+='</div></div>';
-      }
-    }
-
-    // Habits from all sectors
     const now3=new Date(); const days=[];
     for(let i=sharedPeriod-1;i>=0;i--){ const d=new Date(now3); d.setDate(now3.getDate()-i); days.push(fmtDate(d)); }
     const activeHabits=state.habits.filter(h=>!h.archived&&days.some(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])));
     if(activeHabits.length){
-      html+='<div style="margin-top:4px;display:flex;flex-direction:column;gap:10px">';
       const bySec={};
       activeHabits.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
+      html+='<div style="display:flex;flex-direction:column;gap:8px">';
       state.sectors.forEach(sec=>{
         const hh=(bySec[sec.id]||[]).sort((a,b)=>(a.order||0)-(b.order||0));
         if(!hh.length) return;
-        if(state.sectors.length>1) html+=`<div style="font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:.06em;text-transform:uppercase;padding-top:2px">${sec.name}</div>`;
+        if(state.sectors.length>1) html+=`<div style="font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:.06em;text-transform:uppercase;padding-top:4px">${sec.name}</div>`;
         hh.forEach(h=>{
           const doneCount=days.filter(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])).length;
-          html+='<div style="display:flex;align-items:center;gap:10px">';
-          html+='<span style="font-size:14px;color:rgba(255,255,255,0.65);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+h.name+'</span>';
-          html+='<div style="display:flex;gap:3px;flex-shrink:0">';
-          days.forEach(dk=>{ const done=isDone(state.daily?.[dk]?.habits?.[h.id]); html+='<div style="width:6px;height:6px;border-radius:50%;background:'+(done?'rgba(61,221,101,0.85)':'rgba(255,255,255,0.1)')+'"></div>'; });
+          html+='<div style="display:flex;align-items:center;gap:8px">';
+          html+='<span style="font-size:13px;color:rgba(255,255,255,0.55);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+h.name+'</span>';
+          html+='<div style="display:flex;gap:2px;flex-shrink:0">';
+          days.forEach(dk=>{ const done=isDone(state.daily?.[dk]?.habits?.[h.id]); html+='<div style="width:5px;height:5px;border-radius:50%;background:'+(done?'rgba(61,221,101,0.8)':'rgba(255,255,255,0.08)')+'"></div>'; });
           html+='</div>';
-          html+='<span style="font-size:12px;color:rgba(255,255,255,0.3);min-width:24px;text-align:right">'+doneCount+'</span>';
+          html+='<span style="font-size:11px;color:rgba(255,255,255,0.25);min-width:20px;text-align:right">'+doneCount+'</span>';
           html+='</div>';
         });
       });
       html+='</div>';
+    } else {
+      html+='<div style="color:rgba(255,255,255,0.15);font-size:12px;text-align:center;padding:4px 0">—</div>';
     }
     html+=`</div>`;
   }
@@ -1870,7 +1788,7 @@ function renderSettings(){
 
   // Pobierz
   html+=`<div style="display:flex;justify-content:center;margin-top:16px;margin-bottom:8px">
-    <button onclick="showExportSheet()" style="display:flex;align-items:center;gap:7px;background:none;border:none;color:rgba(255,255,255,0.22);font-size:11px;font-family:inherit;cursor:pointer;padding:10px 16px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;letter-spacing:.07em;text-transform:uppercase">
+    <button onclick="showExportSheet()" style="display:flex;align-items:center;gap:7px;background:none;border:none;color:rgba(255,255,255,0.7);font-size:11px;font-family:inherit;cursor:pointer;padding:10px 16px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;letter-spacing:.07em;text-transform:uppercase">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Pobierz
     </button>
