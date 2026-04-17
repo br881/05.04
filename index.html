@@ -8,8 +8,8 @@
 <meta name="theme-color" content="#000000">
 <title>·</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='black'/><circle cx='50' cy='50' r='36' stroke='white' stroke-width='3.5' fill='none'/></svg>">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='black'/><circle cx='50' cy='50' r='36' stroke='white' stroke-width='3.5' fill='none'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='black'/><circle cx='50' cy='50' r='32' stroke='white' stroke-width='6' fill='none'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='black'/><circle cx='50' cy='50' r='32' stroke='white' stroke-width='6' fill='none'/></svg>">
 <style>
 :root{
   --bg:#000;--bg2:#0d0d0d;--tile:#181818;--tile2:#141414;--tile-border:rgba(255,255,255,0.07);
@@ -53,8 +53,8 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .habit-row:active{opacity:.55;}
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
 .habit-row.vanishing{overflow:hidden;pointer-events:none;opacity:0;max-height:0!important;padding-top:0!important;padding-bottom:0!important;margin:0!important;border-width:0!important;transition:opacity .26s ease,max-height .36s .08s cubic-bezier(.4,0,1,1),padding .36s .04s ease,margin .36s .04s ease,border-width .36s .04s ease!important;}
-.habit-row.temp-row .habit-name{color:rgba(120,235,120,1);font-weight:400;}
-.habit-name{font-size:18px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;}
+.habit-row.temp-row .habit-name{color:rgba(120,235,120,1);font-weight:500;}
+.habit-name{font-size:22px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
 .habit-value-input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.38);color:#ffffff;font-size:17px;font-family:inherit;outline:none;width:72px;text-align:right;padding:2px 0 4px;transition:border-color .2s;font-weight:600;}
 .habit-value-input:focus{border-bottom-color:var(--accent-border);}
 .habit-value-input::placeholder{color:transparent;}
@@ -111,9 +111,9 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   border:none;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;pointer-events:all;
-  color:rgba(255,255,255,0.55);
+  color:#ffffff;
   transition:all .2s cubic-bezier(.34,1.56,.64,1);
-  bottom:calc(var(--safe-bottom) + 40px);
+  bottom:calc(var(--safe-bottom) + 44px);
   transform:translateX(-50%);
 }
 #btnTime{ left:33.33%; }
@@ -280,7 +280,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .habit-detail-screen{position:fixed;inset:0;z-index:300;background:#000;transform:translateY(100%);transition:transform .38s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;overflow:hidden;}
 .habit-detail-screen.open{transform:translateY(0);}
 .hd-header{padding:calc(var(--safe-top)+2px) 20px 10px;display:flex;align-items:center;border:none;flex-shrink:0;}
-.hd-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:calc(var(--safe-top)+20px) 24px calc(var(--safe-bottom)+60px);scrollbar-width:none;}
+.hd-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:calc(var(--safe-top)+8px) 24px calc(var(--safe-bottom)+60px);scrollbar-width:none;}
 .hd-body::-webkit-scrollbar{display:none;}
 .hd-top-row{display:flex;align-items:center;gap:10px;padding:36px 0 30px;}
 .type-mini-btns{display:flex;gap:5px;flex-shrink:0;}
@@ -526,15 +526,14 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div class="bottom-bar">
     <!-- Left: time tracker — clock face as ring/outline -->
     <button class="btn-ghost-zone" id="btnTime" onclick="openTimeTracker()">
-      <svg width="60" height="60" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
-        <circle cx="22" cy="22" r="19" stroke-width="1.7"/>
-        <polyline points="22 13 22 22 27 26" stroke-width="1.7"/>
+      <svg width="56" height="56" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
+        <circle cx="22" cy="22" r="19" stroke-width="2"/>
       </svg>
     </button>
     <!-- Right: temp tasks — same clock icon as left -->
     <button class="btn-ghost-zone" id="btnTasks" onclick="openTempScreen()">
-      <svg width="60" height="60" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
-        <circle cx="22" cy="22" r="19" stroke-width="1.7"/>
+      <svg width="56" height="56" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
+        <circle cx="22" cy="22" r="19" stroke-width="2"/>
       </svg>
     </button>
   </div>
@@ -543,9 +542,12 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <!-- Left half top → extras/habits sheet -->
   <div style="position:fixed;top:0;left:0;width:50%;height:calc(var(--safe-top)+52px);z-index:50;cursor:pointer;" onclick="openSheet()"></div>
   <!-- Settings: full area below both buttons is tappable, 2-line icon centered -->
-  <button onclick="openSettings()" style="position:fixed;bottom:calc(var(--safe-bottom)+8px);left:50%;transform:translateX(-50%);z-index:9;width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.11);border:none;color:rgba(255,255,255,0.65);cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-  </button>
+  <div onclick="openSettings()" style="position:fixed;bottom:0;left:0;right:0;height:calc(var(--safe-bottom)+68px);z-index:9;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding-bottom:calc(var(--safe-bottom)+8px);pointer-events:none">
+      <span style="width:28px;height:2.5px;border-radius:1.5px;background:rgba(255,255,255,0.18);display:block"></span>
+      <span style="width:28px;height:2.5px;border-radius:1.5px;background:rgba(255,255,255,0.18);display:block"></span>
+    </div>
+  </div>
 </div>
 
 <!-- ADD TEMP overlay (triggered by left-ghost or swipe-up) -->
@@ -559,7 +561,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 
 <!-- SETTINGS -->
 <div id="settings" class="screen" style="overflow:visible;display:flex;flex-direction:column;">
-  <div class="settings-scroll" id="settingsScroll" style="padding-top:calc(var(--safe-top)+16px)"></div>
+  <div class="settings-scroll" id="settingsScroll" style="padding-top:calc(var(--safe-top)+56px)"></div>
 </div>
 
 <!-- MONEY SCREEN -->
@@ -743,7 +745,7 @@ function defaultState(){
     habits:[],
     extraStats:[],
     tempTasks:[],doneTasks:[],daily:{},streaks:{},streakSectorId:'s1',
-    _doneOpen:false,_streakOpen:false,_archiveOpen:false,_lockOpen:false,_csvOpen:false,_csvSectorId:null,_timeStatsOpen:false,_statsOpen:false,_timePeriod:'week',
+    _doneOpen:false,_streakOpen:false,_archiveOpen:false,_lockOpen:false,_csvOpen:false,_csvSectorId:null,_timeStatsOpen:false,_statsOpen:true,_settingsOpen:false,_timePeriod:'week',
     timeCategories:[
       {id:'tc1',name:'💼',color:'#8B6914'},
       {id:'tc2',name:'🌱',color:'#2d7a3a'},
@@ -778,7 +780,8 @@ function migrateState(s){
   if(!s._lockOpen) s._lockOpen=false;
   if(!s._csvOpen) s._csvOpen=false;
   if(!s._csvSectorId) s._csvSectorId=null;
-  if(!s._statsOpen) s._statsOpen=false;
+  if(s._statsOpen===undefined) s._statsOpen=true;   // default stats open
+  if(s._settingsOpen===undefined) s._settingsOpen=false; // default settings closed
   if(!s.timeCategories) s.timeCategories=[{id:'tc1',name:'💼'},{id:'tc2',name:'🌱'},{id:'tc3',name:'❌'}];
   // Migrate old text-heavy names to emoji-only
   const emojiMap={'💼 Praca':{name:'💼',color:'#8B6914'},'🌱 Rozwój':{name:'🌱',color:'#2d7a3a'},'❌ Strata':{name:'❌',color:'#7a2d2d'}};
@@ -1657,6 +1660,37 @@ function renderSettings(){
     } else {
       html+='<div style="color:rgba(255,255,255,0.15);font-size:12px;text-align:center;padding:4px 0">—</div>';
     }
+
+    // Time stats
+    const _tStats=getTimeStats(sharedPeriod==='week'||sharedPeriod===7?'week':'month');
+    const _tCats=state.timeCategories||[];
+    const _tTotal=Object.values(_tStats).reduce((a,b)=>a+b,0);
+    if(_tTotal>0){
+      html+='<div style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">';
+      html+='<div style="font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;text-align:center">Czas</div>';
+      const _tSorted=Object.entries(_tStats).sort((a,b)=>b[1]-a[1]);
+      _tSorted.forEach(([cid,mins])=>{
+        const cat=_tCats.find(c=>c.id===cid);
+        const h=Math.floor(mins/60),m=mins%60;
+        const str=h>0?(m>0?h+'h '+m+'m':h+'h'):m+'m';
+        html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">';
+        html+='<span style="font-size:14px;min-width:24px;text-align:center">'+(cat?.name||'?')+'</span>';
+        html+='<div style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden"><div style="height:3px;width:'+Math.round(mins/_tTotal*100)+'%;background:rgba(255,255,255,0.45);border-radius:2px"></div></div>';
+        html+='<span style="font-size:12px;color:rgba(255,255,255,0.5);min-width:44px;text-align:right">'+str+'</span>';
+        html+='</div>';
+      });
+      html+='</div>';
+    }
+
+    // Money stats
+    const _mHtml=renderMoneySettings();
+    if(_mHtml&&!_mHtml.includes('text-align:center;color:rgba(255,255,255,0.18)')){
+      html+='<div style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">';
+      html+='<div style="font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;text-align:center">Money</div>';
+      html+=_mHtml;
+      html+='</div>';
+    }
+
     html+=`</div>`;
   }
 
@@ -1784,8 +1818,9 @@ function renderSettings(){
 
   // Pobierz
   html+=`<div style="display:flex;justify-content:center;margin-top:16px;margin-bottom:8px">
-    <button onclick="showExportSheet()" style="background:none;border:none;color:rgba(255,255,255,0.6);cursor:pointer;padding:10px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    <button onclick="showExportSheet()" style="background:none;border:none;color:#ffffff;cursor:pointer;padding:14px 28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-family:inherit">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Pobierz
     </button>
   </div>`;
 
