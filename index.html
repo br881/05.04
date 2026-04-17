@@ -107,11 +107,11 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .btn-ghost-zone{
   position:absolute;
   width:58px;height:58px;border-radius:50%;
-  background:transparent;
-  border:1.5px solid rgba(255,255,255,0.28);
+  background:none;
+  border:none;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;pointer-events:all;
-  color:rgba(255,255,255,0.75);
+  color:rgba(255,255,255,0.5);
   transition:all .2s cubic-bezier(.34,1.56,.64,1);
   bottom:calc(var(--safe-bottom) + 56px);
   transform:translateX(-50%);
@@ -528,16 +528,15 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div class="bottom-bar">
     <!-- Left: time tracker — clock face as ring/outline -->
     <button class="btn-ghost-zone" id="btnTime" onclick="openTimeTracker()">
-      <svg width="48" height="48" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="22" cy="22" r="19" stroke-width="2.2"/>
-        <polyline points="22 12 22 22 28 26" stroke-width="2.2"/>
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-linecap="round">
+        <circle cx="20" cy="20" r="17" stroke-width="1.8"/>
+        <polyline points="20 10 20 20 26 24" stroke-width="1.8"/>
       </svg>
     </button>
     <!-- Right: temp tasks — same clock icon as left -->
     <button class="btn-ghost-zone" id="btnTasks" onclick="openTempScreen()">
-      <svg width="48" height="48" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="22" cy="22" r="19" stroke-width="2.2"/>
-        <polyline points="22 12 22 22 28 26" stroke-width="2.2"/>
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-linecap="round">
+        <circle cx="20" cy="20" r="17" stroke-width="1.8"/>
       </svg>
     </button>
   </div>
@@ -1623,7 +1622,7 @@ function renderSettings(){
   let html='';
   try{
 
-  const statsOpen=state._statsOpen!==false;   // default open
+  const statsOpen=state._statsOpen!==false;  // default open
   const settingsOpen=state._settingsOpen===true; // default closed
   const sharedPeriod=state._statPeriod||7;
 
@@ -1666,6 +1665,9 @@ function renderSettings(){
     }
     html+=`</div>`;
   }
+
+  // ══ ROW 2: SETTINGS ══ (placeholder to be replaced)
+
 
   // ══ ROW 2: SETTINGS header bar — icon only, centered ══
   html+=`<div onclick="toggleFold('settings')" style="display:flex;align-items:center;justify-content:center;padding:14px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;border-bottom:1px solid rgba(255,255,255,0.05);margin-top:1px;opacity:${settingsOpen?'1':'0.4'};transition:opacity .2s">
@@ -1788,7 +1790,7 @@ function renderSettings(){
 
   // Pobierz
   html+=`<div style="display:flex;justify-content:center;margin-top:16px;margin-bottom:8px">
-    <button onclick="showExportSheet()" style="display:flex;align-items:center;gap:7px;background:none;border:none;color:rgba(255,255,255,0.7);font-size:11px;font-family:inherit;cursor:pointer;padding:10px 16px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;letter-spacing:.07em;text-transform:uppercase">
+    <button onclick="showExportSheet()" style="display:flex;align-items:center;gap:7px;background:none;border:none;color:rgba(255,255,255,0.75);font-size:11px;font-family:inherit;cursor:pointer;padding:10px 16px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;letter-spacing:.07em;text-transform:uppercase">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Pobierz
     </button>
