@@ -8,8 +8,8 @@
 <meta name="theme-color" content="#000000">
 <title>·</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='black'/><circle cx='50' cy='50' r='36' stroke='white' stroke-width='4' fill='none'/></svg>">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='black'/><circle cx='50' cy='50' r='36' stroke='white' stroke-width='4' fill='none'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='black'/><circle cx='50' cy='50' r='36' stroke='white' stroke-width='3.5' fill='none'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='black'/><circle cx='50' cy='50' r='36' stroke='white' stroke-width='3.5' fill='none'/></svg>">
 <style>
 :root{
   --bg:#000;--bg2:#0d0d0d;--tile:#181818;--tile2:#141414;--tile-border:rgba(255,255,255,0.07);
@@ -54,7 +54,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
 .habit-row.vanishing{overflow:hidden;pointer-events:none;opacity:0;max-height:0!important;padding-top:0!important;padding-bottom:0!important;margin:0!important;border-width:0!important;transition:opacity .26s ease,max-height .36s .08s cubic-bezier(.4,0,1,1),padding .36s .04s ease,margin .36s .04s ease,border-width .36s .04s ease!important;}
 .habit-row.temp-row .habit-name{color:rgba(120,235,120,1);font-weight:400;}
-.habit-name{font-size:21px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
+.habit-name{font-size:18px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;}
 .habit-value-input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.38);color:#ffffff;font-size:17px;font-family:inherit;outline:none;width:72px;text-align:right;padding:2px 0 4px;transition:border-color .2s;font-weight:600;}
 .habit-value-input:focus{border-bottom-color:var(--accent-border);}
 .habit-value-input::placeholder{color:transparent;}
@@ -106,14 +106,14 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 }
 .btn-ghost-zone{
   position:absolute;
-  width:76px;height:76px;border-radius:50%;
+  width:82px;height:82px;border-radius:50%;
   background:none;
   border:none;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;pointer-events:all;
   color:rgba(255,255,255,0.55);
   transition:all .2s cubic-bezier(.34,1.56,.64,1);
-  bottom:calc(var(--safe-bottom) + 46px);
+  bottom:calc(var(--safe-bottom) + 40px);
   transform:translateX(-50%);
 }
 #btnTime{ left:33.33%; }
@@ -280,7 +280,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .habit-detail-screen{position:fixed;inset:0;z-index:300;background:#000;transform:translateY(100%);transition:transform .38s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;overflow:hidden;}
 .habit-detail-screen.open{transform:translateY(0);}
 .hd-header{padding:calc(var(--safe-top)+2px) 20px 10px;display:flex;align-items:center;border:none;flex-shrink:0;}
-.hd-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:calc(var(--safe-top)+16px) 24px calc(var(--safe-bottom)+60px);scrollbar-width:none;}
+.hd-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:calc(var(--safe-top)+20px) 24px calc(var(--safe-bottom)+60px);scrollbar-width:none;}
 .hd-body::-webkit-scrollbar{display:none;}
 .hd-top-row{display:flex;align-items:center;gap:10px;padding:36px 0 30px;}
 .type-mini-btns{display:flex;gap:5px;flex-shrink:0;}
@@ -526,15 +526,15 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div class="bottom-bar">
     <!-- Left: time tracker — clock face as ring/outline -->
     <button class="btn-ghost-zone" id="btnTime" onclick="openTimeTracker()">
-      <svg width="56" height="56" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
-        <circle cx="22" cy="22" r="19" stroke-width="1.8"/>
-        <polyline points="22 13 22 22 27 26" stroke-width="1.8"/>
+      <svg width="60" height="60" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
+        <circle cx="22" cy="22" r="19" stroke-width="1.7"/>
+        <polyline points="22 13 22 22 27 26" stroke-width="1.7"/>
       </svg>
     </button>
-    <!-- Right: temp tasks — plain circle -->
+    <!-- Right: temp tasks — same clock icon as left -->
     <button class="btn-ghost-zone" id="btnTasks" onclick="openTempScreen()">
-      <svg width="56" height="56" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
-        <circle cx="22" cy="22" r="19" stroke-width="1.8"/>
+      <svg width="60" height="60" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
+        <circle cx="22" cy="22" r="19" stroke-width="1.7"/>
       </svg>
     </button>
   </div>
@@ -543,8 +543,8 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <!-- Left half top → extras/habits sheet -->
   <div style="position:fixed;top:0;left:0;width:50%;height:calc(var(--safe-top)+52px);z-index:50;cursor:pointer;" onclick="openSheet()"></div>
   <!-- Settings: full area below both buttons is tappable, 2-line icon centered -->
-  <button onclick="openSettings()" style="position:fixed;bottom:calc(var(--safe-bottom)+6px);left:50%;transform:translateX(-50%);z-index:9;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.1);border:none;color:rgba(255,255,255,0.6);cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  <button onclick="openSettings()" style="position:fixed;bottom:calc(var(--safe-bottom)+8px);left:50%;transform:translateX(-50%);z-index:9;width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.11);border:none;color:rgba(255,255,255,0.65);cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </button>
 </div>
 
@@ -559,7 +559,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 
 <!-- SETTINGS -->
 <div id="settings" class="screen" style="overflow:visible;display:flex;flex-direction:column;">
-  <div class="settings-scroll" id="settingsScroll" style="padding-top:calc(var(--safe-top)+20px)"></div>
+  <div class="settings-scroll" id="settingsScroll" style="padding-top:calc(var(--safe-top)+16px)"></div>
 </div>
 
 <!-- MONEY SCREEN -->
@@ -1631,25 +1631,25 @@ function renderSettings(){
     html+=`<button onclick="event.stopPropagation();setStatPeriod(7)" class="sector-pill${sharedPeriod===7?' active':''}" style="font-size:12px;padding:5px 14px">7</button>`;
     html+=`<button onclick="event.stopPropagation();setStatPeriod(30)" class="sector-pill${sharedPeriod===30?' active':''}" style="font-size:12px;padding:5px 14px">30</button>`;
     html+=`</div>`;
-    {const now_m=new Date();const mEntries=(state.moneyEntries||[]).filter(e=>{const d=new Date(e.date+'T00:00:00');return (now_m-d)/(1000*60*60*24)<=sharedPeriod;});const mTotal=mEntries.reduce((s,e)=>s+e.amount,0);if(mTotal>0){const mCats=state.moneyCategories||[];const mBycat={};mEntries.forEach(e=>{mBycat[e.catId]=(mBycat[e.catId]||0)+e.amount;});const mTotalStr=mTotal%1===0?Math.round(mTotal):mTotal.toFixed(2);html+='<div style="margin-bottom:10px;display:flex;align-items:baseline;gap:5px;flex-wrap:wrap">';html+='<span style="font-size:22px;font-weight:300;color:#fff;letter-spacing:-.02em">'+mTotalStr+'</span><span style="font-size:12px;color:rgba(255,255,255,0.3)">zł</span>';Object.entries(mBycat).sort((a,b)=>b[1]-a[1]).forEach(([cid,amt])=>{const cat=mCats.find(c=>c.id===cid);html+='<span style="font-size:12px;color:rgba(255,255,255,0.35);margin-left:6px">'+(cat?.name||'')+'&thinsp;'+(amt%1===0?Math.round(amt):amt.toFixed(2))+'</span>';});html+='</div>';}}
-    {const now_t=new Date();const tCats=state.timeCategories||[];let totalMins=0;const tByCat={};for(const[k,entries] of Object.entries(state.timeEntries||{})){const d=new Date(k);if((now_t-d)/(1000*60*60*24)>sharedPeriod)continue;for(const e of (entries||[])){if(e.empty||!e.blocks?.length)continue;const mins=e.blocks.length*15;tByCat[e.catId]=(tByCat[e.catId]||0)+mins;totalMins+=mins;}}if(totalMins>0){const tH=Math.floor(totalMins/60),tM=totalMins%60;html+='<div style="margin-bottom:10px;display:flex;align-items:baseline;gap:5px;flex-wrap:wrap">';html+='<span style="font-size:22px;font-weight:300;color:#fff;letter-spacing:-.02em">'+(tH>0?tH+'h':'')+(tM>0?' '+tM+'m':'')+'</span>';Object.entries(tByCat).sort((a,b)=>b[1]-a[1]).forEach(([cid,mins])=>{const cat=tCats.find(c=>c.id===cid);const hh=Math.floor(mins/60),m=mins%60;html+='<span style="font-size:12px;color:rgba(255,255,255,0.35);margin-left:6px">'+(cat?.name||'')+'&thinsp;'+(hh>0?hh+'h':'')+(m>0?' '+m+'m':'')+'</span>';});html+='</div>';}}
-    const now3=new Date();const days=[];
-    for(let i=sharedPeriod-1;i>=0;i--){const d=new Date(now3);d.setDate(now3.getDate()-i);days.push(fmtDate(d));}
+    const now3=new Date(); const days=[];
+    for(let i=sharedPeriod-1;i>=0;i--){ const d=new Date(now3); d.setDate(now3.getDate()-i); days.push(fmtDate(d)); }
     const activeHabits=state.habits.filter(h=>!h.archived&&days.some(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])));
     if(activeHabits.length){
-      const bySec={};activeHabits.forEach(h=>{if(!bySec[h.sectorId])bySec[h.sectorId]=[];bySec[h.sectorId].push(h);});
-      html+='<div style="display:flex;flex-direction:column;gap:7px">';
+      const bySec={};
+      activeHabits.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
+      html+='<div style="display:flex;flex-direction:column;gap:8px">';
       state.sectors.forEach(sec=>{
-        const hh=(bySec[sec.id]||[]).sort((a,b)=>(a.order||0)-(b.order||0));if(!hh.length)return;
-        if(state.sectors.length>1)html+=`<div style="font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:.06em;text-transform:uppercase;padding-top:4px">${sec.name}</div>`;
+        const hh=(bySec[sec.id]||[]).sort((a,b)=>(a.order||0)-(b.order||0));
+        if(!hh.length) return;
+        if(state.sectors.length>1) html+=`<div style="font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:.06em;text-transform:uppercase;padding-top:4px">${sec.name}</div>`;
         hh.forEach(h=>{
           const doneCount=days.filter(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])).length;
           html+='<div style="display:flex;align-items:center;gap:8px">';
-          html+='<span style="font-size:13px;font-weight:400;color:rgba(255,255,255,0.55);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+h.name+'</span>';
+          html+='<span style="font-size:13px;color:rgba(255,255,255,0.55);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+h.name+'</span>';
           html+='<div style="display:flex;gap:2px;flex-shrink:0">';
-          days.forEach(dk=>{const done=isDone(state.daily?.[dk]?.habits?.[h.id]);html+='<div style="width:5px;height:5px;border-radius:50%;background:'+(done?'rgba(61,221,101,0.8)':'rgba(255,255,255,0.08)')+'"></div>';});
+          days.forEach(dk=>{ const done=isDone(state.daily?.[dk]?.habits?.[h.id]); html+='<div style="width:5px;height:5px;border-radius:50%;background:'+(done?'rgba(61,221,101,0.8)':'rgba(255,255,255,0.08)')+'"></div>'; });
           html+='</div>';
-          html+='<span style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.25);min-width:20px;text-align:right">'+doneCount+'</span>';
+          html+='<span style="font-size:11px;color:rgba(255,255,255,0.25);min-width:20px;text-align:right">'+doneCount+'</span>';
           html+='</div>';
         });
       });
@@ -1783,10 +1783,9 @@ function renderSettings(){
   html+=`</div></div>`;
 
   // Pobierz
-  html+=`<div style="display:flex;justify-content:center;margin-top:20px;margin-bottom:8px">
-    <button onclick="showExportSheet()" style="background:rgba(255,255,255,0.1);border:none;color:rgba(255,255,255,0.85);cursor:pointer;padding:14px 28px;border-radius:14px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;font-family:inherit;font-weight:400">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Pobierz
+  html+=`<div style="display:flex;justify-content:center;margin-top:16px;margin-bottom:8px">
+    <button onclick="showExportSheet()" style="background:none;border:none;color:rgba(255,255,255,0.6);cursor:pointer;padding:10px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     </button>
   </div>`;
 
