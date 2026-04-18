@@ -65,19 +65,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 /* DONE STATE */
 .done-state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .5s cubic-bezier(.4,0,.2,1);}
 .done-state.show{opacity:1;}
-/* PROGRESS BAR */
-#progressBar{
-  position:fixed;
-  top:calc(var(--safe-top) + 8px);
-  left:50%;transform:translateX(-50%);
-  z-index:50;pointer-events:none;
-  opacity:0;transition:opacity .4s;
-  width:52px;height:52px;
-}
-#progressBar.visible{opacity:1;}
-@keyframes pbShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
-@keyframes pbPop{0%{transform:scaleY(1);}40%{transform:scaleY(1.6);}70%{transform:scaleY(0.85);}100%{transform:scaleY(1);}}
-.pb-fill.pop{animation:pbPop .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes pbPop{0%{transform:scaleY(1);}}
 @keyframes toastIn{0%{opacity:0;transform:translateX(-50%) translateY(10px);}100%{opacity:1;transform:translateX(-50%) translateY(0);}}
 @keyframes toastOut{0%{opacity:1;}100%{opacity:0;transform:translateX(-50%) translateY(8px);}}
 @keyframes doneIn{0%{opacity:0;transform:translateX(-40px) scale(.88);}60%{opacity:1;transform:translateX(4px) scale(1.02);}80%{transform:translateX(-2px) scale(.99);}100%{opacity:1;transform:translateX(0) scale(1);}}
@@ -111,7 +99,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   border:none;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;pointer-events:all;
-  color:#ffffff;
+  color:rgba(255,255,255,0.38);
   transition:all .2s cubic-bezier(.34,1.56,.64,1);
   bottom:calc(var(--safe-bottom) + 44px);
   transform:translateX(-50%);
@@ -280,7 +268,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .habit-detail-screen{position:fixed;inset:0;z-index:300;background:#000;transform:translateY(100%);transition:transform .38s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;overflow:hidden;}
 .habit-detail-screen.open{transform:translateY(0);}
 .hd-header{padding:calc(var(--safe-top)+2px) 20px 10px;display:flex;align-items:center;border:none;flex-shrink:0;}
-.hd-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:calc(var(--safe-top)+8px) 24px calc(var(--safe-bottom)+60px);scrollbar-width:none;}
+.hd-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:calc(var(--safe-top)+20px) 24px calc(var(--safe-bottom)+60px);scrollbar-width:none;}
 .hd-body::-webkit-scrollbar{display:none;}
 .hd-top-row{display:flex;align-items:center;gap:10px;padding:36px 0 30px;}
 .type-mini-btns{display:flex;gap:5px;flex-shrink:0;}
@@ -380,8 +368,8 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 }
 .tt-block:active{opacity:.7;}
 .tt-block.selecting{background:rgba(61,221,101,0.65)!important;}
-/* Filled block: black */
-.tt-block.filled{background:#000;border:none;pointer-events:all;cursor:pointer;overflow:visible;}
+/* Filled block: habit tile background */
+.tt-block.filled{background:rgba(255,255,255,0.32);border:none;pointer-events:all;cursor:pointer;overflow:visible;}
 .tt-block.filled:active{opacity:.7;}
 .tt-block.filled::after{display:none;}
 /* Hour ruler tick — appears at bottom of every hour row */
@@ -508,14 +496,6 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
   </div>
-  <div id="progressBar">
-    <svg id="pbCircle" width="52" height="52" viewBox="0 0 52 52">
-      <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3.5"/>
-      <circle id="pbArc" cx="26" cy="26" r="22" fill="none" stroke="#2a7a45" stroke-width="3.5"
-        stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="138.2"
-        transform="rotate(-90 26 26)" style="transition:stroke-dashoffset .55s cubic-bezier(.34,1.2,.64,1)"/>
-    </svg>
-  </div>
   <!-- Habits -->
   <div class="habits-scroll">
     <div class="habits-inner">
@@ -542,10 +522,10 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <!-- Left half top → extras/habits sheet -->
   <div style="position:fixed;top:0;left:0;width:50%;height:calc(var(--safe-top)+52px);z-index:50;cursor:pointer;" onclick="openSheet()"></div>
   <!-- Settings: full area below both buttons is tappable, 2-line icon centered -->
-  <div onclick="openSettings()" style="position:fixed;bottom:0;left:0;right:0;height:calc(var(--safe-bottom)+68px);z-index:9;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding-bottom:calc(var(--safe-bottom)+8px);pointer-events:none">
-      <span style="width:28px;height:2.5px;border-radius:1.5px;background:rgba(255,255,255,0.18);display:block"></span>
-      <span style="width:28px;height:2.5px;border-radius:1.5px;background:rgba(255,255,255,0.18);display:block"></span>
+  <div onclick="openSettings()" style="position:fixed;bottom:calc(var(--safe-bottom)+18px);left:50%;transform:translateX(-50%);width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.13);z-index:9;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:none">
+      <span style="width:20px;height:2px;border-radius:1px;background:rgba(255,255,255,0.6);display:block"></span>
+      <span style="width:20px;height:2px;border-radius:1px;background:rgba(255,255,255,0.6);display:block"></span>
     </div>
   </div>
 </div>
@@ -830,19 +810,11 @@ function renderHome(){
   habits.sort((a,b)=>(a.order||0)-(b.order||0));
   const remaining=habits.filter(h=>!isDone(dd.habits[h.id]));
 
-  // Update progress bar
+  // Update progress bar (removed)
   const _total=habits.length, _done=habits.length-remaining.length;
-  const pb=document.getElementById('progressBar');
-  if(pb&&_total>0){
-    const pct=Math.round(_done/_total*100);
-    const arc=document.getElementById('pbArc');
-    if(arc){ const circ=138.2; arc.style.strokeDashoffset=String(circ-(circ*pct/100)); }
-    pb.classList.add('visible');
-  }
   if(remaining.length===0){
     Array.from(hList.children).forEach(r=>{ r.style.maxHeight=r.offsetHeight+'px'; r.classList.add('vanishing'); });
     setTimeout(()=>{ hList.innerHTML=''; ds.classList.add('show'); },400);
-    pb&&pb.classList.remove('visible');
     return;
   }
   ds.classList.remove('show');
@@ -1658,36 +1630,90 @@ function renderSettings(){
       });
       html+='</div>';
     } else {
-      html+='<div style="color:rgba(255,255,255,0.15);font-size:12px;text-align:center;padding:4px 0">—</div>';
+      html+='<div style="color:rgba(255,255,255,0.12);font-size:12px;text-align:center;padding:4px 0">—</div>';
     }
 
-    // Time stats
-    const _tStats=getTimeStats(sharedPeriod==='week'||sharedPeriod===7?'week':'month');
+    // ── TIME STATS: pie chart ──
+    const _tStats=getTimeStats(sharedPeriod===7?'week':'month');
     const _tCats=state.timeCategories||[];
     const _tTotal=Object.values(_tStats).reduce((a,b)=>a+b,0);
     if(_tTotal>0){
-      html+='<div style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">';
-      html+='<div style="font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;text-align:center">Czas</div>';
+      html+='<div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06)">';
+      html+='<div style="font-size:10px;color:rgba(255,255,255,0.22);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;text-align:center">Czas</div>';
+      // Build pie chart SVG
+      const _tPal=['#7dd3fc','#f9a8d4','#fdba74','#c4b5fd','#6ee7b7','#fde68a','#fca5a5','#67e8f9'];
       const _tSorted=Object.entries(_tStats).sort((a,b)=>b[1]-a[1]);
-      _tSorted.forEach(([cid,mins])=>{
+      const R=52, cx=60, cy=60, size=120;
+      let startAngle=-Math.PI/2;
+      let slices='';
+      _tSorted.forEach(([cid,mins],i)=>{
+        const angle=(mins/_tTotal)*Math.PI*2;
+        const endAngle=startAngle+angle;
+        const x1=cx+R*Math.cos(startAngle), y1=cy+R*Math.sin(startAngle);
+        const x2=cx+R*Math.cos(endAngle),   y2=cy+R*Math.sin(endAngle);
+        const large=angle>Math.PI?1:0;
         const cat=_tCats.find(c=>c.id===cid);
+        const col=cat?.color||_tPal[i%_tPal.length];
+        slices+=`<path d="M${cx},${cy} L${x1},${y1} A${R},${R} 0 ${large},1 ${x2},${y2} Z" fill="${col}" opacity="0.82"/>`;
+        startAngle=endAngle;
+      });
+      html+=`<div style="display:flex;align-items:center;gap:18px;padding:0 4px">`;
+      html+=`<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex-shrink:0">${slices}</svg>`;
+      html+=`<div style="display:flex;flex-direction:column;gap:7px;flex:1">`;
+      _tSorted.forEach(([cid,mins],i)=>{
+        const cat=_tCats.find(c=>c.id===cid);
+        const col=cat?.color||_tPal[i%_tPal.length];
         const h=Math.floor(mins/60),m=mins%60;
         const str=h>0?(m>0?h+'h '+m+'m':h+'h'):m+'m';
-        html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">';
-        html+='<span style="font-size:14px;min-width:24px;text-align:center">'+(cat?.name||'?')+'</span>';
-        html+='<div style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden"><div style="height:3px;width:'+Math.round(mins/_tTotal*100)+'%;background:rgba(255,255,255,0.45);border-radius:2px"></div></div>';
-        html+='<span style="font-size:12px;color:rgba(255,255,255,0.5);min-width:44px;text-align:right">'+str+'</span>';
-        html+='</div>';
+        const pct=Math.round(mins/_tTotal*100);
+        html+=`<div style="display:flex;align-items:center;gap:8px">`;
+        html+=`<span style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></span>`;
+        html+=`<span style="font-size:15px;flex-shrink:0">${cat?.name||'?'}</span>`;
+        html+=`<span style="font-size:12px;color:rgba(255,255,255,0.35);margin-left:auto">${str}</span>`;
+        html+=`</div>`;
       });
+      html+=`</div></div>`;
       html+='</div>';
     }
 
-    // Money stats
-    const _mHtml=renderMoneySettings();
-    if(_mHtml&&!_mHtml.includes('text-align:center;color:rgba(255,255,255,0.18)')){
-      html+='<div style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">';
-      html+='<div style="font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;text-align:center">Money</div>';
-      html+=_mHtml;
+    // ── MONEY STATS: daily list ──
+    const _mPeriod=sharedPeriod;
+    const _now2=new Date();
+    const _mEntries=(state.moneyEntries||[]).filter(e=>{
+      const d=new Date(e.date+'T00:00:00');
+      return (_now2-d)/(1000*60*60*24)<=_mPeriod;
+    }).sort((a,b)=>b.date.localeCompare(a.date));
+    if(_mEntries.length>0){
+      html+='<div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06)">';
+      html+='<div style="font-size:10px;color:rgba(255,255,255,0.22);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;text-align:center">Money</div>';
+      const _mTotal=_mEntries.reduce((s,e)=>s+e.amount,0);
+      const _mTotalStr=_mTotal%1===0?Math.round(_mTotal):_mTotal.toFixed(2);
+      html+=`<div style="font-size:28px;font-weight:200;color:#fff;letter-spacing:-.03em;text-align:center;margin-bottom:14px">${_mTotalStr} <span style="font-size:16px;opacity:.35">zł</span></div>`;
+      // Group by date
+      const _byDate={};
+      _mEntries.forEach(e=>{ if(!_byDate[e.date]) _byDate[e.date]=[]; _byDate[e.date].push(e); });
+      Object.entries(_byDate).forEach(([date,entries])=>{
+        const d=new Date(date+'T00:00:00');
+        const dayNames=['Nd','Pn','Wt','Śr','Cz','Pt','So'];
+        const dayStr=dayNames[d.getDay()]+' '+d.getDate()+'.'+String(d.getMonth()+1).padStart(2,'0');
+        const dayTotal=entries.reduce((s,e)=>s+e.amount,0);
+        const dayTotalStr=dayTotal%1===0?Math.round(dayTotal):dayTotal.toFixed(2);
+        html+=`<div style="margin-bottom:10px">`;
+        html+=`<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">`;
+        html+=`<span style="font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:.04em">${dayStr}</span>`;
+        html+=`<span style="font-size:12px;color:rgba(255,255,255,0.25)">${dayTotalStr} zł</span>`;
+        html+=`</div>`;
+        entries.forEach(e=>{
+          const cat=(state.moneyCategories||[]).find(c=>c.id===e.catId);
+          const amtStr=e.amount%1===0?Math.round(e.amount):e.amount.toFixed(2);
+          html+=`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid rgba(255,255,255,0.04)">`;
+          html+=`<span style="font-size:15px;flex-shrink:0">${cat?.name||''}</span>`;
+          html+=`<span style="font-size:13px;color:rgba(255,255,255,0.4);flex:1">${e.note||''}</span>`;
+          html+=`<span style="font-size:14px;color:#fff;font-weight:300">${amtStr}</span>`;
+          html+=`</div>`;
+        });
+        html+=`</div>`;
+      });
       html+='</div>';
     }
 
@@ -1818,9 +1844,8 @@ function renderSettings(){
 
   // Pobierz
   html+=`<div style="display:flex;justify-content:center;margin-top:16px;margin-bottom:8px">
-    <button onclick="showExportSheet()" style="background:none;border:none;color:#ffffff;cursor:pointer;padding:14px 28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-family:inherit">
+    <button onclick="showExportSheet()" style="background:none;border:none;color:#ffffff;cursor:pointer;padding:14px 28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Pobierz
     </button>
   </div>`;
 
@@ -2531,12 +2556,58 @@ function buildCSVRows(){
 }
 
 function exportCSV(){
-  const rows=buildCSVRows();
-  const csv=rows.map(r=>r.map(cell=>`"${String(cell||'').replace(/"/g,'""')}`).join(',')).join('\n');
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const SEP='\t';
+  const rows=[];
+
+  // ── HABITS ──
+  rows.push(['# HABITS']);
+  rows.push(['date','sector','habit','value']);
+  for(const[k,data]of Object.entries(state.daily)){
+    for(const[hId,val]of Object.entries(data.habits||{})){
+      if(!isDone(val)) continue;
+      const h=state.habits.find(x=>x.id===hId);
+      const sec=state.sectors.find(s=>s.id===h?.sectorId);
+      rows.push([k, sec?.name||'', h?.name||hId, val===true?'1':String(val)]);
+    }
+  }
+
+  rows.push([]);
+
+  // ── MONEY ──
+  rows.push(['# MONEY']);
+  rows.push(['date','day','category','amount','note']);
+  const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const sortedMoney=[...(state.moneyEntries||[])].sort((a,b)=>a.date.localeCompare(b.date));
+  for(const e of sortedMoney){
+    const cat=(state.moneyCategories||[]).find(c=>c.id===e.catId);
+    const d=new Date(e.date+'T00:00:00');
+    rows.push([e.date, dayNames[d.getDay()], cat?.name||'', e.amount, e.note||'']);
+  }
+
+  rows.push([]);
+
+  // ── TIME (sum per category per day) ──
+  rows.push(['# TIME']);
+  rows.push(['date','category','minutes','hours_decimal']);
+  for(const[k,entries]of Object.entries(state.timeEntries||{})){
+    const byCat={};
+    for(const e of entries){
+      if(e.empty) continue;
+      const catId=e.catId||'_';
+      if(!byCat[catId]) byCat[catId]=0;
+      byCat[catId]+=(e.blocks?.length||0)*15;
+    }
+    for(const[catId,mins]of Object.entries(byCat)){
+      const cat=(state.timeCategories||[]).find(c=>c.id===catId);
+      rows.push([k, cat?.name||catId, mins, (mins/60).toFixed(2)]);
+    }
+  }
+
+  const tsv=rows.map(r=>r.map(cell=>String(cell==null?'':cell).replace(/\t/g,' ')).join(SEP)).join('\n');
+  const blob=new Blob(['\uFEFF'+tsv],{type:'text/tab-separated-values;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url; a.download=`Raport ${today()}.csv`; a.click(); URL.revokeObjectURL(url);
+  a.href=url; a.download=`data_${today()}.tsv`; a.click(); URL.revokeObjectURL(url);
 }
 
 function showExportSheet(){
