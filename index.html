@@ -54,7 +54,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
 .habit-row.vanishing{overflow:hidden;pointer-events:none;opacity:0;max-height:0!important;padding-top:0!important;padding-bottom:0!important;margin:0!important;border-width:0!important;transition:opacity .26s ease,max-height .36s .08s cubic-bezier(.4,0,1,1),padding .36s .04s ease,margin .36s .04s ease,border-width .36s .04s ease!important;}
 .habit-row.temp-row .habit-name{color:rgba(120,235,120,1);font-weight:500;}
-.habit-name{font-size:18px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;}
+.habit-name{font-size:22px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
 .habit-value-input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.38);color:#ffffff;font-size:17px;font-family:inherit;outline:none;width:72px;text-align:right;padding:2px 0 4px;transition:border-color .2s;font-weight:600;}
 .habit-value-input:focus{border-bottom-color:var(--accent-border);}
 .habit-value-input::placeholder{color:transparent;}
@@ -106,14 +106,14 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 }
 .btn-ghost-zone{
   position:absolute;
-  width:66px;height:66px;border-radius:50%;
+  width:100px;height:100px;border-radius:50%;
   background:none;
   border:none;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;pointer-events:all;
   color:#ffffff;
   transition:all .2s cubic-bezier(.34,1.56,.64,1);
-  bottom:calc(var(--safe-bottom) + 52px);
+  bottom:calc(var(--safe-bottom) + 36px);
   transform:translateX(-50%);
 }
 #btnTime{ left:33.33%; }
@@ -526,13 +526,13 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div class="bottom-bar">
     <!-- Left: time tracker — clock face as ring/outline -->
     <button class="btn-ghost-zone" id="btnTime" onclick="openTimeTracker()">
-      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
+      <svg width="70" height="70" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
         <circle cx="22" cy="22" r="19" stroke-width="2"/>
       </svg>
     </button>
     <!-- Right: temp tasks — same clock icon as left -->
     <button class="btn-ghost-zone" id="btnTasks" onclick="openTempScreen()">
-      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
+      <svg width="70" height="70" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
         <circle cx="22" cy="22" r="19" stroke-width="2"/>
       </svg>
     </button>
@@ -641,13 +641,13 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
     </div>
   </div>
   <!-- bottom row: back left, all-tasks right — same size as + button -->
-  <button onclick="closeTempScreen()" style="position:absolute;bottom:36px;left:18px;z-index:3;width:72px;height:72px;border-radius:50%;background:none;border:none;color:var(--accent);font-size:36px;font-weight:300;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;line-height:1">‹</button>
-  <button onclick="openAllTasksView()" style="position:absolute;bottom:36px;right:18px;z-index:3;width:72px;height:72px;border-radius:50%;background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;touch-action:manipulation">
-    <span style="width:20px;height:1.5px;background:currentColor;border-radius:1px;display:block"></span>
-    <span style="width:20px;height:1.5px;background:currentColor;border-radius:1px;display:block"></span>
+  <button onclick="closeTempScreen()" style="position:absolute;bottom:36px;left:18px;z-index:3;width:96px;height:96px;border-radius:50%;background:none;border:none;color:var(--accent);font-size:52px;font-weight:300;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;line-height:1">‹</button>
+  <button onclick="openAllTasksView()" style="position:absolute;bottom:36px;right:18px;z-index:3;width:96px;height:96px;border-radius:50%;background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;touch-action:manipulation">
+    <span style="width:28px;height:2px;background:currentColor;border-radius:1px;display:block"></span>
+    <span style="width:28px;height:2px;background:currentColor;border-radius:1px;display:block"></span>
   </button>
-  <button ontouchstart="openTempAddOverlayTouch(event)" onclick="openTempAddOverlay()" style="position:absolute;bottom:36px;left:50%;transform:translateX(-50%);width:72px;height:72px;border-radius:50%;background:rgba(96,165,250,0.18);border:none;color:#60a5fa;display:flex;align-items:center;justify-content:center;cursor:pointer">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  <button ontouchstart="openTempAddOverlayTouch(event)" onclick="openTempAddOverlay()" style="position:absolute;bottom:36px;left:50%;transform:translateX(-50%);width:96px;height:96px;border-radius:50%;background:rgba(96,165,250,0.18);border:none;color:#60a5fa;display:flex;align-items:center;justify-content:center;cursor:pointer">
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   </button>
 </div>
 
