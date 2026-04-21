@@ -54,7 +54,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
 .habit-row.vanishing{overflow:hidden;pointer-events:none;opacity:0;max-height:0!important;padding-top:0!important;padding-bottom:0!important;margin:0!important;border-width:0!important;transition:opacity .26s ease,max-height .36s .08s cubic-bezier(.4,0,1,1),padding .36s .04s ease,margin .36s .04s ease,border-width .36s .04s ease!important;}
 .habit-row.temp-row .habit-name{color:rgba(120,235,120,1);font-weight:500;}
-.habit-name{font-size:22px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
+.habit-name{font-size:21px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
 .habit-value-input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.38);color:#ffffff;font-size:17px;font-family:inherit;outline:none;width:72px;text-align:right;padding:2px 0 4px;transition:border-color .2s;font-weight:600;}
 .habit-value-input:focus{border-bottom-color:var(--accent-border);}
 .habit-value-input::placeholder{color:transparent;}
@@ -111,7 +111,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   border:none;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;pointer-events:all;
-  color:#ffffff;
+  color:rgba(255,255,255,0.38);
   transition:all .2s cubic-bezier(.34,1.56,.64,1);
   bottom:calc(var(--safe-bottom) + 44px);
   transform:translateX(-50%);
@@ -280,7 +280,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .habit-detail-screen{position:fixed;inset:0;z-index:300;background:#000;transform:translateY(100%);transition:transform .38s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;overflow:hidden;}
 .habit-detail-screen.open{transform:translateY(0);}
 .hd-header{padding:calc(var(--safe-top)+2px) 20px 10px;display:flex;align-items:center;border:none;flex-shrink:0;}
-.hd-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:calc(var(--safe-top)+8px) 24px calc(var(--safe-bottom)+60px);scrollbar-width:none;}
+.hd-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:calc(var(--safe-top)+56px) 24px calc(var(--safe-bottom)+60px);scrollbar-width:none;}
 .hd-body::-webkit-scrollbar{display:none;}
 .hd-top-row{display:flex;align-items:center;gap:10px;padding:36px 0 30px;}
 .type-mini-btns{display:flex;gap:5px;flex-shrink:0;}
@@ -526,13 +526,13 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div class="bottom-bar">
     <!-- Left: time tracker — clock face as ring/outline -->
     <button class="btn-ghost-zone" id="btnTime" onclick="openTimeTracker()">
-      <svg width="56" height="56" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
+      <svg width="72" height="72" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
         <circle cx="22" cy="22" r="19" stroke-width="2"/>
       </svg>
     </button>
     <!-- Right: temp tasks — same clock icon as left -->
     <button class="btn-ghost-zone" id="btnTasks" onclick="openTempScreen()">
-      <svg width="56" height="56" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
+      <svg width="72" height="72" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
         <circle cx="22" cy="22" r="19" stroke-width="2"/>
       </svg>
     </button>
@@ -1661,34 +1661,101 @@ function renderSettings(){
       html+='<div style="color:rgba(255,255,255,0.15);font-size:12px;text-align:center;padding:4px 0">—</div>';
     }
 
-    // Time stats
+    // ── TIME STATS — mini donut ──
     const _tStats=getTimeStats(sharedPeriod==='week'||sharedPeriod===7?'week':'month');
     const _tCats=state.timeCategories||[];
     const _tTotal=Object.values(_tStats).reduce((a,b)=>a+b,0);
     if(_tTotal>0){
-      html+='<div style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">';
-      html+='<div style="font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;text-align:center">Czas</div>';
+      html+='<div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06)">';
+      // Build donut SVG
       const _tSorted=Object.entries(_tStats).sort((a,b)=>b[1]-a[1]);
-      _tSorted.forEach(([cid,mins])=>{
+      const R=38, r=24, cx=48, cy=48;
+      const circ=2*Math.PI*R;
+      let offset=0;
+      const FALLBACK_COLORS=['#3ddd65','#60a5fa','#f59e0b','#f87171','#a78bfa','#34d399'];
+      let donutArcs='';
+      _tSorted.forEach(([cid,mins],idx)=>{
         const cat=_tCats.find(c=>c.id===cid);
-        const h=Math.floor(mins/60),m=mins%60;
-        const str=h>0?(m>0?h+'h '+m+'m':h+'h'):m+'m';
-        html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">';
-        html+='<span style="font-size:14px;min-width:24px;text-align:center">'+(cat?.name||'?')+'</span>';
-        html+='<div style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden"><div style="height:3px;width:'+Math.round(mins/_tTotal*100)+'%;background:rgba(255,255,255,0.45);border-radius:2px"></div></div>';
-        html+='<span style="font-size:12px;color:rgba(255,255,255,0.5);min-width:44px;text-align:right">'+str+'</span>';
-        html+='</div>';
+        const pct=mins/_tTotal;
+        const dash=pct*circ;
+        const gap=circ-dash;
+        const color=cat?.color||FALLBACK_COLORS[idx%FALLBACK_COLORS.length];
+        donutArcs+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${color}" stroke-width="${R-r}" stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}" stroke-dashoffset="${(-offset*circ).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;
+        offset+=pct;
       });
-      html+='</div>';
+      // Total hours label
+      const totalH=Math.floor(_tTotal/60), totalM=_tTotal%60;
+      const totalStr=totalH>0?(totalM>0?totalH+'h '+totalM+'m':totalH+'h'):totalM+'m';
+      // Legend rows
+      let legend='';
+      _tSorted.forEach(([cid,mins],idx)=>{
+        const cat=_tCats.find(c=>c.id===cid);
+        const hh=Math.floor(mins/60),m=mins%60;
+        const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
+        const color=cat?.color||FALLBACK_COLORS[idx%FALLBACK_COLORS.length];
+        legend+=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">`;
+        legend+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
+        legend+=`<span style="font-size:14px;flex-shrink:0">${cat?.name||'?'}</span>`;
+        legend+=`<span style="font-size:12px;color:rgba(255,255,255,0.4)">${str}</span>`;
+        legend+=`</div>`;
+      });
+      html+=`<div style="display:flex;align-items:center;gap:16px;justify-content:center">`;
+      html+=`<div style="position:relative;flex-shrink:0"><svg width="96" height="96" viewBox="0 0 96 96">`+
+        `<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`+
+        donutArcs+`</svg>`+
+        `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;pointer-events:none">`+
+        `<span style="font-size:11px;font-weight:600;color:#fff;letter-spacing:-.01em">${totalStr}</span>`+
+        `</div></div>`;
+      html+=`<div style="display:flex;flex-direction:column">${legend}</div>`;
+      html+=`</div></div>`;
     }
 
-    // Money stats
-    const _mHtml=renderMoneySettings();
-    if(_mHtml&&!_mHtml.includes('text-align:center;color:rgba(255,255,255,0.18)')){
-      html+='<div style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">';
-      html+='<div style="font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;text-align:center">Money</div>';
-      html+=_mHtml;
-      html+='</div>';
+    // ── MONEY STATS — mini donut ──
+    const _mEntries=(state.moneyEntries||[]).filter(e=>{
+      const d=new Date(e.date+'T00:00:00'); const now=new Date();
+      return (now-d)/(1000*60*60*24)<=(sharedPeriod||7);
+    });
+    if(_mEntries.length){
+      const _mCats=state.moneyCategories||[];
+      const byCat={};
+      _mEntries.forEach(e=>{ byCat[e.catId]=(byCat[e.catId]||0)+Number(e.amount||0); });
+      const _mTotal=Object.values(byCat).reduce((a,b)=>a+b,0);
+      if(_mTotal>0){
+        html+='<div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06)">';
+        const _mSorted=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+        const R2=38,r2=24,cx2=48,cy2=48,circ2=2*Math.PI*R2;
+        const FB2=['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#a855f7'];
+        let offset2=0; let arcs2='';
+        _mSorted.forEach(([cid,amt],idx)=>{
+          const cat=_mCats.find(c=>c.id===cid);
+          const pct=amt/_mTotal;
+          const dash=pct*circ2,gap=circ2-dash;
+          const color=cat?.color||FB2[idx%FB2.length];
+          arcs2+=`<circle cx="${cx2}" cy="${cy2}" r="${R2}" fill="none" stroke="${color}" stroke-width="${R2-r2}" stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}" stroke-dashoffset="${(-offset2*circ2).toFixed(2)}" transform="rotate(-90 ${cx2} ${cy2})"/>`;
+          offset2+=pct;
+        });
+        const totAmtStr=_mTotal%1===0?_mTotal.toString():_mTotal.toFixed(1);
+        let leg2='';
+        _mSorted.forEach(([cid,amt],idx)=>{
+          const cat=_mCats.find(c=>c.id===cid);
+          const color=cat?.color||FB2[idx%FB2.length];
+          const dispAmt=amt%1===0?amt.toString():amt.toFixed(1);
+          leg2+=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">`;
+          leg2+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
+          leg2+=`<span style="font-size:13px;flex:1;color:rgba(255,255,255,0.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px">${cat?.name||'?'}</span>`;
+          leg2+=`<span style="font-size:12px;color:rgba(255,255,255,0.4)">${dispAmt}</span>`;
+          leg2+=`</div>`;
+        });
+        html+=`<div style="display:flex;align-items:center;gap:16px;justify-content:center">`;
+        html+=`<div style="position:relative;flex-shrink:0"><svg width="96" height="96" viewBox="0 0 96 96">`+
+          `<circle cx="${cx2}" cy="${cy2}" r="${R2}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R2-r2}"/>`+
+          arcs2+`</svg>`+
+          `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">`+
+          `<span style="font-size:11px;font-weight:600;color:#fff">${totAmtStr}</span>`+
+          `</div></div>`;
+        html+=`<div style="display:flex;flex-direction:column">${leg2}</div>`;
+        html+=`</div></div>`;
+      }
     }
 
     html+=`</div>`;
@@ -2451,47 +2518,25 @@ function updateHtDuration(){
 /* ── EXPORT CSV ── */
 function buildCSVRows(){
   const rows=[];
-  // ── NAWYKI (tylko wykonane) ──
-  rows.push(['=== NAWYKI ===','','','']);
-  rows.push(['Data','Sektor','Habit','Wartość']);
-  for(const[k,data]of Object.entries(state.daily)){
+  // ── NAWYKI ──
+  rows.push(['data','sektor','habit','wartosc']);
+  for(const[k,data]of Object.entries(state.daily).sort()){
     for(const[hId,val]of Object.entries(data.habits||{})){
       if(!isDone(val)) continue;
       const h=state.habits.find(x=>x.id===hId);
       const sec=state.sectors.find(s=>s.id===h?.sectorId);
-      rows.push([k,sec?.name||'',h?.name||hId,val===true?'✓':String(val)]);
+      rows.push([k,sec?.name||'',h?.name||hId,val===true?1:String(val)]);
     }
     for(const[eId,val]of Object.entries(data.extras||{})){
       if(!isDone(val)) continue;
       const e=(state.extraStats||[]).find(x=>x.id===eId);
-      rows.push([k,'extra',e?.name||eId,val===true?'✓':String(val)]);
+      rows.push([k,'extra',e?.name||eId,val===true?1:String(val)]);
     }
   }
   rows.push(['','','','']);
-  // ── CZAS — podsumowanie wg kategorii ──
-  rows.push(['=== CZAS — KATEGORIE ===','','','','']);
-  rows.push(['Data','Kategoria','Czas (min)','Czas','Zadania']);
-  for(const[k,entries]of Object.entries(state.timeEntries||{})){
-    const byCat={};
-    for(const e of entries){
-      if(e.empty) continue;
-      const catId=e.catId||'_';
-      if(!byCat[catId]) byCat[catId]={mins:0,labels:[]};
-      byCat[catId].mins+=(e.blocks?.length||0)*15;
-      if(e.label&&!byCat[catId].labels.includes(e.label)) byCat[catId].labels.push(e.label);
-    }
-    for(const[catId,{mins,labels}]of Object.entries(byCat)){
-      const cat=(state.timeCategories||[]).find(c=>c.id===catId);
-      const hh=Math.floor(mins/60),m=mins%60;
-      const dur=hh>0?`${hh}h${m>0?' '+m+'m':''}`:m+'m';
-      rows.push([k,cat?.name||catId,mins,dur,labels.join(', ')]);
-    }
-  }
-  rows.push(['','']);
-  // ── CZAS — szczegóły wpisów ──
-  rows.push(['=== CZAS — SZCZEGÓŁY ===','','','','','']);
-  rows.push(['Data','Kategoria','Zadanie','Od','Do','Min']);
-  for(const[k,entries]of Object.entries(state.timeEntries||{})){
+  // ── CZAS ──
+  rows.push(['data','kategoria','zadanie','od','do','minuty']);
+  for(const[k,entries]of Object.entries(state.timeEntries||{}).sort()){
     for(const e of entries){
       if(e.empty) continue;
       const cat=(state.timeCategories||[]).find(c=>c.id===e.catId);
@@ -2504,39 +2549,35 @@ function buildCSVRows(){
       rows.push([k,cat?.name||'',e.label||'',tStart,tEnd,mins]);
     }
   }
-  rows.push(['','']);
-  // ── TASKS (wszystkie: aktywne + wykonane) ──
-  rows.push(['=== TASKS ===','','','']);
-  rows.push(['Status','Data','Sektor','Nazwa']);
-  for(const t of (state.tempTasks||[])){
+  rows.push(['','','','','','']);
+  // ── TASKS ──
+  rows.push(['data','sektor','nazwa']);
+  const allTasks=[
+    ...(state.doneTasks||[]).map(t=>({...t,date:t.doneDate||''}))
+  ].sort((a,b)=>a.date.localeCompare(b.date));
+  for(const t of allTasks){
     const sec=state.sectors.find(s=>s.id===t.sectorId);
-    rows.push(['aktywne',t.created||'',sec?.name||'',t.name||'']);
+    rows.push([t.date,sec?.name||'',t.name||'']);
   }
-  for(const t of (state.doneTasks||[])){
-    const sec=state.sectors.find(s=>s.id===t.sectorId);
-    rows.push(['wykonane',t.doneDate||'',sec?.name||'',t.name||'']);
-  }
-  rows.push(['','']);
-  // ── MONEY ──
-  rows.push(['=== WYDATKI ===','','','']);
-  rows.push(['Data','Dzień','Kategoria','Kwota','Notatka']);
-  const dayNames=['Nd','Pn','Wt','Śr','Cz','Pt','So'];
+  rows.push(['','','']);
+  // ── WYDATKI ──
+  rows.push(['data','kategoria','kwota','notatka']);
   const sortedMoney=[...(state.moneyEntries||[])].sort((a,b)=>a.date.localeCompare(b.date));
   for(const e of sortedMoney){
     const cat=(state.moneyCategories||[]).find(c=>c.id===e.catId);
-    const d=new Date(e.date+'T00:00:00');
-    rows.push([e.date,dayNames[d.getDay()],cat?.name||'',e.amount,e.note||'']);
+    rows.push([e.date,cat?.name||'',e.amount,e.note||'']);
   }
   return rows;
 }
 
-function exportCSV(){
+function exportCSV(sep){
+  sep=sep||',';
   const rows=buildCSVRows();
-  const csv=rows.map(r=>r.map(cell=>`"${String(cell||'').replace(/"/g,'""')}`).join(',')).join('\n');
+  const csv=rows.map(r=>r.map(cell=>`"${String(cell===null||cell===undefined?'':cell).replace(/"/g,'""')}"`).join(sep)).join('\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url; a.download=`Raport ${today()}.csv`; a.click(); URL.revokeObjectURL(url);
+  a.href=url; a.download=`dane ${today()}.csv`; a.click(); URL.revokeObjectURL(url);
 }
 
 function showExportSheet(){
@@ -2547,7 +2588,12 @@ function showExportSheet(){
   ov.style.cssText='position:fixed;inset:0;z-index:700;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)';
   ov.innerHTML=`<div style="width:100%;max-width:480px;background:#111;border-radius:24px 24px 0 0;padding:20px 24px calc(env(safe-area-inset-bottom,20px)+24px);box-sizing:border-box">
     <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 20px"></div>
-    <button onclick="exportCSV();document.getElementById('exportSheet').remove()" style="width:100%;background:rgba(61,221,101,0.55);color:#fff;font-size:16px;font-weight:600;border:none;border-radius:14px;padding:16px;cursor:pointer;font-family:inherit;margin-bottom:10px">Pobierz CSV</button>
+    <div style="font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:.08em;text-transform:uppercase;text-align:center;margin-bottom:14px">Separator</div>
+    <div style="display:flex;gap:8px;margin-bottom:18px;justify-content:center">
+      <button id="sepComma" onclick="document.getElementById('sepComma').style.background='rgba(61,221,101,0.45)';document.getElementById('sepSemi').style.background='rgba(255,255,255,0.06)';window._csvSep=','" style="flex:1;padding:11px;border-radius:10px;background:rgba(61,221,101,0.45);border:none;color:#fff;font-size:15px;font-family:inherit;cursor:pointer">, przecinek</button>
+      <button id="sepSemi" onclick="document.getElementById('sepSemi').style.background='rgba(61,221,101,0.45)';document.getElementById('sepComma').style.background='rgba(255,255,255,0.06)';window._csvSep=';'" style="flex:1;padding:11px;border-radius:10px;background:rgba(255,255,255,0.06);border:none;color:#fff;font-size:15px;font-family:inherit;cursor:pointer">; średnik</button>
+    </div>
+    <button onclick="exportCSV(window._csvSep||',');document.getElementById('exportSheet').remove()" style="width:100%;background:rgba(61,221,101,0.55);color:#fff;font-size:16px;font-weight:600;border:none;border-radius:14px;padding:16px;cursor:pointer;font-family:inherit;margin-bottom:10px">Pobierz CSV</button>
     <button onclick="document.getElementById('exportSheet').remove()" style="width:100%;background:none;border:none;color:rgba(255,255,255,0.35);font-size:14px;cursor:pointer;font-family:inherit;padding:10px">Anuluj</button>
   </div>`;
   ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
