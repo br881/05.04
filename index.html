@@ -68,19 +68,19 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 /* PROGRESS BAR */
 #progressBar{
   position:fixed;
-  bottom:calc(var(--safe-bottom) + 44px);
+  bottom:calc(var(--safe-bottom) + 18px);
   left:50%;transform:translateX(-50%);
   z-index:11;pointer-events:all;
   opacity:0;transition:opacity .4s;
-  width:120px;height:36px;
+  width:160px;height:34px;
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
 }
 #progressBar.visible{opacity:1;}
 #pbPill{
   width:100%;height:100%;
-  border-radius:18px;
-  background:rgba(255,255,255,0.08);
+  border-radius:17px;
+  background:rgba(255,255,255,0.07);
   overflow:hidden;
   position:relative;
   display:flex;align-items:center;
@@ -89,16 +89,16 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 }
 #pbFill{
   position:absolute;left:0;top:0;bottom:0;
-  border-radius:18px;
-  background:linear-gradient(90deg,rgba(61,221,101,0.55),rgba(61,221,101,0.85));
+  border-radius:17px;
+  background:linear-gradient(90deg,rgba(61,221,101,0.5),rgba(61,221,101,0.8));
   transition:width .55s cubic-bezier(.34,1.2,.64,1);
   width:0%;
 }
 #pbLabel{
   position:relative;z-index:1;
   width:100%;text-align:center;
-  font-size:12px;font-weight:600;letter-spacing:.04em;
-  color:rgba(255,255,255,0.75);
+  font-size:12px;font-weight:600;letter-spacing:.03em;
+  color:rgba(255,255,255,0.7);
   user-select:none;
 }
 @keyframes pbShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
@@ -306,8 +306,8 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .habit-detail-screen{position:fixed;inset:0;z-index:300;background:#000;transform:translateY(100%);transition:transform .38s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;overflow:hidden;}
 .habit-detail-screen.open{transform:translateY(0);}
 .hd-header{padding:calc(var(--safe-top)+2px) 20px 10px;display:flex;align-items:center;border:none;flex-shrink:0;}
-.hd-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:16px 24px calc(var(--safe-bottom)+60px);scrollbar-width:none;}
-.hd-notch-bar{flex-shrink:0;padding-top:calc(var(--safe-top)+6px);display:flex;align-items:center;justify-content:center;}
+.hd-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:8px 24px calc(var(--safe-bottom)+60px);scrollbar-width:none;}
+.hd-notch-bar{flex-shrink:0;padding-top:calc(var(--safe-top)+10px);padding-bottom:10px;display:flex;align-items:center;justify-content:center;}
 .hd-body::-webkit-scrollbar{display:none;}
 .hd-top-row{display:flex;align-items:center;gap:10px;padding:36px 0 30px;}
 .type-mini-btns{display:flex;gap:5px;flex-shrink:0;}
@@ -534,7 +534,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
   </div>
-  <div id="progressBar" onclick="openSheet()">
+  <div id="progressBar" onclick="openSettings()">
     <div id="pbPill">
       <div id="pbFill"></div>
       <span id="pbLabel"></span>
@@ -561,17 +561,15 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
       </svg>
     </button>
   </div>
+  </div>
 
   <!-- Ghost tap zones -->
   <!-- Left half top → extras/habits sheet -->
   <div style="position:fixed;top:0;left:0;width:50%;height:calc(var(--safe-top)+52px);z-index:50;cursor:pointer;" onclick="openSheet()"></div>
-  <!-- Settings: full area below both buttons is tappable, 2-line icon centered -->
-  <div onclick="openSettings()" style="position:fixed;bottom:0;left:0;right:0;height:calc(var(--safe-bottom)+68px);z-index:9;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding-bottom:calc(var(--safe-bottom)+8px);pointer-events:none">
-      <span style="width:28px;height:2.5px;border-radius:1.5px;background:rgba(255,255,255,0.18);display:block"></span>
-      <span style="width:28px;height:2.5px;border-radius:1.5px;background:rgba(255,255,255,0.18);display:block"></span>
-    </div>
-  </div>
+  <!-- Settings: tap the progress bar area or empty space below buttons -->
+  <div id="pbSettingsZone" onclick="openSettings()" style="position:fixed;bottom:0;left:0;right:0;height:calc(var(--safe-bottom)+68px);z-index:8;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;"></div>
+  <!-- Hidden settings button: centered between the two circle buttons, above progressBar -->
+  <button onclick="openSettings()" style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--safe-bottom) + 44px);width:80px;height:48px;background:none;border:none;cursor:pointer;opacity:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;z-index:20;"></button>
 </div>
 
 <!-- ADD TEMP overlay (triggered by left-ghost or swipe-up) -->
@@ -874,7 +872,14 @@ function renderHome(){
   if(remaining.length===0){
     Array.from(hList.children).forEach(r=>{ r.style.maxHeight=r.offsetHeight+'px'; r.classList.add('vanishing'); });
     setTimeout(()=>{ hList.innerHTML=''; ds.classList.add('show'); },400);
-    if(pb){ pb.classList.remove('visible'); const f=document.getElementById('pbFill'); const l=document.getElementById('pbLabel'); if(f) f.style.width='0%'; if(l) l.textContent=''; }
+    if(pb){
+      // Show ... state — fully filled, label becomes ellipsis
+      const fill=document.getElementById('pbFill');
+      const label=document.getElementById('pbLabel');
+      if(fill) fill.style.width='100%';
+      if(label) label.textContent='…';
+      pb.classList.add('visible');
+    }
     return;
   }
   ds.classList.remove('show');
@@ -1676,32 +1681,44 @@ function renderSettings(){
     if(activeHabits.length){
       const bySec={};
       activeHabits.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
-      html+=`<div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 16px;margin-bottom:14px">`;
+      html+=`<div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:16px 18px;margin-bottom:14px">`;
       state.sectors.forEach(sec=>{
         const hh=(bySec[sec.id]||[]).sort((a,b)=>(a.order||0)-(b.order||0));
         if(!hh.length) return;
-        if(state.sectors.length>1) html+=`<div style="font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">${sec.name}</div>`;
+        if(state.sectors.length>1) html+=`<div style="font-size:12px;color:rgba(255,255,255,0.28);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">${sec.name}</div>`;
         hh.forEach(h=>{
           const doneCount=days.filter(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])).length;
           const pct=Math.round(doneCount/days.length*100);
-          html+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">`;
-          html+=`<span style="font-size:13px;color:rgba(255,255,255,0.6);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">${h.name}</span>`;
+          html+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:11px">`;
+          html+=`<span style="font-size:15px;color:rgba(255,255,255,0.7);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">${h.name}</span>`;
           html+=`<div style="display:flex;gap:2px;flex-shrink:0">`;
-          days.forEach(dk=>{ const done=isDone(state.daily?.[dk]?.habits?.[h.id]); html+=`<div style="width:${sharedPeriod===7?'7':'4'}px;height:${sharedPeriod===7?'7':'4'}px;border-radius:50%;background:${done?'rgba(61,221,101,0.85)':'rgba(255,255,255,0.07)'}"></div>`; });
+          days.forEach(dk=>{ const done=isDone(state.daily?.[dk]?.habits?.[h.id]); html+=`<div style="width:${sharedPeriod===7?'8':'4'}px;height:${sharedPeriod===7?'8':'4'}px;border-radius:50%;background:${done?'rgba(61,221,101,0.85)':'rgba(255,255,255,0.08)'}"></div>`; });
           html+=`</div>`;
-          html+=`<span style="font-size:11px;color:rgba(255,255,255,0.22);min-width:26px;text-align:right">${pct}%</span>`;
+          html+=`<span style="font-size:12px;color:rgba(255,255,255,0.28);min-width:30px;text-align:right">${pct}%</span>`;
           html+=`</div>`;
         });
       });
       html+=`</div>`;
     } else {
-      html+=`<div style="color:rgba(255,255,255,0.15);font-size:12px;text-align:center;padding:8px 0 16px">—</div>`;
+      html+=`<div style="color:rgba(255,255,255,0.15);font-size:13px;text-align:center;padding:8px 0 16px">—</div>`;
     }
 
     // ── TIME + MONEY — side by side donuts ──
     const _tStats=getTimeStats(sharedPeriod===7?'week':'month');
     const _tCats=state.timeCategories||[];
     const _tTotal=Object.values(_tStats).reduce((a,b)=>a+b,0);
+
+    // Collect labels per time category for the period
+    const _tLabels={};
+    for(const[dk,entries]of Object.entries(state.timeEntries||{})){
+      if(!days.includes(dk)) continue;
+      for(const e of entries){
+        if(e.empty||!e.label) continue;
+        const cid=e.catId||'_';
+        if(!_tLabels[cid]) _tLabels[cid]=new Set();
+        _tLabels[cid].add(e.label);
+      }
+    }
 
     const _mEntries=(state.moneyEntries||[]).filter(e=>{
       const d=new Date(e.date+'T00:00:00'); const now=new Date();
@@ -1712,7 +1729,7 @@ function renderSettings(){
     _mEntries.forEach(e=>{ byCatM[e.catId]=(byCatM[e.catId]||0)+Number(e.amount||0); });
     const _mTotal=Object.values(byCatM).reduce((a,b)=>a+b,0);
 
-    function buildDonut(dataEntries,cats,fallbackColors,centerLabel){
+    function buildDonut(dataEntries,cats,fallbackColors,labelsMap){
       const R=44,r=28,cx=52,cy=52,circ=2*Math.PI*R;
       const total=dataEntries.reduce((s,[,v])=>s+v,0);
       let offset=0,arcs='';
@@ -1728,14 +1745,23 @@ function renderSettings(){
       dataEntries.forEach(([id,val],idx)=>{
         const cat=cats.find(c=>c.id===id);
         const color=cat?.color||fallbackColors[idx%fallbackColors.length];
-        const dispVal=typeof val==='number'&&val>=60?`${Math.floor(val/60)}h${val%60>0?' '+val%60+'m':''}`:val%1===0?val+'':val.toFixed(1);
-        legend+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">`;
-        legend+=`<div style="width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
-        legend+=`<span style="font-size:13px;flex:1;color:rgba(255,255,255,0.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px">${cat?.name||'?'}</span>`;
-        legend+=`<span style="font-size:11px;color:rgba(255,255,255,0.35)">${dispVal}</span>`;
+        const dispVal=typeof val==='number'&&val>=60?`${Math.floor(val/60)}h${val%60>0?' '+val%60+'m':''}`:val%1===0?String(val):val.toFixed(1);
+        const taskLabels=labelsMap?labelsMap[id]:null;
+        legend+=`<div style="margin-bottom:7px">`;
+        legend+=`<div style="display:flex;align-items:center;gap:7px">`;
+        legend+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
+        legend+=`<span style="font-size:15px;flex:1;color:rgba(255,255,255,0.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px">${cat?.name||'?'}</span>`;
+        legend+=`<span style="font-size:13px;color:rgba(255,255,255,0.4)">${dispVal}</span>`;
+        legend+=`</div>`;
+        if(taskLabels&&taskLabels.size>0){
+          const labArr=[...taskLabels].slice(0,4);
+          legend+=`<div style="padding-left:15px;margin-top:2px">`;
+          labArr.forEach(lbl=>{ legend+=`<div style="font-size:11px;color:rgba(255,255,255,0.28);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5">${lbl}</div>`; });
+          legend+=`</div>`;
+        }
         legend+=`</div>`;
       });
-      return {arcs,legend,R,r,cx,cy,circ,centerLabel};
+      return {arcs,legend,R,r,cx,cy,circ};
     }
 
     const hasBoth=_tTotal>0&&_mTotal>0;
@@ -1749,30 +1775,29 @@ function renderSettings(){
 
       if(hasTime){
         const tEntries=Object.entries(_tStats).sort((a,b)=>b[1]-a[1]);
-        const {arcs,legend,cx,cy,R,r,centerLabel:_}=buildDonut(tEntries,_tCats,FB_TIME,'');
+        const {arcs,legend,cx,cy,R,r}=buildDonut(tEntries,_tCats,FB_TIME,_tLabels);
         const totalH=Math.floor(_tTotal/60),totalM=_tTotal%60;
         const cLabel=totalH>0?(totalM>0?totalH+'h '+totalM+'m':totalH+'h'):_tTotal+'m';
-        const svgSize=hasBoth?120:150;
-        const svgVB=`0 0 104 104`;
+        const svgSize=hasBoth?110:150;
         html+=`<div style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:10px">`;
-        html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="${svgVB}">`;
+        html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
         html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
         html+=arcs;
-        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?10:12}px;font-weight:600;color:#fff;text-align:center;letter-spacing:-.01em">${cLabel}</span></div></div>`;
+        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?11:13}px;font-weight:600;color:#fff;text-align:center;letter-spacing:-.01em">${cLabel}</span></div></div>`;
         html+=`<div style="width:100%">${legend}</div>`;
         html+=`</div>`;
       }
 
       if(hasMoney){
         const mEntries=Object.entries(byCatM).sort((a,b)=>b[1]-a[1]);
-        const {arcs,legend,cx,cy,R,r}=buildDonut(mEntries,_mCats,FB_MONEY,'');
-        const totAmtStr=_mTotal%1===0?_mTotal.toString():_mTotal.toFixed(1);
-        const svgSize=hasBoth?120:150;
+        const {arcs,legend,cx,cy,R,r}=buildDonut(mEntries,_mCats,FB_MONEY,null);
+        const totAmtStr=_mTotal%1===0?String(_mTotal):_mTotal.toFixed(1);
+        const svgSize=hasBoth?110:150;
         html+=`<div style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:10px">`;
         html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
         html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
         html+=arcs;
-        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?10:12}px;font-weight:600;color:#fff">${totAmtStr}</span></div></div>`;
+        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?11:13}px;font-weight:600;color:#fff">${totAmtStr}</span></div></div>`;
         html+=`<div style="width:100%">${legend}</div>`;
         html+=`</div>`;
       }
@@ -2925,18 +2950,10 @@ function updateTTSelectionBar(){
     if(hd) hd.innerHTML='';
     return;
   }
-  const sorted=[...ttSelBlocks].map(k=>{const[h,q]=k.split(':');return{h:+h,q:+q};})
-    .sort((a,b)=>blockIndex(a.h,a.q)-blockIndex(b.h,b.q));
-  const first=sorted[0], last=sorted[sorted.length-1];
-  const fmtT=(h,q)=>`${h}:${String(q*15).padStart(2,'0')}`;
-  const endQ=last.q+1;
-  const endH=endQ>=4?last.h+1:last.h;
-  const endQr=endQ%4;
-  const range=`${fmtT(first.h,first.q)}–${fmtT(endH,endQr)}`;
   const mins=ttSelBlocks.size*15;
   const hh=Math.floor(mins/60),m=mins%60;
   const dur=hh>0?`${hh}h${m>0?' '+m+'m':''}`:mins+'m';
-  const bigHTML=`<span style="display:block;font-size:26px;font-weight:300;letter-spacing:-.01em;color:#fff">${dur}</span><span style="display:block;font-size:13px;color:rgba(255,255,255,0.4);margin-top:2px">${range}</span>`;
+  const bigHTML=`<span style="display:block;font-size:36px;font-weight:200;letter-spacing:-.02em;color:#fff">${dur}</span>`;
   document.getElementById('ttEntryDuration').innerHTML=bigHTML;
   const hd=document.getElementById('ttHabitDuration');
   if(hd) hd.innerHTML=bigHTML;
