@@ -54,7 +54,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
 .habit-row.vanishing{overflow:hidden;pointer-events:none;opacity:0;max-height:0!important;padding-top:0!important;padding-bottom:0!important;margin:0!important;border-width:0!important;transition:opacity .26s ease,max-height .36s .08s cubic-bezier(.4,0,1,1),padding .36s .04s ease,margin .36s .04s ease,border-width .36s .04s ease!important;}
 .habit-row.temp-row .habit-name{color:rgba(120,235,120,1);font-weight:500;}
-.habit-name{font-size:22px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
+.habit-name{font-size:25px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
 .habit-value-input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.38);color:#ffffff;font-size:17px;font-family:inherit;outline:none;width:72px;text-align:right;padding:2px 0 4px;transition:border-color .2s;font-weight:600;}
 .habit-value-input:focus{border-bottom-color:var(--accent-border);}
 .habit-value-input::placeholder{color:transparent;}
@@ -106,8 +106,8 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 }
 .btn-ghost-zone{
   position:absolute;
-  width:100px;height:100px;border-radius:50%;
-  background:none;
+  width:84px;height:84px;border-radius:50%;
+  background:rgba(255,255,255,0.07);
   border:none;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;pointer-events:all;
@@ -147,7 +147,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .settings-header{position:relative;top:0;left:0;z-index:10;padding:calc(var(--safe-top)+4px) 0 0 4px;flex-shrink:0;}
 .btn-back{display:flex;align-items:center;justify-content:center;width:48px;height:48px;background:none;border:none;color:var(--accent);font-size:28px;cursor:pointer;opacity:.7;line-height:1;}
 .btn-back:active{opacity:1;}
-.settings-scroll{flex:1;overflow-y:auto;scrollbar-width:none;padding-top:calc(var(--safe-top)+24px);padding-bottom:calc(var(--safe-bottom)+40px);}
+.settings-scroll{flex:1;overflow-y:auto;scrollbar-width:none;padding-top:16px;padding-bottom:calc(var(--safe-bottom)+40px);}
 .settings-scroll::-webkit-scrollbar{display:none;}
 .s-section{padding:0 18px;margin-top:20px;}
 .s-section-title{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ui);margin-bottom:10px;padding:0 4px;opacity:.5;display:flex;align-items:center;justify-content:center;gap:6px;}
@@ -160,7 +160,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .sector-habits-box{margin-top:6px;background:rgba(255,255,255,0.32);border-radius:12px;overflow:hidden;padding:2px 0;}
 .sector-habit-row{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:grab;touch-action:none;transition:opacity .15s;user-select:none;-webkit-user-select:none;}
 .sector-habit-row:active{opacity:.5;cursor:grabbing;}
-.shr-name{flex:1;font-size:17px;color:#ffffff;font-weight:400;}
+.shr-name{flex:1;font-size:19px;color:#ffffff;font-weight:400;}
 .add-habit-row{display:flex;align-items:center;justify-content:center;padding:10px 4px;color:rgba(255,255,255,0.35);cursor:pointer;touch-action:auto;transition:opacity .15s;}
 .add-habit-row:active{opacity:.8;}
 .add-sector-btn-icon{display:flex;align-items:center;justify-content:center;width:100%;padding:12px;border-radius:12px;border:none;background:none;color:rgba(255,255,255,0.3);cursor:pointer;transition:all .15s;}
@@ -271,7 +271,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .extras-list-box{background:rgba(255,255,255,0.32);border-radius:12px;overflow:hidden;padding:2px 0;margin-bottom:10px;}
 .extra-setting-row{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:grab;touch-action:none;transition:opacity .15s;user-select:none;-webkit-user-select:none;}
 .extra-setting-row:active{opacity:.6;cursor:grabbing;}
-.extra-s-name{flex:1;font-size:17px;color:#ffffff;font-weight:400;}
+.extra-s-name{flex:1;font-size:19px;color:#ffffff;font-weight:400;}
 .del-btn{width:24px;height:24px;background:none;border:none;color:rgba(255,255,255,0.4);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:.5;transition:opacity .15s;line-height:1;}
 .del-btn:active{opacity:1;color:var(--red);}
 .drag-lift{opacity:.45!important;background:rgba(255,255,255,0.09)!important;}
@@ -349,10 +349,10 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 }
 /* Each row = 1 hour, 4 blocks of 15min */
 .tt-hour-label{
-  width:44px;flex-shrink:0;
+  width:52px;flex-shrink:0;
   display:flex;align-items:center;justify-content:flex-end;
   padding-right:10px;
-  font-size:15px;font-weight:400;
+  font-size:18px;font-weight:400;
   color:rgba(255,255,255,0.9);
   letter-spacing:-.01em;
   user-select:none;
@@ -526,13 +526,13 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div class="bottom-bar">
     <!-- Left: time tracker — clock face as ring/outline -->
     <button class="btn-ghost-zone" id="btnTime" onclick="openTimeTracker()">
-      <svg width="70" height="70" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
+      <svg width="58" height="58" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
         <circle cx="22" cy="22" r="19" stroke-width="2"/>
       </svg>
     </button>
     <!-- Right: temp tasks — same clock icon as left -->
     <button class="btn-ghost-zone" id="btnTasks" onclick="openTempScreen()">
-      <svg width="70" height="70" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
+      <svg width="58" height="58" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
         <circle cx="22" cy="22" r="19" stroke-width="2"/>
       </svg>
     </button>
@@ -1633,65 +1633,180 @@ function renderSettings(){
     html+=`<button onclick="event.stopPropagation();setStatPeriod(7)" class="sector-pill${sharedPeriod===7?' active':''}" style="font-size:12px;padding:5px 14px">7</button>`;
     html+=`<button onclick="event.stopPropagation();setStatPeriod(30)" class="sector-pill${sharedPeriod===30?' active':''}" style="font-size:12px;padding:5px 14px">30</button>`;
     html+=`</div>`;
+
+    // ── Habits donut chart ──
     const now3=new Date(); const days=[];
     for(let i=sharedPeriod-1;i>=0;i--){ const d=new Date(now3); d.setDate(now3.getDate()-i); days.push(fmtDate(d)); }
-    const activeHabits=state.habits.filter(h=>!h.archived&&days.some(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])));
-    if(activeHabits.length){
-      const bySec={};
-      activeHabits.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
-      html+='<div style="display:flex;flex-direction:column;gap:8px">';
-      state.sectors.forEach(sec=>{
-        const hh=(bySec[sec.id]||[]).sort((a,b)=>(a.order||0)-(b.order||0));
-        if(!hh.length) return;
-        if(state.sectors.length>1) html+=`<div style="font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:.06em;text-transform:uppercase;padding-top:4px">${sec.name}</div>`;
-        hh.forEach(h=>{
-          const doneCount=days.filter(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])).length;
-          html+='<div style="display:flex;align-items:center;gap:8px">';
-          html+='<span style="font-size:13px;color:rgba(255,255,255,0.55);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+h.name+'</span>';
-          html+='<div style="display:flex;gap:2px;flex-shrink:0">';
-          days.forEach(dk=>{ const done=isDone(state.daily?.[dk]?.habits?.[h.id]); html+='<div style="width:5px;height:5px;border-radius:50%;background:'+(done?'rgba(61,221,101,0.8)':'rgba(255,255,255,0.08)')+'"></div>'; });
-          html+='</div>';
-          html+='<span style="font-size:11px;color:rgba(255,255,255,0.25);min-width:20px;text-align:right">'+doneCount+'</span>';
-          html+='</div>';
-        });
+    const activeHabits=state.habits.filter(h=>!h.archived&&h.days&&h.days.length);
+    // Count done vs possible per habit
+    const habitData=activeHabits.map(h=>{
+      const possible=days.filter(dk=>{ const d=new Date(dk); const jsd=d.getDay()===0?6:d.getDay()-1; return h.days.includes(jsd); }).length;
+      const done=days.filter(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])).length;
+      return {h, done, possible};
+    }).filter(x=>x.possible>0);
+
+    if(habitData.length){
+      const totalDone=habitData.reduce((s,x)=>s+x.done,0);
+      const totalPossible=habitData.reduce((s,x)=>s+x.possible,0);
+      const pct=totalPossible>0?Math.round(totalDone/totalPossible*100):0;
+
+      // Build donut segments
+      const cx=80,cy=80,r=62,stroke=14;
+      const circ=2*Math.PI*r;
+      const colors=['rgba(61,221,101,0.85)','rgba(61,221,101,0.6)','rgba(61,221,101,0.4)','rgba(61,221,101,0.25)','rgba(61,221,101,0.15)','rgba(255,255,255,0.12)'];
+      let offset=0;
+      // Sort by done desc
+      const sorted=[...habitData].sort((a,b)=>(b.done/b.possible)-(a.done/a.possible));
+      let segs='';
+      sorted.forEach((x,i)=>{
+        const frac=x.possible>0?x.done/x.possible:0;
+        const segLen=(x.possible/totalPossible)*circ;
+        const fillLen=frac*segLen;
+        const gap=circ-fillLen;
+        const col=colors[Math.min(i,colors.length-1)];
+        segs+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${col}" stroke-width="${stroke}" stroke-dasharray="${fillLen} ${gap}" stroke-dashoffset="${-offset}" stroke-linecap="butt" transform="rotate(-90 ${cx} ${cy})"/>`;
+        // unfilled remainder of this segment
+        if(fillLen<segLen){
+          const emptyLen=segLen-fillLen;
+          const emptyGap=circ-emptyLen;
+          segs+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="${stroke}" stroke-dasharray="${emptyLen} ${emptyGap}" stroke-dashoffset="${-(offset+fillLen)}" stroke-linecap="butt" transform="rotate(-90 ${cx} ${cy})"/>`;
+        }
+        offset+=segLen;
       });
-      html+='</div>';
+
+      html+=`<div style="display:flex;flex-direction:column;align-items:center;gap:16px">`;
+      html+=`<div style="position:relative;width:160px;height:160px;flex-shrink:0">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${stroke}"/>
+          ${segs}
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+          <span style="font-size:28px;font-weight:300;color:#fff;letter-spacing:-.02em;line-height:1">${pct}%</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:.05em;text-transform:uppercase;margin-top:3px">${sharedPeriod}d</span>
+        </div>
+      </div>`;
+
+      // Legend rows
+      html+=`<div style="width:100%;display:flex;flex-direction:column;gap:5px">`;
+      sorted.slice(0,6).forEach((x,i)=>{
+        const col=colors[Math.min(i,colors.length-2)];
+        const rowPct=x.possible>0?Math.round(x.done/x.possible*100):0;
+        html+=`<div style="display:flex;align-items:center;gap:8px">`;
+        html+=`<div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div>`;
+        html+=`<span style="font-size:13px;color:rgba(255,255,255,0.5);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.h.name}</span>`;
+        html+=`<span style="font-size:12px;color:rgba(255,255,255,0.3);min-width:36px;text-align:right">${x.done}/${x.possible}</span>`;
+        html+=`</div>`;
+      });
+      html+=`</div>`;
+      html+=`</div>`;
     } else {
       html+='<div style="color:rgba(255,255,255,0.15);font-size:12px;text-align:center;padding:4px 0">—</div>';
     }
 
-    // ── Time stats ──
+    // ── Time stats donut ──
     {
-      const tStats=getTimeStats(sharedPeriod==='week'||sharedPeriod===7?'week':sharedPeriod===30?'month':'all');
+      const tPeriod=sharedPeriod===30?'month':'week';
+      const tStats=getTimeStats(tPeriod);
       const tCats=state.timeCategories||[];
       const tTotal=Object.values(tStats).reduce((s,v)=>s+v,0);
       if(tTotal>0){
-        html+='<div style="margin-top:14px;border-top:1px solid rgba(255,255,255,0.06);padding-top:12px">';
-        html+='<div style="font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;text-align:center">Czas</div>';
-        html+='<div style="display:flex;flex-direction:column;gap:6px">';
-        Object.entries(tStats).sort((a,b)=>b[1]-a[1]).forEach(([cid,mins])=>{
+        html+='<div style="margin-top:18px;border-top:1px solid rgba(255,255,255,0.06);padding-top:16px">';
+        html+='<div style="font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px;text-align:center">Czas</div>';
+        // mini donut
+        const tcx=60,tcy=60,tr=44,ts2=12,tcirc=2*Math.PI*tr;
+        const tPal=['rgba(125,211,252,0.85)','rgba(249,168,212,0.85)','rgba(253,186,116,0.85)','rgba(196,181,253,0.85)','rgba(110,231,183,0.85)'];
+        let toff=0; let tsegs='';
+        Object.entries(tStats).sort((a,b)=>b[1]-a[1]).forEach(([cid,mins],i)=>{
+          const frac=mins/tTotal;
+          const slen=frac*tcirc;
+          const col=tPal[i%tPal.length];
+          tsegs+=`<circle cx="${tcx}" cy="${tcy}" r="${tr}" fill="none" stroke="${col}" stroke-width="${ts2}" stroke-dasharray="${slen} ${tcirc-slen}" stroke-dashoffset="${-toff}" stroke-linecap="butt" transform="rotate(-90 ${tcx} ${tcy})"/>`;
+          toff+=slen;
+        });
+        const tTotalH=Math.floor(tTotal/60),tTotalM=tTotal%60;
+        const tTotalStr=tTotalH>0?(tTotalH+'h'+(tTotalM>0?' '+tTotalM+'m':'')):(tTotal+'m');
+        html+=`<div style="display:flex;align-items:center;gap:16px">`;
+        html+=`<div style="position:relative;width:120px;height:120px;flex-shrink:0">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <circle cx="${tcx}" cy="${tcy}" r="${tr}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${ts2}"/>
+            ${tsegs}
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <span style="font-size:16px;font-weight:300;color:#fff;line-height:1">${tTotalStr}</span>
+          </div>
+        </div>`;
+        html+=`<div style="flex:1;display:flex;flex-direction:column;gap:6px">`;
+        Object.entries(tStats).sort((a,b)=>b[1]-a[1]).forEach(([cid,mins],i)=>{
           const cat=tCats.find(c=>c.id===cid);
           const h=Math.floor(mins/60),m=mins%60;
           const dur=h>0?(h+'h'+(m>0?' '+m+'m':'')):(m+'m');
           const pct=Math.round(mins/tTotal*100);
-          html+='<div style="display:flex;align-items:center;gap:10px">';
-          html+='<span style="font-size:15px;min-width:28px;text-align:center">'+(cat?.name||'')+'</span>';
-          html+='<div style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden"><div style="height:3px;width:'+pct+'%;background:rgba(255,255,255,0.45);border-radius:2px"></div></div>';
-          html+='<span style="font-size:13px;color:rgba(255,255,255,0.6);min-width:48px;text-align:right">'+dur+'</span>';
-          html+='</div>';
+          const col=tPal[i%tPal.length];
+          html+=`<div style="display:flex;align-items:center;gap:6px">`;
+          html+=`<div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div>`;
+          html+=`<span style="font-size:18px;flex-shrink:0">${cat?.name||''}</span>`;
+          html+=`<span style="font-size:12px;color:rgba(255,255,255,0.45);text-align:right;margin-left:auto">${dur}</span>`;
+          html+=`</div>`;
         });
-        html+='</div></div>';
+        html+=`</div></div>`;
+        html+=`</div>`;
       }
     }
 
-    // ── Money stats ──
+    // ── Money stats donut ──
     {
-      const mHtml=renderMoneySettings();
-      if(mHtml&&!mHtml.includes('—')){
-        html+='<div style="margin-top:14px;border-top:1px solid rgba(255,255,255,0.06);padding-top:12px">';
-        html+='<div style="font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;text-align:center">Money</div>';
-        html+=mHtml;
-        html+='</div>';
+      const mPeriod=sharedPeriod;
+      const mNow=new Date();
+      const mEntries=(state.moneyEntries||[]).filter(e=>{
+        const d=new Date(e.date+'T00:00:00');
+        return (mNow-d)/(1000*60*60*24)<=mPeriod;
+      });
+      const mTotal=mEntries.reduce((s,e)=>s+e.amount,0);
+      if(mTotal>0){
+        const mCats=(state.moneyCategories||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
+        const catTotals={};
+        mEntries.forEach(e=>{ catTotals[e.catId]=(catTotals[e.catId]||0)+e.amount; });
+        const mSorted=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
+        const mPal=['rgba(239,68,68,0.85)','rgba(251,146,60,0.85)','rgba(250,204,21,0.85)','rgba(74,222,128,0.85)','rgba(96,165,250,0.85)'];
+        const mcx=60,mcy=60,mr=44,ms=12,mcirc=2*Math.PI*mr;
+        let moff=0; let msegs='';
+        mSorted.forEach(([cid,amt],i)=>{
+          const frac=amt/mTotal;
+          const slen=frac*mcirc;
+          const col=mPal[i%mPal.length];
+          // use category color if set
+          const cat=mCats.find(c=>c.id===cid);
+          const catCol=cat?.color?`${cat.color}dd`:col;
+          msegs+=`<circle cx="${mcx}" cy="${mcy}" r="${mr}" fill="none" stroke="${catCol}" stroke-width="${ms}" stroke-dasharray="${slen} ${mcirc-slen}" stroke-dashoffset="${-moff}" stroke-linecap="butt" transform="rotate(-90 ${mcx} ${mcy})"/>`;
+          moff+=slen;
+        });
+        const mTotalStr=mTotal%1===0?Math.round(mTotal):mTotal.toFixed(2);
+        html+='<div style="margin-top:18px;border-top:1px solid rgba(255,255,255,0.06);padding-top:16px">';
+        html+='<div style="font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px;text-align:center">Money</div>';
+        html+=`<div style="display:flex;align-items:center;gap:16px">`;
+        html+=`<div style="position:relative;width:120px;height:120px;flex-shrink:0">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <circle cx="${mcx}" cy="${mcy}" r="${mr}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${ms}"/>
+            ${msegs}
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <span style="font-size:15px;font-weight:300;color:#fff;line-height:1">${mTotalStr}</span>
+            <span style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px">zł</span>
+          </div>
+        </div>`;
+        html+=`<div style="flex:1;display:flex;flex-direction:column;gap:6px">`;
+        mSorted.forEach(([cid,amt],i)=>{
+          const cat=mCats.find(c=>c.id===cid);
+          const amtStr=amt%1===0?Math.round(amt):amt.toFixed(2);
+          const catCol=cat?.color?`${cat.color}dd`:mPal[i%mPal.length];
+          html+=`<div style="display:flex;align-items:center;gap:6px">`;
+          html+=`<div style="width:8px;height:8px;border-radius:50%;background:${catCol};flex-shrink:0"></div>`;
+          html+=`<span style="font-size:13px;color:rgba(255,255,255,0.55);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cat?.name||''}</span>`;
+          html+=`<span style="font-size:12px;color:rgba(255,255,255,0.4);margin-left:auto">${amtStr}</span>`;
+          html+=`</div>`;
+        });
+        html+=`</div></div>`;
+        html+=`</div>`;
       }
     }
 
@@ -1820,7 +1935,6 @@ function renderSettings(){
   html+=`<button onclick="openAddMoneyCat()" style="display:flex;align-items:center;justify-content:center;width:100%;padding:10px;margin-top:6px;border:none;border-radius:12px;background:none;color:rgba(255,255,255,0.3);cursor:pointer;">${plusSVG}</button>`;
   html+=`</div></div>`;
 
-  // Pobierz
   html+=`<div style="display:flex;justify-content:center;margin-top:16px;margin-bottom:8px">
     <button onclick="showExportSheet()" style="background:none;border:none;color:#ffffff;cursor:pointer;padding:14px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
       <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
