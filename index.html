@@ -583,6 +583,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 
 <!-- SETTINGS -->
 <div id="settings" class="screen" style="overflow:visible;display:flex;flex-direction:column;">
+  <button onclick="closeSettings()" style="position:fixed;top:0;left:0;padding:calc(var(--safe-top) + 6px) 16px 12px;background:none;border:none;color:var(--accent);font-size:28px;cursor:pointer;opacity:.7;line-height:1;z-index:20;-webkit-tap-highlight-color:transparent;">‹</button>
   <div class="settings-scroll" id="settingsScroll" style="padding-top:calc(var(--safe-top)+56px)"></div>
 </div>
 
@@ -1640,6 +1641,9 @@ function openSettings(){
   document.getElementById('home').classList.add('slide-out');
   document.getElementById('settings').classList.add('active');
   document.querySelector('.habits-scroll').style.overflow='hidden';
+  document.getElementById('progressBar').style.display='none';
+  document.getElementById('pbSettingsZone').style.display='none';
+  const bb=document.querySelector('.bottom-bar'); if(bb) bb.style.display='none';
 }
 function closeSettings(){
   const s=document.getElementById('settings'), h=document.getElementById('home');
@@ -1647,6 +1651,9 @@ function closeSettings(){
   s.style.transform=''; h.style.transform='';
   h.classList.remove('slide-out'); s.classList.remove('active');
   document.querySelector('.habits-scroll').style.overflow='';
+  document.getElementById('progressBar').style.display='';
+  document.getElementById('pbSettingsZone').style.display='';
+  const bb=document.querySelector('.bottom-bar'); if(bb) bb.style.display='';
 }
 
 function renderSettings(){
