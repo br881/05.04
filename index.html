@@ -68,18 +68,19 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 /* PROGRESS BAR */
 #progressBar{
   position:fixed;
-  bottom:calc(var(--safe-bottom) + 18px);
+  bottom:calc(var(--safe-bottom) + 10px);
   left:50%;transform:translateX(-50%);
   z-index:11;pointer-events:all;
-  opacity:0;transition:opacity .4s;
-  width:160px;height:34px;
+  opacity:0;transition:opacity .35s;
+  width:140px;height:28px;
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
 }
 #progressBar.visible{opacity:1;}
+#progressBar.done-invisible{opacity:0;pointer-events:all;}
 #pbPill{
   width:100%;height:100%;
-  border-radius:17px;
+  border-radius:14px;
   background:rgba(255,255,255,0.07);
   overflow:hidden;
   position:relative;
@@ -89,7 +90,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 }
 #pbFill{
   position:absolute;left:0;top:0;bottom:0;
-  border-radius:17px;
+  border-radius:14px;
   background:linear-gradient(90deg,rgba(61,221,101,0.5),rgba(61,221,101,0.8));
   transition:width .55s cubic-bezier(.34,1.2,.64,1);
   width:0%;
@@ -97,8 +98,8 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 #pbLabel{
   position:relative;z-index:1;
   width:100%;text-align:center;
-  font-size:12px;font-weight:600;letter-spacing:.03em;
-  color:rgba(255,255,255,0.7);
+  font-size:11px;font-weight:600;letter-spacing:.03em;
+  color:rgba(255,255,255,0.65);
   user-select:none;
 }
 @keyframes pbShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
@@ -879,17 +880,20 @@ function renderHome(){
     Array.from(hList.children).forEach(r=>{ r.style.maxHeight=r.offsetHeight+'px'; r.classList.add('vanishing'); });
     setTimeout(()=>{ hList.innerHTML=''; ds.classList.add('show'); },400);
     if(pb){
+      // Invisible but still tappable — no content, no background shown
+      pb.classList.remove('visible');
+      pb.classList.add('done-invisible');
       const fill=document.getElementById('pbFill');
       const label=document.getElementById('pbLabel');
-      if(fill) fill.style.width='100%';
-      if(label) label.textContent='…';
-      pb.classList.add('visible');
+      if(fill) fill.style.width='0%';
+      if(label) label.textContent='';
     }
     const dz=document.getElementById('doneSettingsZone');
     if(dz) dz.style.display='block';
     return;
   }
   ds.classList.remove('show');
+  if(pb) pb.classList.remove('done-invisible');
   const dz=document.getElementById('doneSettingsZone');
   if(dz) dz.style.display='none';
 
@@ -1686,7 +1690,7 @@ function renderSettings(){
     for(let i=sharedPeriod-1;i>=0;i--){ const d=new Date(now3); d.setDate(now3.getDate()-i); days.push(fmtDate(d)); }
     const activeHabits=state.habits.filter(h=>!h.archived&&days.some(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])));
 
-    // ── HABITS — uniform dot-grid card ──
+    // ── HABITS — progress bar per habit ──
     if(activeHabits.length){
       const bySec={};
       activeHabits.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
@@ -1694,16 +1698,25 @@ function renderSettings(){
       state.sectors.forEach(sec=>{
         const hh=(bySec[sec.id]||[]).sort((a,b)=>(a.order||0)-(b.order||0));
         if(!hh.length) return;
-        if(state.sectors.length>1) html+=`<div style="font-size:12px;color:rgba(255,255,255,0.28);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">${sec.name}</div>`;
+        if(state.sectors.length>1) html+=`<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;text-align:center">${sec.name}</div>`;
         hh.forEach(h=>{
-          const doneCount=days.filter(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])).length;
-          const pct=Math.round(doneCount/days.length*100);
-          html+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:11px">`;
-          html+=`<span style="font-size:15px;color:rgba(255,255,255,0.7);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">${h.name}</span>`;
-          html+=`<div style="display:flex;gap:2px;flex-shrink:0">`;
-          days.forEach(dk=>{ const done=isDone(state.daily?.[dk]?.habits?.[h.id]); html+=`<div style="width:${sharedPeriod===7?'8':'4'}px;height:${sharedPeriod===7?'8':'4'}px;border-radius:50%;background:${done?'rgba(61,221,101,0.85)':'rgba(255,255,255,0.08)'}"></div>`; });
+          // Only count days the habit was scheduled (days array)
+          const scheduledDays=days.filter(dk=>{
+            const d=new Date(dk+'T00:00:00');
+            const jsd=d.getDay()===0?6:d.getDay()-1;
+            return h.days.includes(jsd);
+          });
+          const doneCount=scheduledDays.filter(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])).length;
+          const total=scheduledDays.length||1;
+          const pct=Math.round(doneCount/total*100);
+          html+=`<div style="margin-bottom:12px">`;
+          html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">`;
+          html+=`<span style="font-size:15px;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">${h.name}</span>`;
+          html+=`<span style="font-size:12px;color:rgba(255,255,255,0.35);min-width:30px;text-align:right">${pct}%</span>`;
           html+=`</div>`;
-          html+=`<span style="font-size:12px;color:rgba(255,255,255,0.28);min-width:30px;text-align:right">${pct}%</span>`;
+          html+=`<div style="width:100%;height:4px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden">`;
+          html+=`<div style="height:4px;width:${pct}%;background:rgba(61,221,101,0.75);border-radius:2px;transition:width .4s ease"></div>`;
+          html+=`</div>`;
           html+=`</div>`;
         });
       });
@@ -1738,11 +1751,12 @@ function renderSettings(){
     _mEntries.forEach(e=>{ byCatM[e.catId]=(byCatM[e.catId]||0)+Number(e.amount||0); });
     const _mTotal=Object.values(byCatM).reduce((a,b)=>a+b,0);
 
-    function buildDonut(dataEntries,cats,fallbackColors,labelsMap){
+    // build donut arcs only
+    function buildArcs(dataEntries,cats,fallbackColors){
       const R=44,r=28,cx=52,cy=52,circ=2*Math.PI*R;
-      const total=dataEntries.reduce((s,[,v])=>s+v,0);
       let offset=0,arcs='';
       dataEntries.forEach(([id,val],idx)=>{
+        const total=dataEntries.reduce((s,[,v])=>s+v,0);
         const cat=cats.find(c=>c.id===id);
         const pct=val/total;
         const dash=pct*circ,gap=circ-dash;
@@ -1750,27 +1764,7 @@ function renderSettings(){
         arcs+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${color}" stroke-width="${R-r}" stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}" stroke-dashoffset="${(-offset*circ).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;
         offset+=pct;
       });
-      let legend='';
-      dataEntries.forEach(([id,val],idx)=>{
-        const cat=cats.find(c=>c.id===id);
-        const color=cat?.color||fallbackColors[idx%fallbackColors.length];
-        const dispVal=typeof val==='number'&&val>=60?`${Math.floor(val/60)}h${val%60>0?' '+val%60+'m':''}`:val%1===0?String(val):val.toFixed(1);
-        const taskLabels=labelsMap?labelsMap[id]:null;
-        legend+=`<div style="margin-bottom:7px">`;
-        legend+=`<div style="display:flex;align-items:center;gap:7px">`;
-        legend+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
-        legend+=`<span style="font-size:15px;flex:1;color:rgba(255,255,255,0.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px">${cat?.name||'?'}</span>`;
-        legend+=`<span style="font-size:13px;color:rgba(255,255,255,0.4)">${dispVal}</span>`;
-        legend+=`</div>`;
-        if(taskLabels&&taskLabels.size>0){
-          const labArr=[...taskLabels].slice(0,4);
-          legend+=`<div style="padding-left:15px;margin-top:2px">`;
-          labArr.forEach(lbl=>{ legend+=`<div style="font-size:11px;color:rgba(255,255,255,0.28);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5">${lbl}</div>`; });
-          legend+=`</div>`;
-        }
-        legend+=`</div>`;
-      });
-      return {arcs,legend,R,r,cx,cy,circ};
+      return {arcs,R,r,cx,cy};
     }
 
     const hasBoth=_tTotal>0&&_mTotal>0;
@@ -1780,34 +1774,73 @@ function renderSettings(){
     const FB_MONEY=['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#a855f7'];
 
     if(hasTime||hasMoney){
-      html+=`<div style="display:flex;gap:12px;justify-content:center">`;
+      html+=`<div style="display:flex;gap:10px">`;
 
+      // ── TIME card ──
       if(hasTime){
         const tEntries=Object.entries(_tStats).sort((a,b)=>b[1]-a[1]);
-        const {arcs,legend,cx,cy,R,r}=buildDonut(tEntries,_tCats,FB_TIME,_tLabels);
+        const {arcs,R,r,cx,cy}=buildArcs(tEntries,_tCats,FB_TIME);
         const totalH=Math.floor(_tTotal/60),totalM=_tTotal%60;
         const cLabel=totalH>0?(totalM>0?totalH+'h '+totalM+'m':totalH+'h'):_tTotal+'m';
-        const svgSize=hasBoth?110:150;
-        html+=`<div style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:10px">`;
+        const svgSize=hasBoth?100:130;
+        const timeExpanded=state._timeDetailsOpen===true;
+
+        html+=`<div style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px">`;
+        // Donut
+        html+=`<div style="display:flex;justify-content:center;margin-bottom:10px">`;
         html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
         html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
         html+=arcs;
-        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?11:13}px;font-weight:600;color:#fff;text-align:center;letter-spacing:-.01em">${cLabel}</span></div></div>`;
-        html+=`<div style="width:100%">${legend}</div>`;
+        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:12px;font-weight:600;color:#fff">${cLabel}</span></div></div>`;
+        html+=`</div>`;
+        // Category rows
+        tEntries.forEach(([cid,mins],idx)=>{
+          const cat=_tCats.find(c=>c.id===cid);
+          const color=cat?.color||FB_TIME[idx%FB_TIME.length];
+          const hh=Math.floor(mins/60),m=mins%60;
+          const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
+          const labels=_tLabels[cid]?[..._tLabels[cid]]:[];
+          const catId_safe=cid.replace(/[^a-zA-Z0-9]/g,'_');
+          html+=`<div style="margin-bottom:6px">`;
+          html+=`<div onclick="event.stopPropagation();toggleTimeDetail('${catId_safe}')" style="display:flex;align-items:center;gap:7px;cursor:${labels.length?'pointer':'default'}">`;
+          html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
+          html+=`<span style="font-size:15px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</span>`;
+          html+=`<span style="font-size:13px;color:rgba(255,255,255,0.5)">${str}</span>`;
+          if(labels.length) html+=`<span style="font-size:10px;color:rgba(255,255,255,0.2);padding-left:2px">${(state['_tdet_'+catId_safe])?'▲':'▼'}</span>`;
+          html+=`</div>`;
+          if(labels.length&&state['_tdet_'+catId_safe]){
+            html+=`<div style="padding-left:15px;margin-top:3px">`;
+            labels.forEach(lbl=>{ html+=`<div style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lbl}</div>`; });
+            html+=`</div>`;
+          }
+          html+=`</div>`;
+        });
         html+=`</div>`;
       }
 
+      // ── MONEY card ──
       if(hasMoney){
         const mEntries=Object.entries(byCatM).sort((a,b)=>b[1]-a[1]);
-        const {arcs,legend,cx,cy,R,r}=buildDonut(mEntries,_mCats,FB_MONEY,null);
+        const {arcs,R,r,cx,cy}=buildArcs(mEntries,_mCats,FB_MONEY);
         const totAmtStr=_mTotal%1===0?String(_mTotal):_mTotal.toFixed(1);
-        const svgSize=hasBoth?110:150;
-        html+=`<div style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:10px">`;
+        const svgSize=hasBoth?100:130;
+        html+=`<div style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px">`;
+        html+=`<div style="display:flex;justify-content:center;margin-bottom:10px">`;
         html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
         html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
         html+=arcs;
-        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?11:13}px;font-weight:600;color:#fff">${totAmtStr}</span></div></div>`;
-        html+=`<div style="width:100%">${legend}</div>`;
+        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:12px;font-weight:600;color:#fff">${totAmtStr}</span></div></div>`;
+        html+=`</div>`;
+        mEntries.forEach(([cid,amt],idx)=>{
+          const cat=_mCats.find(c=>c.id===cid);
+          const color=cat?.color||FB_MONEY[idx%FB_MONEY.length];
+          const dispAmt=amt%1===0?String(amt):amt.toFixed(1);
+          html+=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">`;
+          html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
+          html+=`<span style="font-size:15px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</span>`;
+          html+=`<span style="font-size:13px;color:rgba(255,255,255,0.5)">${dispAmt}</span>`;
+          html+=`</div>`;
+        });
         html+=`</div>`;
       }
 
@@ -2035,6 +2068,11 @@ function tcTouchMove(e){ if(!tcTId) return; const dx=Math.abs(e.touches[0].clien
 function tcTouchEnd(e,id){ clearTimeout(tcTTimer); if(tcTActive&&tcTMoved&&tcTOver&&tcTOver!==tcTId) tcReorder(tcTId,tcTOver); else renderSettings(); tcTId=null; tcTOver=null; tcTMoved=false; tcTActive=false; }
 function tcReorder(fromId,toId){ if(!fromId||!toId||fromId===toId){ renderSettings(); return; } const arr=state.timeCategories||[]; const fi=arr.findIndex(c=>c.id===fromId),ti=arr.findIndex(c=>c.id===toId); if(fi<0||ti<0){ renderSettings(); return; } const [item]=arr.splice(fi,1); arr.splice(ti,0,item); arr.forEach((c,i)=>c.order=i); save(); renderSettings(); }
 
+function toggleTimeDetail(catId){
+  const k='_tdet_'+catId;
+  state[k]=!state[k];
+  renderSettings();
+}
 function toggleFold(key){
   if(key==='settings'){ state._settingsOpen=!state._settingsOpen; save(); renderSettings(); return; }
   if(key==='stats'){ state._statsOpen=!state._statsOpen; save(); renderSettings(); return; }
@@ -2962,7 +3000,7 @@ function updateTTSelectionBar(){
   const mins=ttSelBlocks.size*15;
   const hh=Math.floor(mins/60),m=mins%60;
   const dur=hh>0?`${hh}h${m>0?' '+m+'m':''}`:mins+'m';
-  const bigHTML=`<span style="display:block;font-size:36px;font-weight:200;letter-spacing:-.02em;color:#fff">${dur}</span>`;
+  const bigHTML=`<span style="display:block;font-size:30px;font-weight:200;letter-spacing:-.02em;color:#fff">${dur}</span>`;
   document.getElementById('ttEntryDuration').innerHTML=bigHTML;
   const hd=document.getElementById('ttHabitDuration');
   if(hd) hd.innerHTML=bigHTML;
