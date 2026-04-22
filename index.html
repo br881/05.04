@@ -307,7 +307,14 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .habit-detail-screen.open{transform:translateY(0);}
 .hd-header{padding:calc(var(--safe-top)+2px) 20px 10px;display:flex;align-items:center;border:none;flex-shrink:0;}
 .hd-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:8px 24px calc(var(--safe-bottom)+60px);scrollbar-width:none;}
-.hd-notch-bar{flex-shrink:0;padding-top:calc(var(--safe-top)+10px);padding-bottom:10px;display:flex;align-items:center;justify-content:center;}
+.hd-notch-bar{
+  flex-shrink:0;
+  padding-top:max(env(safe-area-inset-top,44px), 44px);
+  padding-bottom:12px;
+  display:flex;align-items:flex-end;justify-content:center;
+  background:#000;
+  min-height:72px;
+}
 .hd-body::-webkit-scrollbar{display:none;}
 .hd-top-row{display:flex;align-items:center;gap:10px;padding:36px 0 30px;}
 .type-mini-btns{display:flex;gap:5px;flex-shrink:0;}
@@ -561,15 +568,14 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
       </svg>
     </button>
   </div>
-  </div>
 
   <!-- Ghost tap zones -->
   <!-- Left half top → extras/habits sheet -->
   <div style="position:fixed;top:0;left:0;width:50%;height:calc(var(--safe-top)+52px);z-index:50;cursor:pointer;" onclick="openSheet()"></div>
-  <!-- Settings: tap the progress bar area or empty space below buttons -->
+  <!-- Bottom zone → settings (invisible, behind progress bar) -->
   <div id="pbSettingsZone" onclick="openSettings()" style="position:fixed;bottom:0;left:0;right:0;height:calc(var(--safe-bottom)+68px);z-index:8;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;"></div>
-  <!-- Hidden settings button: centered between the two circle buttons, above progressBar -->
-  <button onclick="openSettings()" style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--safe-bottom) + 44px);width:80px;height:48px;background:none;border:none;cursor:pointer;opacity:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;z-index:20;"></button>
+  <!-- All-done invisible settings button — full screen tap when doneState shown -->
+  <div id="doneSettingsZone" onclick="openSettings()" style="position:fixed;inset:0;z-index:7;display:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;"></div>
 </div>
 
 <!-- ADD TEMP overlay (triggered by left-ghost or swipe-up) -->
@@ -583,7 +589,6 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 
 <!-- SETTINGS -->
 <div id="settings" class="screen" style="overflow:visible;display:flex;flex-direction:column;">
-  <button onclick="closeSettings()" style="position:fixed;top:0;left:0;padding:calc(var(--safe-top) + 6px) 16px 12px;background:none;border:none;color:var(--accent);font-size:28px;cursor:pointer;opacity:.7;line-height:1;z-index:20;-webkit-tap-highlight-color:transparent;">‹</button>
   <div class="settings-scroll" id="settingsScroll" style="padding-top:calc(var(--safe-top)+56px)"></div>
 </div>
 
@@ -874,16 +879,19 @@ function renderHome(){
     Array.from(hList.children).forEach(r=>{ r.style.maxHeight=r.offsetHeight+'px'; r.classList.add('vanishing'); });
     setTimeout(()=>{ hList.innerHTML=''; ds.classList.add('show'); },400);
     if(pb){
-      // Show ... state — fully filled, label becomes ellipsis
       const fill=document.getElementById('pbFill');
       const label=document.getElementById('pbLabel');
       if(fill) fill.style.width='100%';
       if(label) label.textContent='…';
       pb.classList.add('visible');
     }
+    const dz=document.getElementById('doneSettingsZone');
+    if(dz) dz.style.display='block';
     return;
   }
   ds.classList.remove('show');
+  const dz=document.getElementById('doneSettingsZone');
+  if(dz) dz.style.display='none';
 
   function diffZone(container, items, makeRow){
     Array.from(container.children).forEach(row=>{
@@ -1641,9 +1649,6 @@ function openSettings(){
   document.getElementById('home').classList.add('slide-out');
   document.getElementById('settings').classList.add('active');
   document.querySelector('.habits-scroll').style.overflow='hidden';
-  document.getElementById('progressBar').style.display='none';
-  document.getElementById('pbSettingsZone').style.display='none';
-  const bb=document.querySelector('.bottom-bar'); if(bb) bb.style.display='none';
 }
 function closeSettings(){
   const s=document.getElementById('settings'), h=document.getElementById('home');
@@ -1651,9 +1656,6 @@ function closeSettings(){
   s.style.transform=''; h.style.transform='';
   h.classList.remove('slide-out'); s.classList.remove('active');
   document.querySelector('.habits-scroll').style.overflow='';
-  document.getElementById('progressBar').style.display='';
-  document.getElementById('pbSettingsZone').style.display='';
-  const bb=document.querySelector('.bottom-bar'); if(bb) bb.style.display='';
 }
 
 function renderSettings(){
