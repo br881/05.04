@@ -47,12 +47,12 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 /* HABIT TILE */
 .habit-row{display:flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;will-change:opacity,transform;transition:opacity .25s ease,max-height .35s ease,padding .35s ease,margin .35s ease,box-shadow .15s;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
 .habit-row.tapping{animation:tapFill .8s linear forwards;}
-@keyframes tapFill{0%{background:rgba(255,255,255,0.32);}60%{background:rgba(255,255,255,0.22);}100%{background:rgba(255,255,255,0.18);}}
+@keyframes tapFill{0%{box-shadow:inset 0 0 0 2px rgba(61,221,101,0);}15%{box-shadow:inset 0 0 0 2px rgba(61,221,101,0.5);}100%{box-shadow:inset 0 0 0 2px rgba(61,221,101,1),0 0 12px rgba(61,221,101,0.25);background:rgba(61,221,101,0.15);}}
 .habit-row.row-enter{opacity:0;transform:translateY(6px);}
 .habit-row.row-visible{opacity:1;transform:translateY(0);transition:opacity .32s ease,transform .32s cubic-bezier(.2,.8,.4,1);}
 .habit-row:active{opacity:.55;}
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
-.habit-row.vanishing{overflow:hidden;pointer-events:none;opacity:0;max-height:0!important;padding-top:0!important;padding-bottom:0!important;margin:0!important;border-width:0!important;transition:opacity .26s ease,max-height .36s .08s cubic-bezier(.4,0,1,1),padding .36s .04s ease,margin .36s .04s ease,border-width .36s .04s ease!important;}
+.habit-row.vanishing{overflow:hidden;pointer-events:none;opacity:0;max-height:0!important;padding-top:0!important;padding-bottom:0!important;margin:0!important;border-width:0!important;box-shadow:none!important;animation:none!important;transition:opacity .26s ease,max-height .36s .08s cubic-bezier(.4,0,1,1),padding .36s .04s ease,margin .36s .04s ease,border-width .36s .04s ease!important;}
 .habit-row.temp-row .habit-name{color:rgba(120,235,120,1);font-weight:500;}
 .habit-name{font-size:21px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
 .habit-value-input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.38);color:#ffffff;font-size:17px;font-family:inherit;outline:none;width:72px;text-align:right;padding:2px 0 4px;transition:border-color .2s;font-weight:600;}
@@ -68,41 +68,54 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 /* PROGRESS BAR */
 #progressBar{
   position:fixed;
-  bottom:calc(var(--safe-bottom) + 100px);
+  bottom:calc(var(--safe-bottom) + 116px);
   left:50%;transform:translateX(-50%);
   z-index:11;pointer-events:all;
   opacity:0;transition:opacity .35s;
-  width:150px;height:6px;
+  width:160px;height:32px;
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
-  padding:12px 0;
-  box-sizing:content-box;
 }
 #progressBar.visible{opacity:1;}
 #progressBar.done-invisible{opacity:0;pointer-events:all;}
 #pbPill{
-  width:100%;height:6px;
-  border-radius:3px;
-  background:rgba(255,255,255,0.13);
-  overflow:visible;
+  width:100%;height:100%;
+  border-radius:16px;
+  background:rgba(255,255,255,0.08);
+  overflow:hidden;
   position:relative;
   display:flex;align-items:center;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
 }
 #pbFill{
   position:absolute;left:0;top:0;bottom:0;
-  border-radius:3px;
-  background:#3ddd65;
+  border-radius:16px;
+  background:rgba(61,221,101,0.55);
   transition:width .55s cubic-bezier(.34,1.2,.64,1);
   width:0%;
 }
 #pbLabel{
-  position:absolute;
-  top:-20px;
-  width:100%;text-align:center;
-  font-size:11px;font-weight:500;letter-spacing:.04em;
-  color:rgba(255,255,255,0.4);
+  position:relative;z-index:1;
+  width:100%;
+  display:flex;align-items:center;justify-content:center;
+  gap:4px;
   user-select:none;
-  white-space:nowrap;
+}
+#pbLabelDone{
+  font-size:13px;font-weight:700;letter-spacing:.01em;
+  color:rgba(255,255,255,0.9);
+  line-height:1;
+}
+#pbLabelSep{
+  font-size:11px;font-weight:400;
+  color:rgba(255,255,255,0.3);
+  line-height:1;
+}
+#pbLabelTotal{
+  font-size:11px;font-weight:500;letter-spacing:.01em;
+  color:rgba(255,255,255,0.4);
+  line-height:1;
 }
 @keyframes pbShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
 @keyframes pbPop{0%{transform:scaleY(1);}40%{transform:scaleY(1.6);}70%{transform:scaleY(0.85);}100%{transform:scaleY(1);}}
@@ -187,9 +200,9 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .sector-block-header:active{opacity:.6;}
 .sbn{font-size:19px;color:#ffffff;font-weight:400;}
 .sector-habits-box{margin-top:6px;background:rgba(255,255,255,0.32);border-radius:12px;overflow:hidden;padding:2px 0;}
-.sector-habit-row{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:grab;touch-action:none;transition:opacity .15s;user-select:none;-webkit-user-select:none;}
+.sector-habit-row{display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;cursor:grab;touch-action:none;transition:opacity .15s;user-select:none;-webkit-user-select:none;}
 .sector-habit-row:active{opacity:.5;cursor:grabbing;}
-.shr-name{flex:1;font-size:17px;color:#ffffff;font-weight:400;text-align:center;}
+.shr-name{font-size:17px;color:#ffffff;font-weight:400;text-align:center;}
 .add-habit-row{display:flex;align-items:center;justify-content:center;padding:10px 4px;color:rgba(255,255,255,0.35);cursor:pointer;touch-action:auto;transition:opacity .15s;}
 .add-habit-row:active{opacity:.8;}
 .add-sector-btn-icon{display:flex;align-items:center;justify-content:center;width:100%;padding:12px;border-radius:12px;border:none;background:none;color:rgba(255,255,255,0.3);cursor:pointer;transition:all .15s;}
@@ -547,7 +560,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div id="progressBar" onclick="openSettings()">
     <div id="pbPill">
       <div id="pbFill"></div>
-      <span id="pbLabel"></span>
+      <div id="pbLabel"><span id="pbLabelDone"></span><span id="pbLabelSep">/</span><span id="pbLabelTotal"></span></div>
     </div>
   </div>
   <!-- Habits -->
@@ -867,7 +880,7 @@ function renderHome(){
   habits.sort((a,b)=>(a.order||0)-(b.order||0));
   const remaining=habits.filter(h=>!isDone(dd.habits[h.id]));
 
-  // Update progress bar
+  // Update progress bar pill
   const _total=habits.length, _done=habits.length-remaining.length;
   const pb=document.getElementById('progressBar');
   if(pb&&_total>0){
@@ -875,7 +888,11 @@ function renderHome(){
     const fill=document.getElementById('pbFill');
     const label=document.getElementById('pbLabel');
     if(fill) fill.style.width=pct+'%';
-    if(label) label.textContent=_done+'\u2009/\u2009'+_total;
+    if(label){
+      const done=label.querySelector('#pbLabelDone'), total=label.querySelector('#pbLabelTotal');
+      if(done) done.textContent=_done;
+      if(total) total.textContent=_total;
+    }
     pb.classList.add('visible');
   }
   if(remaining.length===0){
@@ -888,7 +905,7 @@ function renderHome(){
       const fill=document.getElementById('pbFill');
       const label=document.getElementById('pbLabel');
       if(fill) fill.style.width='0%';
-      if(label) label.textContent='';
+      if(label){ const done=label.querySelector('#pbLabelDone'), total=label.querySelector('#pbLabelTotal'); if(done) done.textContent=''; if(total) total.textContent=''; }
     }
     const dz=document.getElementById('doneSettingsZone');
     if(dz) dz.style.display='block';
@@ -1692,7 +1709,7 @@ function renderSettings(){
     for(let i=sharedPeriod-1;i>=0;i--){ const d=new Date(now3); d.setDate(now3.getDate()-i); days.push(fmtDate(d)); }
     const activeHabits=state.habits.filter(h=>!h.archived&&days.some(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])));
 
-    // ── HABITS — name · dots · % in one line ──
+    // ── HABITS — progress bar per habit ──
     if(activeHabits.length){
       const bySec={};
       activeHabits.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
@@ -1702,6 +1719,7 @@ function renderSettings(){
         if(!hh.length) return;
         if(state.sectors.length>1) html+=`<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;text-align:center">${sec.name}</div>`;
         hh.forEach(h=>{
+          // Only count days the habit was scheduled (days array)
           const scheduledDays=days.filter(dk=>{
             const d=new Date(dk+'T00:00:00');
             const jsd=d.getDay()===0?6:d.getDay()-1;
@@ -1710,16 +1728,14 @@ function renderSettings(){
           const doneCount=scheduledDays.filter(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])).length;
           const total=scheduledDays.length||1;
           const pct=Math.round(doneCount/total*100);
-          const dotSize=sharedPeriod===7?7:4;
-          html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">`;
-          html+=`<span style="font-size:15px;color:#fff;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.name}</span>`;
-          html+=`<div style="display:flex;gap:3px;flex-shrink:0;align-items:center">`;
-          scheduledDays.forEach(dk=>{
-            const done=isDone(state.daily?.[dk]?.habits?.[h.id]);
-            html+=`<div style="width:${dotSize}px;height:${dotSize}px;border-radius:50%;background:${done?'#3ddd65':'rgba(255,255,255,0.12)'}"></div>`;
-          });
+          html+=`<div style="margin-bottom:12px">`;
+          html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">`;
+          html+=`<span style="font-size:15px;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">${h.name}</span>`;
+          html+=`<span style="font-size:12px;color:rgba(255,255,255,0.35);min-width:30px;text-align:right">${pct}%</span>`;
           html+=`</div>`;
-          html+=`<span style="font-size:12px;color:rgba(255,255,255,0.35);min-width:28px;text-align:right">${pct}%</span>`;
+          html+=`<div style="width:100%;height:4px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden">`;
+          html+=`<div style="height:4px;width:${pct}%;background:rgba(61,221,101,0.75);border-radius:2px;transition:width .4s ease"></div>`;
+          html+=`</div>`;
           html+=`</div>`;
         });
       });
@@ -1728,11 +1744,12 @@ function renderSettings(){
       html+=`<div style="color:rgba(255,255,255,0.15);font-size:13px;text-align:center;padding:8px 0 16px">—</div>`;
     }
 
-    // ── TIME + MONEY — tap to expand ──
+    // ── TIME + MONEY — side by side donuts ──
     const _tStats=getTimeStats(sharedPeriod===7?'week':'month');
     const _tCats=state.timeCategories||[];
     const _tTotal=Object.values(_tStats).reduce((a,b)=>a+b,0);
 
+    // Collect labels per time category for the period
     const _tLabels={};
     for(const[dk,entries]of Object.entries(state.timeEntries||{})){
       if(!days.includes(dk)) continue;
@@ -1753,11 +1770,12 @@ function renderSettings(){
     _mEntries.forEach(e=>{ byCatM[e.catId]=(byCatM[e.catId]||0)+Number(e.amount||0); });
     const _mTotal=Object.values(byCatM).reduce((a,b)=>a+b,0);
 
+    // build donut arcs only
     function buildArcs(dataEntries,cats,fallbackColors){
       const R=44,r=28,cx=52,cy=52,circ=2*Math.PI*R;
       let offset=0,arcs='';
-      const total=dataEntries.reduce((s,[,v])=>s+v,0);
       dataEntries.forEach(([id,val],idx)=>{
+        const total=dataEntries.reduce((s,[,v])=>s+v,0);
         const cat=cats.find(c=>c.id===id);
         const pct=val/total;
         const dash=pct*circ,gap=circ-dash;
@@ -1784,32 +1802,38 @@ function renderSettings(){
         const totalH=Math.floor(_tTotal/60),totalM=_tTotal%60;
         const cLabel=totalH>0?(totalM>0?totalH+'h '+totalM+'m':totalH+'h'):_tTotal+'m';
         const svgSize=hasBoth?100:130;
-        const tExpanded=state._tCardOpen===true;
+        const timeExpanded=state._timeDetailsOpen===true;
 
-        html+=`<div onclick="event.stopPropagation();toggleStatCard('t')" style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent">`;
-        html+=`<div style="display:flex;justify-content:center;margin-bottom:${tExpanded?12:0}px">`;
+        html+=`<div style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px">`;
+        // Donut
+        html+=`<div style="display:flex;justify-content:center;margin-bottom:10px">`;
         html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
-        html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="${R-r}"/>`;
+        html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
         html+=arcs;
-        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:13px;font-weight:600;color:#fff">${cLabel}</span></div></div>`;
+        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:12px;font-weight:600;color:#fff">${cLabel}</span></div></div>`;
         html+=`</div>`;
-        if(tExpanded){
-          tEntries.forEach(([cid,mins],idx)=>{
-            const cat=_tCats.find(c=>c.id===cid);
-            const color=cat?.color||FB_TIME[idx%FB_TIME.length];
-            const hh=Math.floor(mins/60),m=mins%60;
-            const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
-            const labels=_tLabels[cid]?[..._tLabels[cid]]:[];
-            html+=`<div style="margin-bottom:10px">`;
-            html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:${labels.length?4:0}px">`;
-            html+=`<div style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
-            html+=`<span style="font-size:16px;flex:1;color:#fff">${cat?.name||'?'}</span>`;
-            html+=`<span style="font-size:15px;color:rgba(255,255,255,0.6)">${str}</span>`;
+        // Category rows
+        tEntries.forEach(([cid,mins],idx)=>{
+          const cat=_tCats.find(c=>c.id===cid);
+          const color=cat?.color||FB_TIME[idx%FB_TIME.length];
+          const hh=Math.floor(mins/60),m=mins%60;
+          const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
+          const labels=_tLabels[cid]?[..._tLabels[cid]]:[];
+          const catId_safe=cid.replace(/[^a-zA-Z0-9]/g,'_');
+          html+=`<div style="margin-bottom:6px">`;
+          html+=`<div onclick="event.stopPropagation();toggleTimeDetail('${catId_safe}')" style="display:flex;align-items:center;gap:7px;cursor:${labels.length?'pointer':'default'}">`;
+          html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
+          html+=`<span style="font-size:15px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</span>`;
+          html+=`<span style="font-size:13px;color:rgba(255,255,255,0.5)">${str}</span>`;
+          if(labels.length) html+=`<span style="font-size:10px;color:rgba(255,255,255,0.2);padding-left:2px">${(state['_tdet_'+catId_safe])?'▲':'▼'}</span>`;
+          html+=`</div>`;
+          if(labels.length&&state['_tdet_'+catId_safe]){
+            html+=`<div style="padding-left:15px;margin-top:3px">`;
+            labels.forEach(lbl=>{ html+=`<div style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lbl}</div>`; });
             html+=`</div>`;
-            labels.forEach(lbl=>{ html+=`<div style="font-size:12px;color:rgba(255,255,255,0.38);padding-left:17px;line-height:1.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lbl}</div>`; });
-            html+=`</div>`;
-          });
-        }
+          }
+          html+=`</div>`;
+        });
         html+=`</div>`;
       }
 
@@ -1819,27 +1843,23 @@ function renderSettings(){
         const {arcs,R,r,cx,cy}=buildArcs(mEntries,_mCats,FB_MONEY);
         const totAmtStr=_mTotal%1===0?String(_mTotal):_mTotal.toFixed(1);
         const svgSize=hasBoth?100:130;
-        const mExpanded=state._mCardOpen===true;
-
-        html+=`<div onclick="event.stopPropagation();toggleStatCard('m')" style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent">`;
-        html+=`<div style="display:flex;justify-content:center;margin-bottom:${mExpanded?12:0}px">`;
+        html+=`<div style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px">`;
+        html+=`<div style="display:flex;justify-content:center;margin-bottom:10px">`;
         html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
-        html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="${R-r}"/>`;
+        html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
         html+=arcs;
-        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:13px;font-weight:600;color:#fff">${totAmtStr}</span></div></div>`;
+        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:12px;font-weight:600;color:#fff">${totAmtStr}</span></div></div>`;
         html+=`</div>`;
-        if(mExpanded){
-          mEntries.forEach(([cid,amt],idx)=>{
-            const cat=_mCats.find(c=>c.id===cid);
-            const color=cat?.color||FB_MONEY[idx%FB_MONEY.length];
-            const dispAmt=amt%1===0?String(amt):amt.toFixed(1);
-            html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">`;
-            html+=`<div style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
-            html+=`<span style="font-size:16px;flex:1;color:#fff">${cat?.name||'?'}</span>`;
-            html+=`<span style="font-size:15px;color:rgba(255,255,255,0.6)">${dispAmt}</span>`;
-            html+=`</div>`;
-          });
-        }
+        mEntries.forEach(([cid,amt],idx)=>{
+          const cat=_mCats.find(c=>c.id===cid);
+          const color=cat?.color||FB_MONEY[idx%FB_MONEY.length];
+          const dispAmt=amt%1===0?String(amt):amt.toFixed(1);
+          html+=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">`;
+          html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
+          html+=`<span style="font-size:15px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</span>`;
+          html+=`<span style="font-size:13px;color:rgba(255,255,255,0.5)">${dispAmt}</span>`;
+          html+=`</div>`;
+        });
         html+=`</div>`;
       }
 
@@ -1939,7 +1959,7 @@ function renderSettings(){
   // Kategorie Czas + Money
   html+=`<div class="s-section" style="margin-top:4px"><div style="padding:0 0 8px">`;
   html+=`<div style="padding:12px 16px 8px">`;
-  html+=`<div style="font-size:12px;color:rgba(255,255,255,0.45);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px;text-align:center">Czas</div>`;
+  html+=`<div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px;text-align:center">Czas</div>`;
   const _aCats=state.timeCategories||[];
   const _aPal=['#7dd3fc','#f9a8d4','#fdba74','#c4b5fd','#6ee7b7','#fde68a','#fca5a5','#67e8f9'];
   html+=`<div style="display:flex;flex-direction:column;gap:8px">`;
@@ -1954,7 +1974,7 @@ function renderSettings(){
   });
   html+=`</div>`;
   html+=`<button onclick="openAddTimeCat()" style="display:flex;align-items:center;justify-content:center;width:100%;padding:10px;margin-top:6px;border:none;border-radius:12px;background:none;color:rgba(255,255,255,0.3);cursor:pointer;">${plusSVG}</button>`;
-  html+=`<div style="font-size:12px;color:rgba(255,255,255,0.45);letter-spacing:.07em;text-transform:uppercase;margin:16px 0 10px;text-align:center">Money</div>`;
+  html+=`<div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:.07em;text-transform:uppercase;margin:16px 0 10px;text-align:center">Money</div>`;
   const _mCats2=(state.moneyCategories||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
   const _mPal2=['#7dd3fc','#f9a8d4','#fdba74','#c4b5fd','#6ee7b7','#fde68a','#fca5a5','#67e8f9'];
   html+=`<div style="display:flex;flex-direction:column;gap:8px">`;
@@ -2070,11 +2090,6 @@ function tcReorder(fromId,toId){ if(!fromId||!toId||fromId===toId){ renderSettin
 function toggleTimeDetail(catId){
   const k='_tdet_'+catId;
   state[k]=!state[k];
-  renderSettings();
-}
-function toggleStatCard(type){
-  if(type==='t') state._tCardOpen=!state._tCardOpen;
-  else state._mCardOpen=!state._mCardOpen;
   renderSettings();
 }
 function toggleFold(key){
