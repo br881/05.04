@@ -582,7 +582,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <!-- Left half top → extras/habits sheet -->
   <div style="position:fixed;top:0;left:0;width:50%;height:calc(var(--safe-top)+52px);z-index:50;cursor:pointer;" onclick="openSheet()"></div>
   <!-- Bottom zone → settings (invisible, behind progress bar) -->
-  <div id="pbSettingsZone" onclick="openSettings()" style="position:fixed;bottom:0;left:0;right:0;height:calc(var(--safe-bottom)+68px);z-index:8;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;"></div>
+  <div id="pbSettingsZone" onclick="openSettings()" style="position:fixed;bottom:0;left:0;right:0;height:calc(var(--safe-bottom) + 140px);z-index:9;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;"></div>
   <!-- All-done invisible settings button — full screen tap when doneState shown -->
   <div id="doneSettingsZone" onclick="openSettings()" style="position:fixed;inset:0;z-index:7;display:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;"></div>
 </div>
