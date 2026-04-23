@@ -1709,7 +1709,7 @@ function renderSettings(){
     for(let i=sharedPeriod-1;i>=0;i--){ const d=new Date(now3); d.setDate(now3.getDate()-i); days.push(fmtDate(d)); }
     const activeHabits=state.habits.filter(h=>!h.archived&&days.some(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])));
 
-    // ── HABITS — progress bar per habit ──
+    // ── HABITS — inline progress bar per habit ──
     if(activeHabits.length){
       const bySec={};
       activeHabits.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
@@ -1717,9 +1717,8 @@ function renderSettings(){
       state.sectors.forEach(sec=>{
         const hh=(bySec[sec.id]||[]).sort((a,b)=>(a.order||0)-(b.order||0));
         if(!hh.length) return;
-        if(state.sectors.length>1) html+=`<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;text-align:center">${sec.name}</div>`;
+        if(state.sectors.length>1) html+=`<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;text-align:center">${sec.name}</div>`;
         hh.forEach(h=>{
-          // Only count days the habit was scheduled (days array)
           const scheduledDays=days.filter(dk=>{
             const d=new Date(dk+'T00:00:00');
             const jsd=d.getDay()===0?6:d.getDay()-1;
@@ -1728,14 +1727,17 @@ function renderSettings(){
           const doneCount=scheduledDays.filter(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])).length;
           const total=scheduledDays.length||1;
           const pct=Math.round(doneCount/total*100);
-          html+=`<div style="margin-bottom:12px">`;
-          html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">`;
-          html+=`<span style="font-size:15px;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">${h.name}</span>`;
-          html+=`<span style="font-size:12px;color:rgba(255,255,255,0.35);min-width:30px;text-align:right">${pct}%</span>`;
-          html+=`</div>`;
-          html+=`<div style="width:100%;height:4px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden">`;
-          html+=`<div style="height:4px;width:${pct}%;background:rgba(61,221,101,0.75);border-radius:2px;transition:width .4s ease"></div>`;
-          html+=`</div>`;
+          const segments=total;
+          // Build segmented bar: each segment = 1 scheduled day
+          let segsHtml='';
+          for(let si=0;si<segments;si++){
+            const filled=si<doneCount;
+            segsHtml+=`<div style="flex:1;height:4px;border-radius:2px;background:${filled?'rgba(61,221,101,0.75)':'rgba(255,255,255,0.1)'}"></div>`;
+          }
+          html+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">`;
+          html+=`<span style="font-size:15px;color:#fff;flex-shrink:0;max-width:38%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.name}</span>`;
+          html+=`<div style="display:flex;gap:2px;flex:1;align-items:center">${segsHtml}</div>`;
+          html+=`<span style="font-size:13px;color:rgba(255,255,255,0.45);flex-shrink:0;min-width:34px;text-align:right">${pct}%</span>`;
           html+=`</div>`;
         });
       });
@@ -1744,7 +1746,7 @@ function renderSettings(){
       html+=`<div style="color:rgba(255,255,255,0.15);font-size:13px;text-align:center;padding:8px 0 16px">—</div>`;
     }
 
-    // ── TIME + MONEY — side by side donuts ──
+    // ── TIME + MONEY ──
     const _tStats=getTimeStats(sharedPeriod===7?'week':'month');
     const _tCats=state.timeCategories||[];
     const _tTotal=Object.values(_tStats).reduce((a,b)=>a+b,0);
@@ -1770,99 +1772,68 @@ function renderSettings(){
     _mEntries.forEach(e=>{ byCatM[e.catId]=(byCatM[e.catId]||0)+Number(e.amount||0); });
     const _mTotal=Object.values(byCatM).reduce((a,b)=>a+b,0);
 
-    // build donut arcs only
-    function buildArcs(dataEntries,cats,fallbackColors){
-      const R=44,r=28,cx=52,cy=52,circ=2*Math.PI*R;
-      let offset=0,arcs='';
-      dataEntries.forEach(([id,val],idx)=>{
-        const total=dataEntries.reduce((s,[,v])=>s+v,0);
-        const cat=cats.find(c=>c.id===id);
-        const pct=val/total;
-        const dash=pct*circ,gap=circ-dash;
-        const color=cat?.color||fallbackColors[idx%fallbackColors.length];
-        arcs+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${color}" stroke-width="${R-r}" stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}" stroke-dashoffset="${(-offset*circ).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;
-        offset+=pct;
-      });
-      return {arcs,R,r,cx,cy};
-    }
-
-    const hasBoth=_tTotal>0&&_mTotal>0;
-    const hasTime=_tTotal>0;
-    const hasMoney=_mTotal>0;
     const FB_TIME=['#3ddd65','#60a5fa','#f59e0b','#f87171','#a78bfa','#34d399'];
     const FB_MONEY=['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#a855f7'];
 
-    if(hasTime||hasMoney){
-      html+=`<div style="display:flex;gap:10px">`;
-
-      // ── TIME card ──
-      if(hasTime){
-        const tEntries=Object.entries(_tStats).sort((a,b)=>b[1]-a[1]);
-        const {arcs,R,r,cx,cy}=buildArcs(tEntries,_tCats,FB_TIME);
-        const totalH=Math.floor(_tTotal/60),totalM=_tTotal%60;
-        const cLabel=totalH>0?(totalM>0?totalH+'h '+totalM+'m':totalH+'h'):_tTotal+'m';
-        const svgSize=hasBoth?100:130;
-        const timeExpanded=state._timeDetailsOpen===true;
-
-        html+=`<div style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px">`;
-        // Donut
-        html+=`<div style="display:flex;justify-content:center;margin-bottom:10px">`;
-        html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
-        html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
-        html+=arcs;
-        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:12px;font-weight:600;color:#fff">${cLabel}</span></div></div>`;
-        html+=`</div>`;
-        // Category rows
+    // ── TIME card ──
+    if(_tTotal>0){
+      const tEntries=Object.entries(_tStats).sort((a,b)=>b[1]-a[1]);
+      const totalH=Math.floor(_tTotal/60),totalM=_tTotal%60;
+      const cLabel=totalH>0?(totalM>0?totalH+'h '+totalM+'m':totalH+'h'):_tTotal+'m';
+      const timeOpen=state._timeCardOpen===true;
+      html+=`<div onclick="event.stopPropagation();toggleStatCard('time')" style="background:rgba(255,255,255,0.04);border-radius:14px;padding:18px 20px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
+      // Header row: total + arrow
+      html+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${timeOpen?'18px':'0'}">`;
+      html+=`<span style="font-size:28px;font-weight:300;color:#fff;letter-spacing:-.02em">${cLabel}</span>`;
+      html+=`<span style="font-size:12px;color:rgba(255,255,255,0.25)">${timeOpen?'▲':'▼'}</span>`;
+      html+=`</div>`;
+      if(timeOpen){
         tEntries.forEach(([cid,mins],idx)=>{
           const cat=_tCats.find(c=>c.id===cid);
           const color=cat?.color||FB_TIME[idx%FB_TIME.length];
           const hh=Math.floor(mins/60),m=mins%60;
           const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
           const labels=_tLabels[cid]?[..._tLabels[cid]]:[];
-          const catId_safe=cid.replace(/[^a-zA-Z0-9]/g,'_');
-          html+=`<div style="margin-bottom:6px">`;
-          html+=`<div onclick="event.stopPropagation();toggleTimeDetail('${catId_safe}')" style="display:flex;align-items:center;gap:7px;cursor:${labels.length?'pointer':'default'}">`;
-          html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
-          html+=`<span style="font-size:15px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</span>`;
-          html+=`<span style="font-size:13px;color:rgba(255,255,255,0.5)">${str}</span>`;
-          if(labels.length) html+=`<span style="font-size:10px;color:rgba(255,255,255,0.2);padding-left:2px">${(state['_tdet_'+catId_safe])?'▲':'▼'}</span>`;
+          html+=`<div style="margin-bottom:14px">`;
+          html+=`<div style="display:flex;align-items:center;gap:10px">`;
+          html+=`<div style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
+          html+=`<span style="font-size:17px;color:#fff;flex:1">${cat?.name||'?'}</span>`;
+          html+=`<span style="font-size:17px;font-weight:600;color:#fff">${str}</span>`;
           html+=`</div>`;
-          if(labels.length&&state['_tdet_'+catId_safe]){
-            html+=`<div style="padding-left:15px;margin-top:3px">`;
-            labels.forEach(lbl=>{ html+=`<div style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lbl}</div>`; });
+          if(labels.length){
+            html+=`<div style="padding-left:19px;margin-top:5px">`;
+            labels.forEach(lbl=>{ html+=`<div style="font-size:13px;color:rgba(255,255,255,0.38);line-height:1.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lbl}</div>`; });
             html+=`</div>`;
           }
           html+=`</div>`;
         });
-        html+=`</div>`;
       }
+      html+=`</div>`;
+    }
 
-      // ── MONEY card ──
-      if(hasMoney){
-        const mEntries=Object.entries(byCatM).sort((a,b)=>b[1]-a[1]);
-        const {arcs,R,r,cx,cy}=buildArcs(mEntries,_mCats,FB_MONEY);
-        const totAmtStr=_mTotal%1===0?String(_mTotal):_mTotal.toFixed(1);
-        const svgSize=hasBoth?100:130;
-        html+=`<div style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px">`;
-        html+=`<div style="display:flex;justify-content:center;margin-bottom:10px">`;
-        html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
-        html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
-        html+=arcs;
-        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:12px;font-weight:600;color:#fff">${totAmtStr}</span></div></div>`;
-        html+=`</div>`;
+    // ── MONEY card ──
+    if(_mTotal>0){
+      const mEntries=Object.entries(byCatM).sort((a,b)=>b[1]-a[1]);
+      const totAmtStr=_mTotal%1===0?String(_mTotal):_mTotal.toFixed(2);
+      const moneyOpen=state._moneyCardOpen===true;
+      html+=`<div onclick="event.stopPropagation();toggleStatCard('money')" style="background:rgba(255,255,255,0.04);border-radius:14px;padding:18px 20px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
+      // Header row: total + arrow
+      html+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${moneyOpen?'18px':'0'}">`;
+      html+=`<span style="font-size:28px;font-weight:300;color:#fff;letter-spacing:-.02em">${totAmtStr}</span>`;
+      html+=`<span style="font-size:12px;color:rgba(255,255,255,0.25)">${moneyOpen?'▲':'▼'}</span>`;
+      html+=`</div>`;
+      if(moneyOpen){
         mEntries.forEach(([cid,amt],idx)=>{
           const cat=_mCats.find(c=>c.id===cid);
           const color=cat?.color||FB_MONEY[idx%FB_MONEY.length];
-          const dispAmt=amt%1===0?String(amt):amt.toFixed(1);
-          html+=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">`;
-          html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
-          html+=`<span style="font-size:15px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</span>`;
-          html+=`<span style="font-size:13px;color:rgba(255,255,255,0.5)">${dispAmt}</span>`;
+          const dispAmt=amt%1===0?String(amt):amt.toFixed(2);
+          html+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">`;
+          html+=`<div style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
+          html+=`<span style="font-size:17px;color:#fff;flex:1">${cat?.name||'?'}</span>`;
+          html+=`<span style="font-size:17px;font-weight:600;color:#fff">${dispAmt}</span>`;
           html+=`</div>`;
         });
-        html+=`</div>`;
       }
-
       html+=`</div>`;
     }
 
@@ -2091,6 +2062,10 @@ function toggleTimeDetail(catId){
   const k='_tdet_'+catId;
   state[k]=!state[k];
   renderSettings();
+}
+function toggleStatCard(type){
+  if(type==='time'){ state._timeCardOpen=!state._timeCardOpen; save(); renderSettings(); return; }
+  if(type==='money'){ state._moneyCardOpen=!state._moneyCardOpen; save(); renderSettings(); return; }
 }
 function toggleFold(key){
   if(key==='settings'){ state._settingsOpen=!state._settingsOpen; save(); renderSettings(); return; }
