@@ -18,17 +18,7 @@
   --red:#e05555;--sep:rgba(255,255,255,0.06);--radius:16px;
   --safe-top:env(safe-area-inset-top,44px);--safe-bottom:env(safe-area-inset-bottom,20px);
 }
-html.light{
-  --bg:#f2f2f7;--bg2:#e5e5ea;--tile:#ffffff;--tile2:#f2f2f7;--tile-border:rgba(0,0,0,0.08);
-  --accent:#22c55e;--accent-dim:rgba(34,197,94,0.2);--accent-border:rgba(34,197,94,0.7);--accent-bright:#000000;
-  --white:#1c1c1e;--ui:rgba(28,28,30,0.52);--ui2:rgba(28,28,30,0.32);
-  --red:#e05555;--sep:rgba(0,0,0,0.06);
-}
-html.light body,html.light #app,html.light .screen{ background:var(--bg);color:#1c1c1e; }
-html.light .habit-row{ background:rgba(0,0,0,0.08); }
-html.light #pbPill{ background:rgba(0,0,0,0.1); }
-html.light .sheet,html.light .input-sheet{ background:#ffffff; }
-html.light #pbFill{ background:rgba(34,197,94,0.7); }
+
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',BlinkMacSystemFont,sans-serif;height:100%;overflow:hidden;-webkit-font-smoothing:antialiased;font-weight:400;}
 #app{height:100dvh;display:flex;flex-direction:column;overflow:hidden;position:relative;}
@@ -58,7 +48,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 /* HABIT TILE */
 .habit-row{display:flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;will-change:opacity,transform;transition:opacity .25s ease,max-height .35s ease,padding .35s ease,margin .35s ease,box-shadow .15s;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
 .habit-row.tapping{animation:tapFill .8s linear forwards;}
-@keyframes tapFill{0%{box-shadow:inset 0 0 0 2px rgba(61,221,101,0);}15%{box-shadow:inset 0 0 0 2px rgba(61,221,101,0.5);}100%{box-shadow:inset 0 0 0 2px rgba(61,221,101,1),0 0 12px rgba(61,221,101,0.25);background:rgba(61,221,101,0.15);}}
+@keyframes tapFill{0%{background:rgba(255,255,255,0.32);}100%{background:rgba(61,221,101,0.15);}}
 .habit-row.row-enter{opacity:0;transform:translateY(6px);}
 .habit-row.row-visible{opacity:1;transform:translateY(0);transition:opacity .32s ease,transform .32s cubic-bezier(.2,.8,.4,1);}
 .habit-row:active{opacity:.55;}
@@ -79,12 +69,12 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 /* PROGRESS BAR */
 #progressBar{
   position:fixed;
-  bottom:calc(var(--safe-bottom) + 116px);
-  left:calc(33.33% - 41px);
-  right:calc(33.33% - 41px);
+  bottom:calc(var(--safe-bottom) + 126px);
+  left:calc(33.33% - 30px);
+  right:calc(33.33% - 30px);
   z-index:11;pointer-events:all;
   opacity:0;transition:opacity .35s;
-  height:6px;
+  height:5px;
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
   transform:none;
@@ -98,6 +88,8 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   overflow:hidden;
   position:relative;
   display:flex;align-items:center;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
 }
 #pbFill{
   position:absolute;left:0;top:0;bottom:0;
@@ -1707,19 +1699,22 @@ function renderSettings(){
     const activeHabits=focusedHabitId ? allActiveHabits.filter(h=>h.id===focusedHabitId) : allActiveHabits;
 
     // ── HABITS — inline segmented bar per habit ──
-    if(activeHabits.length){
+    // habits card is always clickable: if focused show back arrow, else expand to show all
+    const habitsCardOpen=state._habitsCardOpen===true||!focusedHabitId;
+    const habitsToShow=habitsCardOpen ? allActiveHabits : activeHabits;
+    if(allActiveHabits.length){
       const bySec={};
-      activeHabits.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
-      html+=`<div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:16px 18px;margin-bottom:14px">`;
+      habitsToShow.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
+      html+=`<div onclick="event.stopPropagation();${focusedHabitId?'clearFocusedHabit()':'toggleStatCard(\'habits\')'}" style="background:rgba(255,255,255,0.04);border-radius:14px;padding:16px 18px;margin-bottom:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
       if(focusedHabitId){
-        html+=`<div onclick="event.stopPropagation();clearFocusedHabit()" style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px;cursor:pointer;color:rgba(255,255,255,0.35);font-size:12px;letter-spacing:.04em">
+        html+=`<div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px;color:rgba(255,255,255,0.35);font-size:12px;letter-spacing:.04em">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> wszystkie
         </div>`;
       }
       state.sectors.forEach(sec=>{
         const hh=(bySec[sec.id]||[]).sort((a,b)=>(a.order||0)-(b.order||0));
         if(!hh.length) return;
-        if(state.sectors.length>1&&!focusedHabitId) html+=`<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;text-align:center">${sec.name}</div>`;
+        if(state.sectors.length>1) html+=`<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;text-align:center">${sec.name}</div>`;
         hh.forEach(h=>{
           const scheduledDays=days.filter(dk=>{
             const d=new Date(dk+'T00:00:00');
@@ -1742,7 +1737,7 @@ function renderSettings(){
         });
       });
       html+=`</div>`;
-    } else if(!focusedHabitId){
+    } else {
       html+=`<div style="color:rgba(255,255,255,0.15);font-size:13px;text-align:center;padding:8px 0 16px">—</div>`;
     }
 
@@ -1805,33 +1800,32 @@ function renderSettings(){
         const svgSize=hasBoth?100:130;
         const timeOpen=state._timeCardOpen===true;
         html+=`<div onclick="event.stopPropagation();toggleStatCard('time')" style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
-        html+=`<div style="display:flex;justify-content:center;margin-bottom:${timeOpen?'12px':'0'}">`;
+        html+=`<div style="display:flex;justify-content:center;margin-bottom:10px">`;
         html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
         html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
         html+=arcs;
         html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?11:13}px;font-weight:600;color:#fff">${cLabel}</span></div></div>`;
         html+=`</div>`;
-        if(timeOpen){
-          tEntries.forEach(([cid,mins],idx)=>{
-            const cat=_tCats.find(c=>c.id===cid);
-            const color=cat?.color||FB_TIME[idx%FB_TIME.length];
-            const hh=Math.floor(mins/60),m=mins%60;
-            const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
-            const labels=_tLabels[cid]?[..._tLabels[cid]]:[];
-            html+=`<div style="margin-bottom:8px">`;
-            html+=`<div style="display:flex;align-items:center;gap:7px">`;
-            html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
-            html+=`<span style="font-size:14px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</span>`;
-            html+=`<span style="font-size:14px;font-weight:600;color:#fff">${str}</span>`;
+        // Always show category rows; labels (detail) only when expanded
+        tEntries.forEach(([cid,mins],idx)=>{
+          const cat=_tCats.find(c=>c.id===cid);
+          const color=cat?.color||FB_TIME[idx%FB_TIME.length];
+          const hh=Math.floor(mins/60),m=mins%60;
+          const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
+          const labels=_tLabels[cid]?[..._tLabels[cid]]:[];
+          html+=`<div style="margin-bottom:6px">`;
+          html+=`<div style="display:flex;align-items:center;gap:7px">`;
+          html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
+          html+=`<span style="font-size:13px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</span>`;
+          html+=`<span style="font-size:13px;font-weight:600;color:#fff">${str}</span>`;
+          html+=`</div>`;
+          if(timeOpen&&labels.length){
+            html+=`<div style="padding-left:15px;margin-top:2px">`;
+            labels.forEach(lbl=>{ html+=`<div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lbl}</div>`; });
             html+=`</div>`;
-            if(labels.length){
-              html+=`<div style="padding-left:15px;margin-top:3px">`;
-              labels.forEach(lbl=>{ html+=`<div style="font-size:11px;color:rgba(255,255,255,0.38);line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lbl}</div>`; });
-              html+=`</div>`;
-            }
-            html+=`</div>`;
-          });
-        }
+          }
+          html+=`</div>`;
+        });
         html+=`</div>`;
       }
 
@@ -1843,24 +1837,42 @@ function renderSettings(){
         const svgSize=hasBoth?100:130;
         const moneyOpen=state._moneyCardOpen===true;
         html+=`<div onclick="event.stopPropagation();toggleStatCard('money')" style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
-        html+=`<div style="display:flex;justify-content:center;margin-bottom:${moneyOpen?'12px':'0'}">`;
+        html+=`<div style="display:flex;justify-content:center;margin-bottom:10px">`;
         html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
         html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
         html+=arcs;
         html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?11:13}px;font-weight:600;color:#fff">${totAmtStr}</span></div></div>`;
         html+=`</div>`;
-        if(moneyOpen){
-          mEntries.forEach(([cid,amt],idx)=>{
-            const cat=_mCats.find(c=>c.id===cid);
-            const color=cat?.color||FB_MONEY[idx%FB_MONEY.length];
-            const dispAmt=amt%1===0?String(amt):amt.toFixed(1);
-            html+=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">`;
-            html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
-            html+=`<span style="font-size:14px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</span>`;
-            html+=`<span style="font-size:14px;font-weight:600;color:#fff">${dispAmt}</span>`;
-            html+=`</div>`;
-          });
-        }
+        // Always show category rows; when expanded show individual entry notes
+        mEntries.forEach(([cid,amt],idx)=>{
+          const cat=_mCats.find(c=>c.id===cid);
+          const color=cat?.color||FB_MONEY[idx%FB_MONEY.length];
+          const dispAmt=amt%1===0?String(amt):amt.toFixed(1);
+          html+=`<div style="margin-bottom:6px">`;
+          html+=`<div style="display:flex;align-items:center;gap:7px">`;
+          html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
+          html+=`<span style="font-size:13px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'Other'}</span>`;
+          html+=`<span style="font-size:13px;font-weight:600;color:#fff">${dispAmt}</span>`;
+          html+=`</div>`;
+          if(moneyOpen){
+            // Show individual entries for this category
+            const catEntries=_mEntries.filter(e=>e.catId===cid);
+            if(catEntries.length){
+              html+=`<div style="padding-left:15px;margin-top:2px">`;
+              catEntries.forEach(e=>{
+                const note=e.note||'Other';
+                const eAmt=Number(e.amount||0);
+                const eStr=eAmt%1===0?String(eAmt):eAmt.toFixed(1);
+                html+=`<div style="display:flex;align-items:center;gap:6px;line-height:1.7">`;
+                html+=`<span style="font-size:11px;color:rgba(255,255,255,0.35);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${note}</span>`;
+                html+=`<span style="font-size:11px;color:rgba(255,255,255,0.4);flex-shrink:0">${eStr}</span>`;
+                html+=`</div>`;
+              });
+              html+=`</div>`;
+            }
+          }
+          html+=`</div>`;
+        });
         html+=`</div>`;
       }
 
@@ -1992,14 +2004,6 @@ function renderSettings(){
   html+=`<button onclick="openAddMoneyCat()" style="display:flex;align-items:center;justify-content:center;width:100%;padding:10px;margin-top:6px;border:none;border-radius:12px;background:none;color:rgba(255,255,255,0.3);cursor:pointer;">${plusSVG}</button>`;
   html+=`</div></div>`;
 
-  // Light mode toggle
-  const isLight=document.documentElement.classList.contains('light');
-  html+=`<div style="display:flex;justify-content:center;margin-top:20px;margin-bottom:0">
-    <button onclick="toggleLightMode()" style="background:none;border:none;color:${isLight?'var(--accent)':'rgba(255,255,255,0.5)'};cursor:pointer;padding:14px 28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-family:inherit">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-    </button>
-  </div>`;
-
   // Pobierz
   html+=`<div style="display:flex;justify-content:center;margin-top:16px;margin-bottom:8px">
     <button onclick="showExportSheet()" style="background:none;border:none;color:#ffffff;cursor:pointer;padding:14px 28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-family:inherit">
@@ -2104,6 +2108,7 @@ function toggleTimeDetail(catId){
 function toggleStatCard(type){
   if(type==='time'){ state._timeCardOpen=!state._timeCardOpen; save(); renderSettings(); return; }
   if(type==='money'){ state._moneyCardOpen=!state._moneyCardOpen; save(); renderSettings(); return; }
+  if(type==='habits'){ state._habitsCardOpen=!state._habitsCardOpen; save(); renderSettings(); return; }
 }
 function focusHabitStats(hId){
   state._focusedHabitId=hId;
