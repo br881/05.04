@@ -46,9 +46,9 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .temps-tray-inner::-webkit-scrollbar{display:none;}
 
 /* HABIT TILE */
-.habit-row{display:flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;will-change:opacity,transform;transition:opacity .25s ease,max-height .35s ease,padding .35s ease,margin .35s ease,box-shadow .15s;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+.habit-row{display:flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;will-change:opacity,transform;transition:opacity .25s ease,max-height .35s ease,padding .35s ease,margin .35s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
 .habit-row.tapping{animation:tapFill .8s linear forwards;}
-@keyframes tapFill{0%{background:rgba(255,255,255,0.32);}100%{background:rgba(61,221,101,0.15);}}
+@keyframes tapFill{0%{opacity:1;}100%{opacity:0.22;}}
 .habit-row.row-enter{opacity:0;transform:translateY(6px);}
 .habit-row.row-visible{opacity:1;transform:translateY(0);transition:opacity .32s ease,transform .32s cubic-bezier(.2,.8,.4,1);}
 .habit-row:active{opacity:.55;}
@@ -69,12 +69,12 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 /* PROGRESS BAR */
 #progressBar{
   position:fixed;
-  bottom:calc(var(--safe-bottom) + 126px);
-  left:calc(33.33% - 30px);
-  right:calc(33.33% - 30px);
+  bottom:calc(var(--safe-bottom) + 138px);
+  left:calc(33.33% - 18px);
+  right:calc(33.33% - 18px);
   z-index:11;pointer-events:all;
   opacity:0;transition:opacity .35s;
-  height:5px;
+  height:7px;
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
   transform:none;
@@ -830,7 +830,6 @@ function migrateState(s){
 
 let state;
 try{ const r=localStorage.getItem('hs9'); state=r?migrateState(JSON.parse(r)):defaultState(); }catch{ state=defaultState(); }
-try{ if(localStorage.getItem("lightMode")==="1") document.documentElement.classList.add("light"); }catch{}
 function save(){ try{ localStorage.setItem('hs9',JSON.stringify(state)); }catch{} }
 
 function today(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
@@ -1700,15 +1699,13 @@ function renderSettings(){
 
     // ── HABITS — inline segmented bar per habit ──
     // habits card is always clickable: if focused show back arrow, else expand to show all
-    const habitsCardOpen=state._habitsCardOpen===true||!focusedHabitId;
-    const habitsToShow=habitsCardOpen ? allActiveHabits : activeHabits;
     if(allActiveHabits.length){
       const bySec={};
-      habitsToShow.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
-      html+=`<div onclick="event.stopPropagation();${focusedHabitId?'clearFocusedHabit()':'toggleStatCard(\'habits\')'}" style="background:rgba(255,255,255,0.04);border-radius:14px;padding:16px 18px;margin-bottom:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
+      allActiveHabits.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
+      html+=`<div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:16px 18px;margin-bottom:14px">`;
       if(focusedHabitId){
-        html+=`<div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px;color:rgba(255,255,255,0.35);font-size:12px;letter-spacing:.04em">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> wszystkie
+        html+=`<div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px;color:rgba(255,255,255,0.45);font-size:11px;letter-spacing:.04em;text-transform:uppercase">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> filtr aktywny
         </div>`;
       }
       state.sectors.forEach(sec=>{
@@ -1804,7 +1801,7 @@ function renderSettings(){
         html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
         html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
         html+=arcs;
-        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?11:13}px;font-weight:600;color:#fff">${cLabel}</span></div></div>`;
+        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?14:17}px;font-weight:600;color:#fff">${cLabel}</span></div></div>`;
         html+=`</div>`;
         // Always show category rows; labels (detail) only when expanded
         tEntries.forEach(([cid,mins],idx)=>{
@@ -1841,7 +1838,7 @@ function renderSettings(){
         html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
         html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
         html+=arcs;
-        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?11:13}px;font-weight:600;color:#fff">${totAmtStr}</span></div></div>`;
+        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?14:17}px;font-weight:600;color:#fff">${totAmtStr}</span></div></div>`;
         html+=`</div>`;
         // Always show category rows; when expanded show individual entry notes
         mEntries.forEach(([cid,amt],idx)=>{
@@ -2118,11 +2115,6 @@ function focusHabitStats(hId){
 function clearFocusedHabit(){
   state._focusedHabitId=null;
   save(); renderSettings();
-}
-function toggleLightMode(){
-  const isLight=document.documentElement.classList.toggle('light');
-  try{ localStorage.setItem('lightMode',isLight?'1':'0'); }catch{}
-  renderSettings();
 }
 function toggleFold(key){
   if(key==='settings'){ state._settingsOpen=!state._settingsOpen; save(); renderSettings(); return; }
@@ -2526,24 +2518,24 @@ function openHabitDetail(hId,defaultSector){
   archToggle.onclick=()=>archToggle.classList.toggle('on');
   archRow.appendChild(archIcon); archRow.appendChild(archToggle); body.appendChild(archRow);
 
-  // Stats button — for existing habits only
+  // Stats button — icon-only toggle, same style as clock/lock rows
   if(!isNew){
     const statsSep=document.createElement('div'); statsSep.style.cssText='height:1px;background:rgba(255,255,255,0.08);margin:0'; body.appendChild(statsSep);
     const statsRow=document.createElement('div');
-    statsRow.style.cssText='display:flex;align-items:center;gap:14px;padding:16px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation';
+    statsRow.style.cssText='display:flex;align-items:center;gap:14px;padding:16px 0;';
     const statsIcon=document.createElement('span');
     statsIcon.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>';
+    statsIcon.style.cssText='color:rgba(255,255,255,0.7);flex-shrink:0;display:flex;align-items:center';
     const isFocused=state._focusedHabitId===hId;
-    statsIcon.style.cssText=`color:${isFocused?'var(--accent)':'rgba(255,255,255,0.7)'};flex-shrink:0;display:flex;align-items:center`;
-    const statsLabel=document.createElement('span');
-    statsLabel.textContent='Statystyki';
-    statsLabel.style.cssText=`font-size:15px;color:${isFocused?'var(--accent)':'rgba(255,255,255,0.5)'};flex:1`;
-    const statsChev=document.createElement('span');
-    statsChev.innerHTML='<svg width="6" height="10" viewBox="0 0 6 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 1 5 5 1 9"/></svg>';
-    statsChev.style.cssText='color:rgba(255,255,255,0.25)';
-    statsRow.appendChild(statsIcon); statsRow.appendChild(statsLabel); statsRow.appendChild(statsChev);
-    statsRow.onclick=()=>{ focusHabitStats(hId); closeHabitDetail(); openSettings(); };
-    body.appendChild(statsRow);
+    const statsToggle=document.createElement('div');
+    statsToggle.className='toggle'+(isFocused?' on':'');
+    statsToggle.onclick=()=>{
+      const nowFocused=state._focusedHabitId===hId;
+      if(nowFocused){ state._focusedHabitId=null; statsToggle.classList.remove('on'); }
+      else{ state._focusedHabitId=hId; state._statsOpen=true; statsToggle.classList.add('on'); }
+      save();
+    };
+    statsRow.appendChild(statsIcon); statsRow.appendChild(statsToggle); body.appendChild(statsRow);
   }
 
   // Spacer + Save + Delete
