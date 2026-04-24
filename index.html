@@ -319,10 +319,10 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .hd-body::-webkit-scrollbar{display:none;}
 .hd-top-row{display:flex;align-items:center;gap:10px;padding:36px 0 30px;}
 .type-mini-btns{display:flex;gap:5px;flex-shrink:0;}
-.type-mini-btn{width:38px;height:38px;border-radius:10px;border:none;background:rgba(255,255,255,0.06);color:#ffffff;font-size:14px;cursor:pointer;font-family:inherit;transition:all .18s;display:flex;align-items:center;justify-content:center;}
+.type-mini-btn{width:52px;height:52px;border-radius:12px;border:none;background:rgba(255,255,255,0.06);color:#ffffff;font-size:16px;cursor:pointer;font-family:inherit;transition:all .18s;display:flex;align-items:center;justify-content:center;}
 .type-mini-btn.active{background:var(--accent-dim);color:var(--accent-bright);font-weight:600;}
 .days-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:30px;}
-.day-btn{width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,0.06);color:#ffffff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .18s;}
+.day-btn{width:46px;height:46px;border-radius:50%;border:none;background:rgba(255,255,255,0.06);color:#ffffff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .18s;}
 .day-btn.active{background:var(--accent-dim);color:var(--accent-bright);}
 .hd-url-arch-row{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding:0 4px;}
 .url-input{flex:1;background:rgba(255,255,255,0.09);border:none;border-radius:10px;padding:9px 12px;color:#ffffff;font-size:13px;font-weight:500;font-family:inherit;outline:none;min-width:0;transition:background .2s;}
@@ -335,7 +335,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .toggle::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .22s cubic-bezier(.34,1.4,.64,1);box-shadow:0 1px 4px rgba(0,0,0,.3);}
 .toggle.on::after{transform:translateX(18px);}
 .hd-spacer{flex:1;min-height:20px;}
-.save-btn{width:100%;background:rgba(61,221,101,0.55);color:#fff;font-size:16px;font-weight:600;border:none;border-radius:12px;padding:15px;cursor:pointer;font-family:inherit;transition:opacity .15s;}
+.save-btn{width:100%;background:var(--accent);color:#000;font-size:16px;font-weight:600;border:none;border-radius:12px;padding:15px;cursor:pointer;font-family:inherit;transition:opacity .15s;}
 .save-btn:active{opacity:.7;}
 .delete-btn{width:100%;background:none;border:none;padding:14px;margin-top:4px;color:rgba(224,85,85,0.5);font-size:14px;font-family:inherit;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;}
 .delete-btn:active{color:var(--red);}
@@ -782,13 +782,13 @@ function defaultState(){
     tempTasks:[],doneTasks:[],daily:{},streaks:{},streakSectorId:'s1',
     _doneOpen:false,_streakOpen:false,_archiveOpen:false,_lockOpen:false,_csvOpen:false,_csvSectorId:null,_timeStatsOpen:false,_statsOpen:true,_settingsOpen:false,_timePeriod:'week',
     timeCategories:[
-      {id:'tc1',name:'💼',color:'#8B6914'},
-      {id:'tc2',name:'🌱',color:'#2d7a3a'},
-      {id:'tc3',name:'❌',color:'#7a2d2d'},
+      {id:'tc1',name:'💼',color:'#f59e0b'},
+      {id:'tc2',name:'🌱',color:'#4ade80'},
+      {id:'tc3',name:'❌',color:'#f87171'},
     ],
     timeEntries:{}, // keyed by date → array of {id,label,catId,blocks:[{h,q}]}
     moneyCategories:[
-      {id:'mc1',name:'🍎 Food',order:0,color:'#c0392b'},
+      {id:'mc1',name:'🍎 Food',order:0,color:'#b03a2e'},
     ],
     moneyEntries:[], // array of {id,date,amount,catId,note}
     _moneyOpen:false,
@@ -822,7 +822,7 @@ function migrateState(s){
   const emojiMap={'💼 Praca':{name:'💼',color:'#8B6914'},'🌱 Rozwój':{name:'🌱',color:'#2d7a3a'},'❌ Strata':{name:'❌',color:'#7a2d2d'}};
   for(const c of (s.timeCategories||[])){ if(emojiMap[c.name]){ c.name=emojiMap[c.name].name; if(!c.color) c.color=emojiMap[c.name]?.color||'#555'; } }
   if(!s.timeEntries) s.timeEntries={};
-  if(!s.moneyCategories) s.moneyCategories=[{id:'mc1',name:'🍎 Food',order:0,color:'#c0392b'}];
+  if(!s.moneyCategories) s.moneyCategories=[{id:'mc1',name:'🍎 Food',order:0,color:'#b03a2e'},{id:'mc_other',name:'Other',order:99,color:'rgba(255,255,255,0.32)'}];
   if(!s.moneyEntries) s.moneyEntries=[];
   if(!s._moneyOpen) s._moneyOpen=false;
   return s;
@@ -1708,7 +1708,7 @@ function renderSettings(){
   </div>`;
 
   if(statsOpen){
-    html+=`<div style="padding:16px 20px 16px">`;
+    html+=`<div style="padding:16px 20px 16px" id="statsPanelInner" ontouchstart="swipeStatStart(event)" ontouchend="swipeStatEnd(event)">`;
     const now3=new Date(); const days=[];
     for(let i=sharedPeriod-1;i>=0;i--){ const d=new Date(now3); d.setDate(now3.getDate()-i); days.push(fmtDate(d)); }
     const allActiveHabits=state.habits.filter(h=>!h.archived&&days.some(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])));
@@ -1810,13 +1810,15 @@ function renderSettings(){
         } else {
           // Bottom: star pin + archive lock + save
           html+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 2px">`;
-          html+=`<div style="display:flex;align-items:center;gap:14px">`;
-          html+=`<div onclick="event.stopPropagation();toggleHabitsPicking()" style="cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;color:rgba(255,255,255,0.7)">`;
-          html+=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>`;
-          html+=`</div>`;
-          // Archive lock toggle
           const archOpen=state._habitsArchiveOpen===true;
-          html+=`<div onclick="event.stopPropagation();toggleHabitsArchive()" style="cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;color:${archOpen?'var(--accent)':'rgba(255,255,255,0.4)'}">`;
+          html+=`<div style="display:flex;align-items:center;gap:22px">`;
+          html+=`<div onclick="event.stopPropagation();toggleHabitsPicking()" style="cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;color:rgba(255,255,255,0.7);padding:6px">`;
+          html+=`<svg width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+          html+=`</div>`;
+          html+=`<div onclick="event.stopPropagation();toggleHabitsTimeView()" style="cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;color:${state._habitsTimeOpen?'var(--accent)':'rgba(255,255,255,0.4)'};padding:6px">`;
+          html+=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 15 14"/></svg>`;
+          html+=`</div>`;
+          html+=`<div onclick="event.stopPropagation();toggleHabitsArchive()" style="cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;color:${archOpen?'var(--accent)':'rgba(255,255,255,0.4)'};padding:6px">`;
           html+=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
           html+=`</div>`;
           html+=`</div>`;
@@ -1872,7 +1874,7 @@ function renderSettings(){
     const hasTime=_tTotal>0;
     const hasMoney=_mTotal>0;
     const FB_TIME=['#4ade80','#93c5fd','#fbbf24','#fb923c','#c084fc','#2dd4bf'];
-    const FB_MONEY=['#c0392b','#f97316','#eab308','#22c55e','#3b82f6','#a855f7'];
+    const FB_MONEY=['#b03a2e','#f97316','#eab308','#22c55e','#3b82f6','#a855f7'];
 
     if(hasTime||hasMoney){
       html+=`<div style="display:flex;gap:10px">`;
@@ -1970,18 +1972,14 @@ function renderSettings(){
     html+=`</div>`;
   }
 
-  // 7/30 selector between stats and settings
-  html+=`<div style="display:flex;gap:8px;justify-content:center;padding:14px 0 10px">`;
-  html+=`<button onclick="event.stopPropagation();setStatPeriod(7)" class="sector-pill${sharedPeriod===7?' active':''}" style="font-size:15px;padding:8px 26px;font-weight:600">7</button>`;
-  html+=`<button onclick="event.stopPropagation();setStatPeriod(30)" class="sector-pill${sharedPeriod===30?' active':''}" style="font-size:15px;padding:8px 26px;font-weight:600">30</button>`;
-  html+=`</div>`;
+
 
   // ══ ROW 2: SETTINGS ══ (placeholder to be replaced)
 
 
   // ══ ROW 2: SETTINGS header bar — icon only, centered ══
   html+=`<div onclick="toggleFold('settings')" style="display:flex;align-items:center;justify-content:center;padding:14px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;border-bottom:1px solid rgba(255,255,255,0.05);margin-top:1px">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:#fff"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:${settingsOpen?'#fff':'rgba(255,255,255,0.35)'}"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </div>`;
 
   if(settingsOpen){
@@ -2190,6 +2188,19 @@ function toggleArchiveHabit(hId){
   const h=state.habits.find(x=>x.id===hId); if(!h) return;
   h.archived=true; save(); renderSettings();
 }
+function toggleHabitsTimeView(){
+  state._habitsTimeOpen=!state._habitsTimeOpen;
+  save(); renderSettings();
+}
+let _swipeStatX=0;
+function swipeStatStart(e){ _swipeStatX=e.touches[0].clientX; }
+function swipeStatEnd(e){
+  const dx=e.changedTouches[0].clientX-_swipeStatX;
+  if(Math.abs(dx)<50) return;
+  const cur=state._statPeriod||7;
+  if(dx<0&&cur===7){ state._statPeriod=30; save(); renderSettings(); }
+  else if(dx>0&&cur===30){ state._statPeriod=7; save(); renderSettings(); }
+}
 function toggleHabitsExpanded(){
   state._habitsExpanded=!state._habitsExpanded;
   if(!state._habitsExpanded) state._habitsPicking=false;
@@ -2239,7 +2250,7 @@ function openCatEditOverlay(type,id){
   const cats=type==='tc'?(state.timeCategories||[]):(state.moneyCategories||[]);
   const cat=cats.find(c=>c.id===id);
   if(!cat) return;
-  const pal=['#c0392b','#f97316','#f59e0b','#eab308','#84cc16','#22c55e',
+  const pal=['#b03a2e','#f97316','#f59e0b','#eab308','#84cc16','#22c55e',
     '#3ddd65','#10b981','#14b8a6','#06b6d4','#3b82f6','#6366f1',
     '#8b5cf6','#a855f7','#ec4899','#f43f5e','#ffffff','#d4d4d8',
     '#a1a1aa','#71717a','#52525b','#000000','#7dd3fc','#f9a8d4',
@@ -2287,7 +2298,7 @@ function openCatColorPicker(type,id){
   if(type==='tc'){ const c=(state.timeCategories||[]).find(x=>x.id===id); if(c?.color) cur=c.color; }
   else { const c=(state.moneyCategories||[]).find(x=>x.id===id); if(c?.color) cur=c.color; }
   const colors=[
-    '#c0392b','#f97316','#f59e0b','#eab308','#84cc16','#22c55e',
+    '#b03a2e','#f97316','#f59e0b','#eab308','#84cc16','#22c55e',
     '#3ddd65','#10b981','#14b8a6','#06b6d4','#3b82f6','#6366f1',
     '#8b5cf6','#a855f7','#ec4899','#f43f5e','#ffffff','#d4d4d8',
     '#a1a1aa','#71717a','#52525b','#000000','#7dd3fc','#f9a8d4',
@@ -2567,32 +2578,6 @@ function openHabitDetail(hId,defaultSector){
   });
   body.appendChild(daysRow);
 
-  // Track time row (clock icon) — bigger, brighter
-  const sep=document.createElement('div'); sep.style.cssText='height:1px;background:rgba(255,255,255,0.08);margin:8px 0'; body.appendChild(sep);
-  const ttRow=document.createElement('div');
-  ttRow.style.cssText='display:flex;align-items:center;gap:14px;padding:16px 0';
-  const ttIcon=document.createElement('span');
-  ttIcon.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 15 14"/></svg>';
-  ttIcon.style.cssText='color:rgba(255,255,255,0.7);flex-shrink:0;display:flex;align-items:center';
-  const ttToggle=document.createElement('div');
-  ttToggle.className='toggle'+(h.trackTime?' on':''); ttToggle.id='hdTrackTime';
-
-  // Category row — below toggle, shown when trackTime on
-  const catRow=document.createElement('div'); catRow.id='hdCatRow';
-  catRow.style.cssText='display:'+(h.trackTime?'flex':'none')+';gap:8px;flex-wrap:wrap;padding:4px 0 14px;justify-content:center';
-  const cats=state.timeCategories||[];
-  const defaultCatId=h.trackCatId||(cats[0]?.id)||null;
-  cats.forEach(c=>{
-    const pill=document.createElement('div');
-    pill.className='sector-pill'+(defaultCatId===c.id?' active':'');
-    pill.dataset.catid=c.id; pill.style.fontSize='18px'; pill.textContent=c.name;
-    pill.onclick=()=>{ catRow.querySelectorAll('.sector-pill').forEach(p=>p.classList.remove('active')); pill.classList.add('active'); };
-    catRow.appendChild(pill);
-  });
-  ttToggle.onclick=()=>{ ttToggle.classList.toggle('on'); catRow.style.display=ttToggle.classList.contains('on')?'flex':'none'; };
-  ttRow.appendChild(ttIcon); ttRow.appendChild(ttToggle); body.appendChild(ttRow);
-  body.appendChild(catRow);
-
   // URL — icon + toggle (same style as clock row), field shown when toggle on
   const urlSep=document.createElement('div'); urlSep.style.cssText='height:1px;background:rgba(255,255,255,0.08);margin:0'; body.appendChild(urlSep);
   const urlRow=document.createElement('div');
@@ -2641,8 +2626,8 @@ function saveHabitDetail(){
   const type=tl.find(t=>document.querySelectorAll('.hd-body .type-mini-btns .type-mini-btn')[tl.indexOf(t)]?.classList.contains('active'))||'checkbox';
   const url=document.getElementById('hdu')?.value.trim()||'';
   const archived=false;
-  const trackTime=document.getElementById('hdTrackTime')?.classList.contains('on')||false;
-  const trackCatId=document.querySelector('#hdCatRow .sector-pill.active')?.dataset?.catid||null;
+  const trackTime=editHabitId!=='new'?(state.habits.find(x=>x.id===editHabitId)?.trackTime||false):false;
+  const trackCatId=editHabitId!=='new'?(state.habits.find(x=>x.id===editHabitId)?.trackCatId||null):null;
   if(editHabitId==='new'){
     const sectorId=editHabitSectorId||state.sectors[0]?.id;
     const order=state.habits.filter(h=>h.sectorId===sectorId).length;
