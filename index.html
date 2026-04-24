@@ -48,7 +48,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 /* HABIT TILE */
 .habit-row{display:flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;will-change:opacity,transform;transition:opacity .25s ease,max-height .35s ease,padding .35s ease,margin .35s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
 .habit-row.tapping{animation:tapFill .8s linear forwards;}
-@keyframes tapFill{0%{opacity:1;}100%{opacity:0.22;}}
+@keyframes tapFill{0%{transform:scale(1);}40%{transform:scale(0.975);}100%{transform:scale(1);}}
 .habit-row.row-enter{opacity:0;transform:translateY(6px);}
 .habit-row.row-visible{opacity:1;transform:translateY(0);transition:opacity .32s ease,transform .32s cubic-bezier(.2,.8,.4,1);}
 .habit-row:active{opacity:.55;}
@@ -74,7 +74,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   right:calc(33.33% - 18px);
   z-index:11;pointer-events:all;
   opacity:0;transition:opacity .35s;
-  height:7px;
+  height:9px;
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
   transform:none;
@@ -83,7 +83,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 #progressBar.done-invisible{opacity:0;pointer-events:all;}
 #pbPill{
   width:100%;height:100%;
-  border-radius:3px;
+  border-radius:5px;
   background:rgba(255,255,255,0.32);
   overflow:hidden;
   position:relative;
@@ -93,7 +93,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 }
 #pbFill{
   position:absolute;left:0;top:0;bottom:0;
-  border-radius:3px;
+  border-radius:5px;
   background:rgba(61,221,101,0.7);
   transition:width .55s cubic-bezier(.34,1.2,.64,1);
   width:0%;
@@ -1684,12 +1684,6 @@ function renderSettings(){
 
   if(statsOpen){
     html+=`<div style="padding:16px 20px 16px">`;
-    // Period selector — bigger
-    html+=`<div style="display:flex;gap:8px;margin-bottom:20px;justify-content:center">`;
-    html+=`<button onclick="event.stopPropagation();setStatPeriod(7)" class="sector-pill${sharedPeriod===7?' active':''}" style="font-size:16px;padding:9px 28px;font-weight:600">7</button>`;
-    html+=`<button onclick="event.stopPropagation();setStatPeriod(30)" class="sector-pill${sharedPeriod===30?' active':''}" style="font-size:16px;padding:9px 28px;font-weight:600">30</button>`;
-    html+=`</div>`;
-
     const now3=new Date(); const days=[];
     for(let i=sharedPeriod-1;i>=0;i--){ const d=new Date(now3); d.setDate(now3.getDate()-i); days.push(fmtDate(d)); }
     const focusedHabitId=state._focusedHabitId||null;
@@ -1724,11 +1718,11 @@ function renderSettings(){
           let segsHtml='';
           for(let si=0;si<total;si++){
             const filled=si<doneCount;
-            segsHtml+=`<div style="flex:1;height:4px;border-radius:2px;background:${filled?'rgba(61,221,101,0.75)':'rgba(255,255,255,0.1)'}"></div>`;
+            segsHtml+=`<div style="flex:1;height:4px;border-radius:0;background:${filled?'rgba(61,221,101,0.75)':'rgba(255,255,255,0.1)'}"></div>`;
           }
           html+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">`;
           html+=`<span style="font-size:15px;color:#fff;flex-shrink:0;max-width:38%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.name}</span>`;
-          html+=`<div style="display:flex;gap:2px;flex:1;align-items:center">${segsHtml}</div>`;
+          html+=`<div style="display:flex;gap:0;flex:1;align-items:center;border-radius:2px;overflow:hidden">${segsHtml}</div>`;
           html+=`<span style="font-size:13px;color:rgba(255,255,255,0.45);flex-shrink:0;min-width:34px;text-align:right">${pct}%</span>`;
           html+=`</div>`;
         });
@@ -1797,32 +1791,33 @@ function renderSettings(){
         const svgSize=hasBoth?100:130;
         const timeOpen=state._timeCardOpen===true;
         html+=`<div onclick="event.stopPropagation();toggleStatCard('time')" style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
-        html+=`<div style="display:flex;justify-content:center;margin-bottom:10px">`;
+        html+=`<div style="display:flex;justify-content:center;margin-bottom:${timeOpen?'12px':'0'}">`;
         html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
         html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
         html+=arcs;
-        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?14:17}px;font-weight:600;color:#fff">${cLabel}</span></div></div>`;
+        html+=`</svg></div>`;
         html+=`</div>`;
-        // Always show category rows; labels (detail) only when expanded
-        tEntries.forEach(([cid,mins],idx)=>{
-          const cat=_tCats.find(c=>c.id===cid);
-          const color=cat?.color||FB_TIME[idx%FB_TIME.length];
-          const hh=Math.floor(mins/60),m=mins%60;
-          const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
-          const labels=_tLabels[cid]?[..._tLabels[cid]]:[];
-          html+=`<div style="margin-bottom:6px">`;
-          html+=`<div style="display:flex;align-items:center;gap:7px">`;
-          html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
-          html+=`<span style="font-size:13px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</span>`;
-          html+=`<span style="font-size:13px;font-weight:600;color:#fff">${str}</span>`;
-          html+=`</div>`;
-          if(timeOpen&&labels.length){
-            html+=`<div style="padding-left:15px;margin-top:2px">`;
-            labels.forEach(lbl=>{ html+=`<div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lbl}</div>`; });
+        if(timeOpen){
+          tEntries.forEach(([cid,mins],idx)=>{
+            const cat=_tCats.find(c=>c.id===cid);
+            const color=cat?.color||FB_TIME[idx%FB_TIME.length];
+            const hh=Math.floor(mins/60),m=mins%60;
+            const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
+            const labels=_tLabels[cid]?[..._tLabels[cid]]:[];
+            html+=`<div style="margin-bottom:6px">`;
+            html+=`<div style="display:flex;align-items:center;gap:7px">`;
+            html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
+            html+=`<span style="font-size:13px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</span>`;
+            html+=`<span style="font-size:13px;font-weight:600;color:#fff">${str}</span>`;
             html+=`</div>`;
-          }
-          html+=`</div>`;
-        });
+            if(labels.length){
+              html+=`<div style="padding-left:15px;margin-top:2px">`;
+              labels.forEach(lbl=>{ html+=`<div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lbl}</div>`; });
+              html+=`</div>`;
+            }
+            html+=`</div>`;
+          });
+        }
         html+=`</div>`;
       }
 
@@ -1834,25 +1829,23 @@ function renderSettings(){
         const svgSize=hasBoth?100:130;
         const moneyOpen=state._moneyCardOpen===true;
         html+=`<div onclick="event.stopPropagation();toggleStatCard('money')" style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
-        html+=`<div style="display:flex;justify-content:center;margin-bottom:10px">`;
+        html+=`<div style="display:flex;justify-content:center;margin-bottom:${moneyOpen?'12px':'0'}">`;
         html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
         html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
         html+=arcs;
-        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?14:17}px;font-weight:600;color:#fff">${totAmtStr}</span></div></div>`;
+        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?16:20}px;font-weight:600;color:#fff">${totAmtStr}</span></div></div>`;
         html+=`</div>`;
-        // Always show category rows; when expanded show individual entry notes
-        mEntries.forEach(([cid,amt],idx)=>{
-          const cat=_mCats.find(c=>c.id===cid);
-          const color=cat?.color||FB_MONEY[idx%FB_MONEY.length];
-          const dispAmt=amt%1===0?String(amt):amt.toFixed(1);
-          html+=`<div style="margin-bottom:6px">`;
-          html+=`<div style="display:flex;align-items:center;gap:7px">`;
-          html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
-          html+=`<span style="font-size:13px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'Other'}</span>`;
-          html+=`<span style="font-size:13px;font-weight:600;color:#fff">${dispAmt}</span>`;
-          html+=`</div>`;
-          if(moneyOpen){
-            // Show individual entries for this category
+        if(moneyOpen){
+          mEntries.forEach(([cid,amt],idx)=>{
+            const cat=_mCats.find(c=>c.id===cid);
+            const color=cat?.color||FB_MONEY[idx%FB_MONEY.length];
+            const dispAmt=amt%1===0?String(amt):amt.toFixed(1);
+            html+=`<div style="margin-bottom:6px">`;
+            html+=`<div style="display:flex;align-items:center;gap:7px">`;
+            html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
+            html+=`<span style="font-size:13px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'Other'}</span>`;
+            html+=`<span style="font-size:13px;font-weight:600;color:#fff">${dispAmt}</span>`;
+            html+=`</div>`;
             const catEntries=_mEntries.filter(e=>e.catId===cid);
             if(catEntries.length){
               html+=`<div style="padding-left:15px;margin-top:2px">`;
@@ -1867,9 +1860,9 @@ function renderSettings(){
               });
               html+=`</div>`;
             }
-          }
-          html+=`</div>`;
-        });
+            html+=`</div>`;
+          });
+        }
         html+=`</div>`;
       }
 
@@ -1878,6 +1871,12 @@ function renderSettings(){
 
     html+=`</div>`;
   }
+
+  // 7/30 selector between stats and settings
+  html+=`<div style="display:flex;gap:8px;justify-content:center;padding:14px 0 10px">`;
+  html+=`<button onclick="event.stopPropagation();setStatPeriod(7)" class="sector-pill${sharedPeriod===7?' active':''}" style="font-size:15px;padding:8px 26px;font-weight:600">7</button>`;
+  html+=`<button onclick="event.stopPropagation();setStatPeriod(30)" class="sector-pill${sharedPeriod===30?' active':''}" style="font-size:15px;padding:8px 26px;font-weight:600">30</button>`;
+  html+=`</div>`;
 
   // ══ ROW 2: SETTINGS ══ (placeholder to be replaced)
 
