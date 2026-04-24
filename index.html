@@ -188,7 +188,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .sector-habit-row{display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;cursor:grab;touch-action:none;transition:opacity .15s;user-select:none;-webkit-user-select:none;}
 .sector-habit-row:active{opacity:.5;cursor:grabbing;}
 .shr-name{font-size:17px;color:#ffffff;font-weight:400;text-align:center;}
-.add-habit-row{display:flex;align-items:center;justify-content:center;padding:10px 4px;color:rgba(255,255,255,0.35);cursor:pointer;touch-action:auto;transition:opacity .15s;}
+.add-habit-row{display:flex;align-items:center;justify-content:center;padding:10px 4px;color:rgba(255,255,255,0.35);cursor:pointer;touch-action:auto;transition:opacity .15s;background:none;}
 .add-habit-row:active{opacity:.8;}
 .add-sector-btn-icon{display:flex;align-items:center;justify-content:center;width:100%;padding:12px;border-radius:12px;border:none;background:none;color:rgba(255,255,255,0.3);cursor:pointer;transition:all .15s;}
 .add-sector-btn-icon:active{opacity:.8;}
@@ -319,10 +319,10 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .hd-body::-webkit-scrollbar{display:none;}
 .hd-top-row{display:flex;align-items:center;gap:10px;padding:36px 0 30px;}
 .type-mini-btns{display:flex;gap:5px;flex-shrink:0;}
-.type-mini-btn{width:52px;height:52px;border-radius:12px;border:none;background:rgba(255,255,255,0.06);color:#ffffff;font-size:16px;cursor:pointer;font-family:inherit;transition:all .18s;display:flex;align-items:center;justify-content:center;}
+.type-mini-btn{width:46px;height:46px;border-radius:11px;border:none;background:rgba(255,255,255,0.06);color:#ffffff;font-size:18px;cursor:pointer;font-family:inherit;transition:all .18s;display:flex;align-items:center;justify-content:center;}
 .type-mini-btn.active{background:var(--accent-dim);color:var(--accent-bright);font-weight:600;}
 .days-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:30px;}
-.day-btn{width:46px;height:46px;border-radius:50%;border:none;background:rgba(255,255,255,0.06);color:#ffffff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .18s;}
+.day-btn{width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,0.06);color:#ffffff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .18s;}
 .day-btn.active{background:var(--accent-dim);color:var(--accent-bright);}
 .hd-url-arch-row{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding:0 4px;}
 .url-input{flex:1;background:rgba(255,255,255,0.09);border:none;border-radius:10px;padding:9px 12px;color:#ffffff;font-size:13px;font-weight:500;font-family:inherit;outline:none;min-width:0;transition:background .2s;}
@@ -335,7 +335,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .toggle::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .22s cubic-bezier(.34,1.4,.64,1);box-shadow:0 1px 4px rgba(0,0,0,.3);}
 .toggle.on::after{transform:translateX(18px);}
 .hd-spacer{flex:1;min-height:20px;}
-.save-btn{width:100%;background:var(--accent);color:#000;font-size:16px;font-weight:600;border:none;border-radius:12px;padding:15px;cursor:pointer;font-family:inherit;transition:opacity .15s;}
+.save-btn{width:100%;background:#1a7a3a;color:#fff;font-size:16px;font-weight:600;border:none;border-radius:12px;padding:15px;cursor:pointer;font-family:inherit;transition:opacity .15s;}
 .save-btn:active{opacity:.7;}
 .delete-btn{width:100%;background:none;border:none;padding:14px;margin-top:4px;color:rgba(224,85,85,0.5);font-size:14px;font-family:inherit;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;}
 .delete-btn:active{color:var(--red);}
@@ -782,9 +782,9 @@ function defaultState(){
     tempTasks:[],doneTasks:[],daily:{},streaks:{},streakSectorId:'s1',
     _doneOpen:false,_streakOpen:false,_archiveOpen:false,_lockOpen:false,_csvOpen:false,_csvSectorId:null,_timeStatsOpen:false,_statsOpen:true,_settingsOpen:false,_timePeriod:'week',
     timeCategories:[
-      {id:'tc1',name:'💼',color:'#f59e0b'},
-      {id:'tc2',name:'🌱',color:'#4ade80'},
-      {id:'tc3',name:'❌',color:'#f87171'},
+      {id:'tc1',name:'💼',color:'#d97706'},
+      {id:'tc2',name:'🌱',color:'#22c55e'},
+      {id:'tc3',name:'❌',color:'#ef4444'},
     ],
     timeEntries:{}, // keyed by date → array of {id,label,catId,blocks:[{h,q}]}
     moneyCategories:[
@@ -1734,9 +1734,9 @@ function renderSettings(){
         const filled=si<doneCount;
         segsHtml+=`<div style="flex:1;height:6px;border-radius:0;background:${filled?'rgba(61,221,101,0.75)':'rgba(255,255,255,0.1)'}"></div>`;
       }
-      let row=`<div style="display:flex;align-items:center;gap:0;margin-bottom:14px">`;
+      let row=`<div style="display:flex;align-items:center;gap:0;margin-bottom:20px">`;
       row+=`<span style="font-size:16px;color:#fff;flex-shrink:0;width:42%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.name}</span>`;
-      row+=`<div style="display:flex;gap:0;flex:1;align-items:center;border-radius:2px;overflow:hidden;margin-right:8px">${segsHtml}</div>`;
+      row+=`<div style="display:flex;gap:0;flex:1;align-items:center;border-radius:3px;overflow:hidden;margin-right:0">${segsHtml}</div>`;
       
       row+=`</div>`;
       return row;
@@ -1764,13 +1764,37 @@ function renderSettings(){
           hh.forEach(h=>{ html+=renderHabitBar(h); });
         });
 
+        // Time view panel
+        if(state._habitsTimeOpen){
+          const cats=state.timeCategories||[];
+          html+=`<div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;margin-top:4px">`;
+          html+=`<div style="display:flex;justify-content:center;margin-bottom:12px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 15 14"/></svg></div>`;
+          allActiveHabits.forEach(h=>{
+            if(!h.trackTime) return;
+            const cat=cats.find(c=>c.id===h.trackCatId);
+            const color=cat?.color||'rgba(255,255,255,0.3)';
+            const totalMins=days.reduce((sum,dk)=>{
+              const entries=(state.timeEntries||{})[dk]||[];
+              return sum+entries.filter(e=>e.catId===h.trackCatId&&!e.empty).reduce((s,e)=>s+(e.blocks?.length||0)*15,0);
+            },0);
+            const hh=Math.floor(totalMins/60),mm=totalMins%60;
+            const timeStr=totalMins>0?(hh>0?(mm>0?hh+'h '+mm+'m':hh+'h'):mm+'m'):'—';
+            html+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 0">`;
+            html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
+            html+=`<span style="font-size:15px;color:#fff;flex:1">${h.name}</span>`;
+            html+=`<span style="font-size:15px;color:rgba(255,255,255,0.5)">${timeStr}</span>`;
+            html+=`</div>`;
+          });
+          html+=`</div>`;
+        }
+
         // Archive panel — checklist to select which habits to archive
         const archOpen=state._habitsArchiveOpen===true;
         if(archOpen){
           const nonArchived=state.habits.filter(h=>!h.archived);
           const archivedIds=new Set(state.habits.filter(h=>h.archived).map(h=>h.id));
           html+=`<div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;margin-top:4px">`;
-          html+=`<div style="font-size:11px;color:rgba(255,255,255,0.3);text-align:center;letter-spacing:.05em;text-transform:uppercase;margin-bottom:12px">Archiwum</div>`;
+          html+=`<div style="display:flex;justify-content:center;margin-bottom:12px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>`;
           // Show non-archived for selection
           nonArchived.forEach(h=>{
             html+=`<div onclick="event.stopPropagation();toggleArchiveHabit('${h.id}')" style="display:flex;align-items:center;gap:12px;padding:9px 0;cursor:pointer;-webkit-tap-highlight-color:transparent">`;
@@ -1788,14 +1812,14 @@ function renderSettings(){
             html+=`<button onclick="event.stopPropagation();unarchiveHabit('${h.id}')" style="background:none;border:none;color:rgba(61,221,101,0.7);font-size:13px;cursor:pointer;font-family:inherit;padding:4px 0;touch-action:manipulation">Przywróć</button>`;
             html+=`</div>`;
           });
-          html+=`<button onclick="event.stopPropagation();toggleHabitsArchive()" style="width:100%;margin-top:12px;padding:12px;border:none;border-radius:10px;background:var(--accent);color:#000;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer">Gotowe</button>`;
+          html+=`<button onclick="event.stopPropagation();toggleHabitsArchive()" style="width:100%;margin-top:12px;padding:12px;border:none;border-radius:10px;background:#1a7a3a;color:#fff;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer">Gotowe</button>`;
           html+=`</div>`;
         }
 
         if(habitsPicking){
           // Pin picker: checklist of all habits
           html+=`<div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;margin-top:4px">`;
-          html+=`<div style="font-size:11px;color:rgba(255,255,255,0.3);text-align:center;letter-spacing:.05em;text-transform:uppercase;margin-bottom:12px">Przypnij na górze</div>`;
+          html+=`<div style="display:flex;justify-content:center;margin-bottom:12px"><svg width="18" height="18" viewBox="0 0 24 24" fill="rgba(255,255,255,0.4)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>`;
           allActiveHabits.forEach(h=>{
             const pinned=pinnedIds.has(h.id);
             html+=`<div onclick="event.stopPropagation();togglePinHabit('${h.id}')" style="display:flex;align-items:center;gap:12px;padding:9px 0;cursor:pointer;-webkit-tap-highlight-color:transparent">`;
@@ -1805,7 +1829,7 @@ function renderSettings(){
             html+=`<span style="font-size:15px;color:#fff">${h.name}</span>`;
             html+=`</div>`;
           });
-          html+=`<button onclick="event.stopPropagation();saveHabitPins()" style="width:100%;margin-top:12px;padding:12px;border:none;border-radius:10px;background:var(--accent);color:#000;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer">Zapisz</button>`;
+          html+=`<button onclick="event.stopPropagation();saveHabitPins()" style="width:100%;margin-top:12px;padding:12px;border:none;border-radius:10px;background:#1a7a3a;color:#fff;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer">Zapisz</button>`;
           html+=`</div>`;
         } else {
           // Bottom: star pin + archive lock + save
@@ -1822,7 +1846,7 @@ function renderSettings(){
           html+=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
           html+=`</div>`;
           html+=`</div>`;
-          html+=`<button onclick="event.stopPropagation();toggleHabitsExpanded()" style="background:var(--accent);border:none;border-radius:10px;color:#000;font-size:14px;font-weight:600;font-family:inherit;padding:8px 20px;cursor:pointer">Zapisz</button>`;
+          html+=`<button onclick="event.stopPropagation();toggleHabitsExpanded()" style="background:#1a7a3a;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:600;font-family:inherit;padding:8px 20px;cursor:pointer">Zapisz</button>`;
           html+=`</div>`;
         }
       }
@@ -1873,7 +1897,7 @@ function renderSettings(){
     const hasBoth=_tTotal>0&&_mTotal>0;
     const hasTime=_tTotal>0;
     const hasMoney=_mTotal>0;
-    const FB_TIME=['#4ade80','#93c5fd','#fbbf24','#fb923c','#c084fc','#2dd4bf'];
+    const FB_TIME=['#22c55e','#60a5fa','#d97706','#ef4444','#a78bfa','#14b8a6'];
     const FB_MONEY=['#b03a2e','#f97316','#eab308','#22c55e','#3b82f6','#a855f7'];
 
     if(hasTime||hasMoney){
@@ -1885,7 +1909,7 @@ function renderSettings(){
         const {arcs,R,r,cx,cy}=buildArcs(tEntries,_tCats,FB_TIME);
         const totalH=Math.floor(_tTotal/60),totalM=_tTotal%60;
         const cLabel=totalH>0?(totalM>0?totalH+'h '+totalM+'m':totalH+'h'):_tTotal+'m';
-        const svgSize=hasBoth?100:130;
+        const svgSize=hasBoth?130:160;
         const timeOpen=state._timeCardOpen===true;
         html+=`<div onclick="event.stopPropagation();toggleStatCard('time')" style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
         html+=`<div style="display:flex;justify-content:center;margin-bottom:${timeOpen?'12px':'0'}">`;
@@ -1923,7 +1947,7 @@ function renderSettings(){
         const mEntries=Object.entries(byCatM).sort((a,b)=>b[1]-a[1]);
         const {arcs,R,r,cx,cy}=buildArcs(mEntries,_mCats,FB_MONEY);
         const totAmtStr=_mTotal%1===0?String(_mTotal):_mTotal.toFixed(1);
-        const svgSize=hasBoth?100:130;
+        const svgSize=hasBoth?130:160;
         const moneyOpen=state._moneyCardOpen===true;
         html+=`<div onclick="event.stopPropagation();toggleStatCard('money')" style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
         html+=`<div style="display:flex;justify-content:center;margin-bottom:${moneyOpen?'12px':'0'}">`;
@@ -1978,7 +2002,7 @@ function renderSettings(){
 
 
   // ══ ROW 2: SETTINGS header bar — icon only, centered ══
-  html+=`<div onclick="toggleFold('settings')" style="display:flex;align-items:center;justify-content:center;padding:14px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;border-bottom:1px solid rgba(255,255,255,0.05);margin-top:1px">
+  html+=`<div onclick="toggleFold('settings')" style="display:flex;align-items:center;justify-content:center;padding:14px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;margin-top:1px">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:${settingsOpen?'#fff':'rgba(255,255,255,0.35)'}"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </div>`;
 
