@@ -53,7 +53,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .habit-row.row-visible{opacity:1;transform:translateY(0);transition:opacity .32s ease,transform .32s cubic-bezier(.2,.8,.4,1);}
 .habit-row:active{opacity:.55;}
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
-.habit-row.vanishing{overflow:hidden;pointer-events:none;opacity:0;max-height:0!important;padding-top:0!important;padding-bottom:0!important;margin:0!important;border-width:0!important;box-shadow:none!important;animation:none!important;transition:opacity .38s cubic-bezier(.4,0,.2,1),max-height .52s .12s cubic-bezier(.4,0,.2,1),padding .52s .06s cubic-bezier(.4,0,.2,1),margin .52s .06s cubic-bezier(.4,0,.2,1),border-width .52s .06s cubic-bezier(.4,0,.2,1)!important;}
+.habit-row.vanishing{overflow:hidden;pointer-events:none;opacity:0;max-height:0px;padding-top:0;padding-bottom:0;margin:0;border-width:0;box-shadow:none;animation:none;transition:opacity .4s cubic-bezier(.4,0,.2,1),max-height .55s .05s cubic-bezier(.4,0,.2,1),padding .5s .04s cubic-bezier(.4,0,.2,1),margin .5s .04s cubic-bezier(.4,0,.2,1);}
 .habit-row.temp-row .habit-name{color:rgba(120,235,120,1);font-weight:500;}
 .habit-name{font-size:21px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
 .habit-value-input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.38);color:#ffffff;font-size:17px;font-family:inherit;outline:none;width:72px;text-align:right;padding:2px 0 4px;transition:border-color .2s;font-weight:600;}
@@ -954,7 +954,7 @@ function thingsTap(key,onConfirm){
     row.style.maxHeight=row.offsetHeight+'px';
     const name=row.querySelector('.habit-name')?.textContent||'';
     onConfirm();
-    requestAnimationFrame(()=>row.classList.add('vanishing'));
+    requestAnimationFrame(()=>requestAnimationFrame(()=>row.classList.add('vanishing')));
     row.addEventListener('transitionend',()=>{ renderHome(); showUndoToast(name,key,onConfirm); },{once:true});
   },800);
 }
@@ -1343,7 +1343,8 @@ function completeTempFromScreen(tId){
     };
     setTimeout(()=>{
       doComplete();
-      requestAnimationFrame(()=>row.classList.add('vanishing'));
+      row.style.maxHeight=row.offsetHeight+'px';
+      requestAnimationFrame(()=>requestAnimationFrame(()=>row.classList.add('vanishing')));
       row.addEventListener('transitionend',()=>{ renderTempScreen(); showUndoToast(name,'t'+tId,doComplete); },{once:true});
     },600);
     return;
@@ -1709,10 +1710,10 @@ function renderSettings(){
         const filled=si<doneCount;
         segsHtml+=`<div style="flex:1;height:4px;border-radius:0;background:${filled?'rgba(61,221,101,0.75)':'rgba(255,255,255,0.1)'}"></div>`;
       }
-      let row=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">`;
-      row+=`<span style="font-size:15px;color:#fff;flex-shrink:0;max-width:38%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.name}</span>`;
-      row+=`<div style="display:flex;gap:0;flex:1;align-items:center;border-radius:2px;overflow:hidden">${segsHtml}</div>`;
-      row+=`<span style="font-size:13px;color:rgba(255,255,255,0.45);flex-shrink:0;min-width:34px;text-align:right">${pct}%</span>`;
+      let row=`<div style="display:flex;align-items:center;gap:0;margin-bottom:14px">`;
+      row+=`<span style="font-size:15px;color:#fff;flex-shrink:0;width:40%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.name}</span>`;
+      row+=`<div style="display:flex;gap:0;flex:1;align-items:center;border-radius:2px;overflow:hidden;margin-right:8px">${segsHtml}</div>`;
+      row+=`<span style="font-size:13px;color:rgba(255,255,255,0.45);flex-shrink:0;width:34px;text-align:right">${pct}%</span>`;
       row+=`</div>`;
       return row;
     }
@@ -1755,13 +1756,13 @@ function renderSettings(){
           html+=`<button onclick="event.stopPropagation();saveHabitPins()" style="width:100%;margin-top:12px;padding:12px;border:none;border-radius:10px;background:var(--accent);color:#000;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer">Zapisz</button>`;
           html+=`</div>`;
         } else {
-          // Bottom pin button
-          html+=`<div onclick="event.stopPropagation();toggleHabitsPicking()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0 2px;cursor:pointer;-webkit-tap-highlight-color:transparent;color:rgba(255,255,255,0.25);font-size:12px;letter-spacing:.04em;text-transform:uppercase">`;
-          html+=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
-          html+=`Przypnij`;
+          // Bottom: pin icon next to habits list + save/collapse
+          html+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 2px">`;
+          html+=`<div onclick="event.stopPropagation();toggleHabitsPicking()" style="display:flex;align-items:center;gap:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;color:rgba(255,255,255,0.25)">`;
+          html+=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>`;
           html+=`</div>`;
-          // Collapse button
-          html+=`<div onclick="event.stopPropagation();toggleHabitsExpanded()" style="display:flex;align-items:center;justify-content:center;padding:6px 0 0;cursor:pointer;-webkit-tap-highlight-color:transparent;color:rgba(255,255,255,0.15);font-size:11px">▲</div>`;
+          html+=`<button onclick="event.stopPropagation();toggleHabitsExpanded()" style="background:var(--accent);border:none;border-radius:10px;color:#000;font-size:14px;font-weight:600;font-family:inherit;padding:8px 20px;cursor:pointer">Zapisz</button>`;
+          html+=`</div>`;
         }
       }
       html+=`</div>`;
@@ -1877,8 +1878,10 @@ function renderSettings(){
             const dispAmt=amt%1===0?String(amt):amt.toFixed(1);
             html+=`<div style="margin-bottom:6px">`;
             html+=`<div style="display:flex;align-items:center;gap:7px">`;
-            html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
-            html+=`<span style="font-size:13px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'Other'}</span>`;
+            const catDisplayName=cat?.name||'Other';
+            const catDotColor=cat?.color?cat.color:'rgba(255,255,255,0.32)';
+            html+=`<div style="width:8px;height:8px;border-radius:50%;background:${catDotColor};flex-shrink:0"></div>`;
+            html+=`<span style="font-size:13px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${catDisplayName}</span>`;
             html+=`<span style="font-size:13px;font-weight:600;color:#fff">${dispAmt}</span>`;
             html+=`</div>`;
             const catEntries=_mEntries.filter(e=>e.catId===cid);
