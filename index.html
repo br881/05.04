@@ -53,7 +53,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .habit-row.row-visible{opacity:1;transform:translateY(0);transition:opacity .32s ease,transform .32s cubic-bezier(.2,.8,.4,1);}
 .habit-row:active{opacity:.55;}
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
-.habit-row.vanishing{overflow:hidden;pointer-events:none;opacity:0;max-height:0!important;padding-top:0!important;padding-bottom:0!important;margin:0!important;border-width:0!important;box-shadow:none!important;animation:none!important;transition:opacity .26s ease,max-height .36s .08s cubic-bezier(.4,0,1,1),padding .36s .04s ease,margin .36s .04s ease,border-width .36s .04s ease!important;}
+.habit-row.vanishing{overflow:hidden;pointer-events:none;opacity:0;max-height:0!important;padding-top:0!important;padding-bottom:0!important;margin:0!important;border-width:0!important;box-shadow:none!important;animation:none!important;transition:opacity .38s cubic-bezier(.4,0,.2,1),max-height .52s .12s cubic-bezier(.4,0,.2,1),padding .52s .06s cubic-bezier(.4,0,.2,1),margin .52s .06s cubic-bezier(.4,0,.2,1),border-width .52s .06s cubic-bezier(.4,0,.2,1)!important;}
 .habit-row.temp-row .habit-name{color:rgba(120,235,120,1);font-weight:500;}
 .habit-name{font-size:21px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
 .habit-value-input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.38);color:#ffffff;font-size:17px;font-family:inherit;outline:none;width:72px;text-align:right;padding:2px 0 4px;transition:border-color .2s;font-weight:600;}
@@ -1686,50 +1686,85 @@ function renderSettings(){
     html+=`<div style="padding:16px 20px 16px">`;
     const now3=new Date(); const days=[];
     for(let i=sharedPeriod-1;i>=0;i--){ const d=new Date(now3); d.setDate(now3.getDate()-i); days.push(fmtDate(d)); }
-    const focusedHabitId=state._focusedHabitId||null;
     const allActiveHabits=state.habits.filter(h=>!h.archived&&days.some(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])));
-    // If a habit is focused, show only it in habits block; always show time+money
-    const activeHabits=focusedHabitId ? allActiveHabits.filter(h=>h.id===focusedHabitId) : allActiveHabits;
 
-    // ── HABITS — inline segmented bar per habit ──
-    // habits card is always clickable: if focused show back arrow, else expand to show all
-    if(allActiveHabits.length){
-      const bySec={};
-      allActiveHabits.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
-      html+=`<div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:16px 18px;margin-bottom:14px">`;
-      if(focusedHabitId){
-        html+=`<div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px;color:rgba(255,255,255,0.45);font-size:11px;letter-spacing:.04em;text-transform:uppercase">
-          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> filtr aktywny
-        </div>`;
-      }
-      state.sectors.forEach(sec=>{
-        const hh=(bySec[sec.id]||[]).sort((a,b)=>(a.order||0)-(b.order||0));
-        if(!hh.length) return;
-        if(state.sectors.length>1) html+=`<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;text-align:center">${sec.name}</div>`;
-        hh.forEach(h=>{
-          const scheduledDays=days.filter(dk=>{
-            const d=new Date(dk+'T00:00:00');
-            const jsd=d.getDay()===0?6:d.getDay()-1;
-            return h.days.includes(jsd);
-          });
-          const doneCount=scheduledDays.filter(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])).length;
-          const total=scheduledDays.length||1;
-          const pct=Math.round(doneCount/total*100);
-          let segsHtml='';
-          for(let si=0;si<total;si++){
-            const filled=si<doneCount;
-            segsHtml+=`<div style="flex:1;height:4px;border-radius:0;background:${filled?'rgba(61,221,101,0.75)':'rgba(255,255,255,0.1)'}"></div>`;
-          }
-          html+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">`;
-          html+=`<span style="font-size:15px;color:#fff;flex-shrink:0;max-width:38%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.name}</span>`;
-          html+=`<div style="display:flex;gap:0;flex:1;align-items:center;border-radius:2px;overflow:hidden">${segsHtml}</div>`;
-          html+=`<span style="font-size:13px;color:rgba(255,255,255,0.45);flex-shrink:0;min-width:34px;text-align:right">${pct}%</span>`;
-          html+=`</div>`;
-        });
+    // ── HABITS — pinned shown by default, expand shows all + pin picker ──
+    const pinnedIds=new Set(state._pinnedHabitIds||[]);
+    const pinnedHabits=allActiveHabits.filter(h=>pinnedIds.has(h.id));
+    const habitsExpanded=state._habitsExpanded===true;
+    const habitsPicking=state._habitsPicking===true;
+    const habitsToRender=habitsExpanded ? allActiveHabits : pinnedHabits;
+
+    function renderHabitBar(h){
+      const scheduledDays=days.filter(dk=>{
+        const d=new Date(dk+'T00:00:00');
+        const jsd=d.getDay()===0?6:d.getDay()-1;
+        return h.days.includes(jsd);
       });
+      const doneCount=scheduledDays.filter(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])).length;
+      const total=scheduledDays.length||1;
+      const pct=Math.round(doneCount/total*100);
+      let segsHtml='';
+      for(let si=0;si<total;si++){
+        const filled=si<doneCount;
+        segsHtml+=`<div style="flex:1;height:4px;border-radius:0;background:${filled?'rgba(61,221,101,0.75)':'rgba(255,255,255,0.1)'}"></div>`;
+      }
+      let row=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">`;
+      row+=`<span style="font-size:15px;color:#fff;flex-shrink:0;max-width:38%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.name}</span>`;
+      row+=`<div style="display:flex;gap:0;flex:1;align-items:center;border-radius:2px;overflow:hidden">${segsHtml}</div>`;
+      row+=`<span style="font-size:13px;color:rgba(255,255,255,0.45);flex-shrink:0;min-width:34px;text-align:right">${pct}%</span>`;
+      row+=`</div>`;
+      return row;
+    }
+
+    if(allActiveHabits.length){
+      // Card wrapper — clickable to expand if not already
+      html+=`<div onclick="event.stopPropagation();${!habitsExpanded?'toggleHabitsExpanded()':''}" style="background:rgba(255,255,255,0.04);border-radius:14px;padding:16px 18px;margin-bottom:14px;${!habitsExpanded?'cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation':''}">`;
+
+      if(!habitsExpanded){
+        // Collapsed: show pinned only (or hint to expand)
+        if(pinnedHabits.length){
+          pinnedHabits.forEach(h=>{ html+=renderHabitBar(h); });
+        } else {
+          html+=`<div style="color:rgba(255,255,255,0.2);font-size:13px;text-align:center;padding:4px 0 2px">Kliknij aby zobaczyć wszystkie</div>`;
+        }
+      } else {
+        // Expanded: show all habits
+        const bySec={};
+        allActiveHabits.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
+        state.sectors.forEach(sec=>{
+          const hh=(bySec[sec.id]||[]).sort((a,b)=>(a.order||0)-(b.order||0));
+          if(!hh.length) return;
+          if(state.sectors.length>1) html+=`<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;text-align:center">${sec.name}</div>`;
+          hh.forEach(h=>{ html+=renderHabitBar(h); });
+        });
+
+        if(habitsPicking){
+          // Pin picker: checklist of all habits
+          html+=`<div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;margin-top:4px">`;
+          html+=`<div style="font-size:11px;color:rgba(255,255,255,0.3);text-align:center;letter-spacing:.05em;text-transform:uppercase;margin-bottom:12px">Przypnij na górze</div>`;
+          allActiveHabits.forEach(h=>{
+            const pinned=pinnedIds.has(h.id);
+            html+=`<div onclick="event.stopPropagation();togglePinHabit('${h.id}')" style="display:flex;align-items:center;gap:12px;padding:9px 0;cursor:pointer;-webkit-tap-highlight-color:transparent">`;
+            html+=`<div style="width:20px;height:20px;border-radius:50%;border:2px solid ${pinned?'var(--accent)':'rgba(255,255,255,0.2)'};background:${pinned?'var(--accent)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s">`;
+            if(pinned) html+=`<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+            html+=`</div>`;
+            html+=`<span style="font-size:15px;color:#fff">${h.name}</span>`;
+            html+=`</div>`;
+          });
+          html+=`<button onclick="event.stopPropagation();saveHabitPins()" style="width:100%;margin-top:12px;padding:12px;border:none;border-radius:10px;background:var(--accent);color:#000;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer">Zapisz</button>`;
+          html+=`</div>`;
+        } else {
+          // Bottom pin button
+          html+=`<div onclick="event.stopPropagation();toggleHabitsPicking()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0 2px;cursor:pointer;-webkit-tap-highlight-color:transparent;color:rgba(255,255,255,0.25);font-size:12px;letter-spacing:.04em;text-transform:uppercase">`;
+          html+=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+          html+=`Przypnij`;
+          html+=`</div>`;
+          // Collapse button
+          html+=`<div onclick="event.stopPropagation();toggleHabitsExpanded()" style="display:flex;align-items:center;justify-content:center;padding:6px 0 0;cursor:pointer;-webkit-tap-highlight-color:transparent;color:rgba(255,255,255,0.15);font-size:11px">▲</div>`;
+        }
+      }
       html+=`</div>`;
-    } else {
-      html+=`<div style="color:rgba(255,255,255,0.15);font-size:13px;text-align:center;padding:8px 0 16px">—</div>`;
     }
 
     // ── TIME + MONEY — side by side pie charts ──
@@ -1853,9 +1888,10 @@ function renderSettings(){
                 const note=e.note||'Other';
                 const eAmt=Number(e.amount||0);
                 const eStr=eAmt%1===0?String(eAmt):eAmt.toFixed(1);
-                html+=`<div style="display:flex;align-items:center;gap:6px;line-height:1.7">`;
-                html+=`<span style="font-size:11px;color:rgba(255,255,255,0.35);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${note}</span>`;
-                html+=`<span style="font-size:11px;color:rgba(255,255,255,0.4);flex-shrink:0">${eStr}</span>`;
+                html+=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">`;
+                html+=`<div style="width:6px;height:6px;border-radius:50%;background:${color};opacity:0.5;flex-shrink:0"></div>`;
+                html+=`<span style="font-size:13px;color:rgba(255,255,255,0.7);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${note}</span>`;
+                html+=`<span style="font-size:13px;color:rgba(255,255,255,0.5);flex-shrink:0">${eStr}</span>`;
                 html+=`</div>`;
               });
               html+=`</div>`;
@@ -2100,6 +2136,25 @@ function toggleTimeDetail(catId){
   const k='_tdet_'+catId;
   state[k]=!state[k];
   renderSettings();
+}
+function toggleHabitsExpanded(){
+  state._habitsExpanded=!state._habitsExpanded;
+  if(!state._habitsExpanded) state._habitsPicking=false;
+  save(); renderSettings();
+}
+function toggleHabitsPicking(){
+  state._habitsPicking=!state._habitsPicking;
+  save(); renderSettings();
+}
+function togglePinHabit(hId){
+  const pins=new Set(state._pinnedHabitIds||[]);
+  if(pins.has(hId)) pins.delete(hId); else pins.add(hId);
+  state._pinnedHabitIds=[...pins];
+  save(); renderSettings();
+}
+function saveHabitPins(){
+  state._habitsPicking=false;
+  save(); renderSettings();
 }
 function toggleStatCard(type){
   if(type==='time'){ state._timeCardOpen=!state._timeCardOpen; save(); renderSettings(); return; }
@@ -2516,26 +2571,6 @@ function openHabitDetail(hId,defaultSector){
   archToggle.className='toggle'+(h.archived?' on':''); archToggle.id='hdp';
   archToggle.onclick=()=>archToggle.classList.toggle('on');
   archRow.appendChild(archIcon); archRow.appendChild(archToggle); body.appendChild(archRow);
-
-  // Stats button — icon-only toggle, same style as clock/lock rows
-  if(!isNew){
-    const statsSep=document.createElement('div'); statsSep.style.cssText='height:1px;background:rgba(255,255,255,0.08);margin:0'; body.appendChild(statsSep);
-    const statsRow=document.createElement('div');
-    statsRow.style.cssText='display:flex;align-items:center;gap:14px;padding:16px 0;';
-    const statsIcon=document.createElement('span');
-    statsIcon.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>';
-    statsIcon.style.cssText='color:rgba(255,255,255,0.7);flex-shrink:0;display:flex;align-items:center';
-    const isFocused=state._focusedHabitId===hId;
-    const statsToggle=document.createElement('div');
-    statsToggle.className='toggle'+(isFocused?' on':'');
-    statsToggle.onclick=()=>{
-      const nowFocused=state._focusedHabitId===hId;
-      if(nowFocused){ state._focusedHabitId=null; statsToggle.classList.remove('on'); }
-      else{ state._focusedHabitId=hId; state._statsOpen=true; statsToggle.classList.add('on'); }
-      save();
-    };
-    statsRow.appendChild(statsIcon); statsRow.appendChild(statsToggle); body.appendChild(statsRow);
-  }
 
   // Spacer + Save + Delete
   const spacer=document.createElement('div'); spacer.className='hd-spacer'; body.appendChild(spacer);
