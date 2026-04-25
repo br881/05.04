@@ -824,6 +824,7 @@ function migrateState(s){
   if(!s.timeEntries) s.timeEntries={};
   if(!s.moneyCategories) s.moneyCategories=[{id:'mc1',name:'🍎 Food',order:0,color:'#b03a2e'},{id:'mc_other',name:'Other',order:99,color:'rgba(255,255,255,0.32)'}];
   if(!s.moneyEntries) s.moneyEntries=[];
+  if(s.moneyCategories&&!s.moneyCategories.find(x=>x.id==='mc_other')) s.moneyCategories.push({id:'mc_other',name:'Other',order:99,color:'rgba(255,255,255,0.32)'});
   if(!s._moneyOpen) s._moneyOpen=false;
   return s;
 }
@@ -1539,7 +1540,7 @@ function openExtraDetail(eId){
   const typeBtnsDiv=document.createElement('div');
   typeBtnsDiv.className='type-mini-btns';
   typeBtnsDiv.style.cssText='justify-content:center;display:flex;gap:8px;margin-bottom:28px';
-  [{k:'checkbox',lbl:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="7 13 10 16 17 9"/></svg>'},{k:'number',lbl:'#'},{k:'text',lbl:'t'}].forEach(t=>{
+  [{k:'checkbox',lbl:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="7 13 10 16 17 9"/></svg>'},{k:'number',lbl:'<span style="font-size:16px">#</span>'},{k:'text',lbl:'<span style="font-size:16px">t</span>'}].forEach(t=>{
     const btn=document.createElement('button');
     btn.className='type-mini-btn'+(e.type===t.k?' active':'');
     btn.innerHTML=t.lbl;
@@ -2594,7 +2595,7 @@ function openHabitDetail(hId,defaultSector){
   const typeBtnsDiv=document.createElement('div');
   typeBtnsDiv.className='type-mini-btns';
   typeBtnsDiv.style.cssText='justify-content:center;display:flex;gap:8px;margin-bottom:28px';
-  [{k:'checkbox',lbl:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="7 13 10 16 17 9"/></svg>'},{k:'number',lbl:'#'},{k:'text',lbl:'t'}].forEach(t=>{
+  [{k:'checkbox',lbl:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="7 13 10 16 17 9"/></svg>'},{k:'number',lbl:'<span style="font-size:16px">#</span>'},{k:'text',lbl:'<span style="font-size:16px">t</span>'}].forEach(t=>{
     const btn=document.createElement('button');
     btn.className='type-mini-btn'+(h.type===t.k?' active':'');
     btn.innerHTML=t.lbl;
@@ -3552,11 +3553,14 @@ function renderMoneyCats(){
   const row=document.getElementById('moneyCatRow');
   if(!row) return;
   const cats=(state.moneyCategories||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
-  row.innerHTML=cats.map(c=>{
-    const isSel=_moneySelCat===c.id;
-    const bg=isSel?'rgba(61,221,101,0.28)':'rgba(255,255,255,0.32)';
+  row.innerHTML=cats.map(cat=>{
+    const isSel=_moneySelCat===cat.id;
+    const isOther=cat.id==='mc_other';
+    const dotColor=isOther?'rgba(255,255,255,0.32)':(cat.color||'rgba(255,255,255,0.32)');
+    const bg=isSel?'rgba(61,221,101,0.28)':(isOther?'rgba(255,255,255,0.10)':'rgba(255,255,255,0.32)');
     const fw=isSel?'600':'500';
-    return `<div onclick="selectAndSave('${c.id}')" style="padding:18px 26px;border-radius:var(--radius);background:${bg};backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;font-size:18px;font-weight:${fw};cursor:pointer;transition:all .15s;text-align:left;letter-spacing:-.02em;">${c.name}</div>`;
+    const textColor=isOther?'rgba(255,255,255,0.55)':'#fff';
+    return `<div onclick="selectAndSave('${cat.id}')" style="padding:18px 26px;border-radius:var(--radius);background:${bg};backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:${textColor};font-size:18px;font-weight:${fw};cursor:pointer;transition:all .15s;text-align:left;letter-spacing:-.02em;">${cat.name}</div>`;
   }).join('');
 }
 
@@ -3570,7 +3574,7 @@ function saveMoney(){
   if(!amount||isNaN(amount)){ closeMoney(); return; }
   const note=document.getElementById('moneyNoteInput').value.trim();
   if(!state.moneyEntries) state.moneyEntries=[];
-  state.moneyEntries.push({id:'m'+Date.now(),date:today(),amount,catId:_moneySelCat,note});
+  state.moneyEntries.push({id:'m'+Date.now(),date:today(),amount,catId:_moneySelCat||'mc_other',note});
   save(); closeMoney();
 }
 
