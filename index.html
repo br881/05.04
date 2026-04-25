@@ -183,11 +183,11 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .sector-block{margin-bottom:28px;}
 .sector-block-header{display:flex;align-items:center;justify-content:center;padding:10px 4px;cursor:pointer;transition:opacity .15s;}
 .sector-block-header:active{opacity:.6;}
-.sbn{font-size:19px;color:#ffffff;font-weight:400;}
+.sbn{font-size:18px;color:#ffffff;font-weight:400;}
 .sector-habits-box{margin-top:6px;background:rgba(255,255,255,0.32);border-radius:12px;overflow:hidden;padding:2px 0;}
 .sector-habit-row{display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;cursor:grab;touch-action:none;transition:opacity .15s;user-select:none;-webkit-user-select:none;}
 .sector-habit-row:active{opacity:.5;cursor:grabbing;}
-.shr-name{font-size:19px;color:#ffffff;font-weight:400;text-align:center;}
+.shr-name{font-size:18px;color:#ffffff;font-weight:400;text-align:center;}
 .add-habit-row{display:flex;align-items:center;justify-content:center;padding:10px 4px;color:rgba(255,255,255,0.35);cursor:pointer;touch-action:auto;transition:opacity .15s;background:none;}
 .add-habit-row:active{opacity:.8;}
 .add-sector-btn-icon{display:flex;align-items:center;justify-content:center;width:100%;padding:12px;border-radius:12px;border:none;background:none;color:rgba(255,255,255,0.3);cursor:pointer;transition:all .15s;}
@@ -1769,7 +1769,7 @@ function renderSettings(){
         const {arcs,R,r,cx,cy}=buildArcs(tEntries,_tCats,FB_TIME);
         const totalH=Math.floor(_tTotal/60),totalM=_tTotal%60;
         const cLabel=totalH>0?(totalM>0?totalH+'h '+totalM+'m':totalH+'h'):_tTotal+'m';
-        const svgSize=hasBoth?130:160;
+        const svgSize=hasBoth?110:140;
         const timeOpen=state._timeCardOpen===true;
         html+=`<div onclick="event.stopPropagation();toggleStatCard('time')" style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
         html+=`<div style="display:flex;justify-content:center;margin-bottom:${timeOpen?'12px':'0'}">`;
@@ -1807,14 +1807,14 @@ function renderSettings(){
         const mEntries=Object.entries(byCatM).sort((a,b)=>b[1]-a[1]);
         const {arcs,R,r,cx,cy}=buildArcs(mEntries,_mCats,FB_MONEY);
         const totAmtStr=_mTotal%1===0?String(_mTotal):_mTotal.toFixed(1);
-        const svgSize=hasBoth?130:160;
+        const svgSize=hasBoth?110:140;
         const moneyOpen=state._moneyCardOpen===true;
         html+=`<div onclick="event.stopPropagation();toggleStatCard('money')" style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
         html+=`<div style="display:flex;justify-content:center;margin-bottom:${moneyOpen?'12px':'0'}">`;
         html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
         html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
         html+=arcs;
-        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?19:24}px;font-weight:600;color:#fff">${totAmtStr}</span></div></div>`;
+        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?17:21}px;font-weight:600;color:#fff">${totAmtStr}</span></div></div>`;
         html+=`</div>`;
         if(moneyOpen){
           mEntries.forEach(([cid,amt],idx)=>{
@@ -1852,6 +1852,8 @@ function renderSettings(){
 
       html+=`</div>`;
     }
+
+    html+=`<div style="height:20px"></div>`;
 
     // ── HABITS — pinned shown by default, expand shows all + pin picker ──
     const pinnedIds=new Set(state._pinnedHabitIds||[]);
@@ -1891,18 +1893,21 @@ function renderSettings(){
         if(pinnedHabits.length){
           pinnedHabits.forEach(h=>{ html+=renderHabitBar(h); });
         } else {
-          html+=`<div style="color:rgba(255,255,255,0.2);font-size:13px;text-align:center;padding:4px 0 2px">Kliknij aby zobaczyć wszystkie</div>`;
+          html+=`<div style="display:flex;justify-content:center;padding:6px 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg></div>`;
         }
       } else {
-        // Expanded: show all habits
-        const bySec={};
-        allActiveHabits.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
-        state.sectors.forEach(sec=>{
-          const hh=(bySec[sec.id]||[]).sort((a,b)=>(a.order||0)-(b.order||0));
-          if(!hh.length) return;
-          if(state.sectors.length>1) html+=`<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;text-align:center">${sec.name}</div>`;
-          hh.forEach(h=>{ html+=renderHabitBar(h); });
-        });
+        const anyPanelOpen = state._habitsTimeOpen || state._habitsArchiveOpen || habitsPicking;
+        // Expanded: show all habits only when no sub-panel is open
+        if(!anyPanelOpen){
+          const bySec={};
+          allActiveHabits.forEach(h=>{ if(!bySec[h.sectorId]) bySec[h.sectorId]=[]; bySec[h.sectorId].push(h); });
+          state.sectors.forEach(sec=>{
+            const hh=(bySec[sec.id]||[]).sort((a,b)=>(a.order||0)-(b.order||0));
+            if(!hh.length) return;
+            if(state.sectors.length>1) html+=`<div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;text-align:center">${sec.name}</div>`;
+            hh.forEach(h=>{ html+=renderHabitBar(h); });
+          });
+        }
 
         // Time view panel — select which habits track time and their category
         if(state._habitsTimeOpen){
@@ -1981,7 +1986,7 @@ function renderSettings(){
           const archOpen=state._habitsArchiveOpen===true;
           html+=`<div style="display:flex;align-items:center;gap:22px">`;
           html+=`<div onclick="event.stopPropagation();toggleHabitsPicking()" style="cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;color:rgba(255,255,255,0.7);padding:6px">`;
-          html+=`<svg width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+          html+=`<svg width="24" height="24" viewBox="0 0 24 24" fill="rgba(255,255,255,0.4)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
           html+=`</div>`;
           html+=`<div onclick="event.stopPropagation();toggleHabitsTimeView()" style="cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;color:${state._habitsTimeOpen?'var(--accent)':'rgba(255,255,255,0.4)'};padding:6px">`;
           html+=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 15 14"/></svg>`;
@@ -2629,7 +2634,7 @@ function openHabitDetail(hId,defaultSector){
   urlIconEl.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
   urlIconEl.style.cssText='color:rgba(255,255,255,0.5);display:flex;align-items:center';
   const urlInput=document.createElement('input');
-  urlInput.className='url-input'; urlInput.id='hdu'; urlInput.value=h.url||''; urlInput.placeholder='https://';
+  urlInput.className='url-input'; urlInput.id='hdu'; urlInput.value=h.url||''; urlInput.placeholder='';
   urlInput.style.cssText='width:100%;display:'+(hasUrl?'block':'none')+';margin-top:8px';
   urlIconWrap.onclick=()=>{
     const open=urlInput.style.display!=='none';
