@@ -188,7 +188,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .sector-habit-row{display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;cursor:grab;touch-action:none;transition:opacity .15s;user-select:none;-webkit-user-select:none;}
 .sector-habit-row:active{opacity:.5;cursor:grabbing;}
 .shr-name{font-size:18px;color:#ffffff;font-weight:400;text-align:center;}
-.add-habit-row{display:flex;align-items:center;justify-content:center;padding:10px 4px;color:rgba(255,255,255,0.35);cursor:pointer;touch-action:auto;transition:opacity .15s;background:none;}
+.add-habit-row{display:flex;align-items:center;justify-content:center;padding:10px 4px;color:rgba(255,255,255,0.35);cursor:pointer;touch-action:auto;transition:opacity .15s;background:transparent!important;}
 .add-habit-row:active{opacity:.8;}
 .add-sector-btn-icon{display:flex;align-items:center;justify-content:center;width:100%;padding:12px;border-radius:12px;border:none;background:none;color:rgba(255,255,255,0.3);cursor:pointer;transition:all .15s;}
 .add-sector-btn-icon:active{opacity:.8;}
@@ -325,8 +325,8 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
 .day-btn{width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,0.06);color:#ffffff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .18s;}
 .day-btn.active{background:var(--accent-dim);color:var(--accent-bright);}
 .hd-url-arch-row{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding:0 4px;}
-.url-input{flex:1;background:rgba(255,255,255,0.09);border:none;border-radius:10px;padding:9px 12px;color:#ffffff;font-size:13px;font-weight:500;font-family:inherit;outline:none;min-width:0;transition:background .2s;}
-.url-input:focus{background:rgba(255,255,255,0.14);}
+.url-input{flex:1;background:rgba(255,255,255,0.32);border:none;border-radius:12px;padding:14px 16px;color:#ffffff;font-size:16px;font-weight:400;font-family:inherit;outline:none;min-width:0;transition:background .2s;}
+.url-input:focus{background:rgba(255,255,255,0.38);}
 .url-input::placeholder{color:rgba(255,255,255,0.3);}
 .arch-toggle-row{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .arch-toggle-label{font-size:13px;color:#ffffff;opacity:.7;}
@@ -699,7 +699,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div class="is-handle" onclick="closeInputSheet()"></div>
   <div class="is-label" id="inputSheetLabel"></div>
   <input class="is-field" id="inputSheetField">
-  <button class="is-confirm" onclick="confirmInput()">Gotowe</button>
+  <button class="is-confirm" onclick="confirmInput()">Zapisz</button>
 </div>
 
 <!-- HABIT TIME SCREEN — opens after habit tap if trackTime enabled -->
@@ -1769,7 +1769,7 @@ function renderSettings(){
         const {arcs,R,r,cx,cy}=buildArcs(tEntries,_tCats,FB_TIME);
         const totalH=Math.floor(_tTotal/60),totalM=_tTotal%60;
         const cLabel=totalH>0?(totalM>0?totalH+'h '+totalM+'m':totalH+'h'):_tTotal+'m';
-        const svgSize=hasBoth?110:140;
+        const svgSize=hasBoth?95:120;
         const timeOpen=state._timeCardOpen===true;
         html+=`<div onclick="event.stopPropagation();toggleStatCard('time')" style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
         html+=`<div style="display:flex;justify-content:center;margin-bottom:${timeOpen?'12px':'0'}">`;
@@ -1807,7 +1807,7 @@ function renderSettings(){
         const mEntries=Object.entries(byCatM).sort((a,b)=>b[1]-a[1]);
         const {arcs,R,r,cx,cy}=buildArcs(mEntries,_mCats,FB_MONEY);
         const totAmtStr=_mTotal%1===0?String(_mTotal):_mTotal.toFixed(1);
-        const svgSize=hasBoth?110:140;
+        const svgSize=hasBoth?95:120;
         const moneyOpen=state._moneyCardOpen===true;
         html+=`<div onclick="event.stopPropagation();toggleStatCard('money')" style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
         html+=`<div style="display:flex;justify-content:center;margin-bottom:${moneyOpen?'12px':'0'}">`;
@@ -1853,7 +1853,7 @@ function renderSettings(){
       html+=`</div>`;
     }
 
-    html+=`<div style="height:20px"></div>`;
+    html+=`<div style="height:32px"></div>`;
 
     // ── HABITS — pinned shown by default, expand shows all + pin picker ──
     const pinnedIds=new Set(state._pinnedHabitIds||[]);
@@ -1961,7 +1961,7 @@ function renderSettings(){
             html+=`<button onclick="event.stopPropagation();unarchiveHabit('${h.id}')" style="background:none;border:none;color:rgba(61,221,101,0.7);font-size:13px;cursor:pointer;font-family:inherit;padding:4px 0;touch-action:manipulation">Przywróć</button>`;
             html+=`</div>`;
           });
-          html+=`<button onclick="event.stopPropagation();toggleHabitsArchive()" style="width:100%;margin-top:12px;padding:12px;border:none;border-radius:10px;background:#1a7a3a;color:#fff;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer">Gotowe</button>`;
+          html+=`<button onclick="event.stopPropagation();toggleHabitsArchive()" style="width:100%;margin-top:12px;padding:12px;border:none;border-radius:10px;background:#1a7a3a;color:#fff;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer">Zapisz</button>`;
           html+=`</div>`;
         }
 
@@ -1988,10 +1988,10 @@ function renderSettings(){
           html+=`<div onclick="event.stopPropagation();toggleHabitsPicking()" style="cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;color:rgba(255,255,255,0.7);padding:6px">`;
           html+=`<svg width="24" height="24" viewBox="0 0 24 24" fill="rgba(255,255,255,0.4)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
           html+=`</div>`;
-          html+=`<div onclick="event.stopPropagation();toggleHabitsTimeView()" style="cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;color:${state._habitsTimeOpen?'var(--accent)':'rgba(255,255,255,0.4)'};padding:6px">`;
+          html+=`<div onclick="event.stopPropagation();toggleHabitsTimeView()" style="cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;color:${state._habitsTimeOpen?'var(--accent)':'rgba(255,255,255,0.7)'};padding:6px">`;
           html+=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 15 14"/></svg>`;
           html+=`</div>`;
-          html+=`<div onclick="event.stopPropagation();toggleHabitsArchive()" style="cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;color:${archOpen?'var(--accent)':'rgba(255,255,255,0.4)'};padding:6px">`;
+          html+=`<div onclick="event.stopPropagation();toggleHabitsArchive()" style="cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;color:${archOpen?'var(--accent)':'rgba(255,255,255,0.7)'};padding:6px">`;
           html+=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
           html+=`</div>`;
           html+=`</div>`;
@@ -2066,8 +2066,8 @@ function renderSettings(){
           onclick="hRowClick(event,'${h.id}')">
           <span class="shr-name">${h.name}</span>
         </div>`).join('')}
-        <div class="add-habit-row" onclick="openHabitDetail('new','${sec.id}')">${plusSVG}</div>
       </div>
+      <div class="add-habit-row" onclick="openHabitDetail('new','${sec.id}')">${plusSVG}</div>
     </div>`;
   }
   if(state.sectors.length<5) html+=`<button class="add-sector-btn-icon" onclick="addSector()">${plusSVG}</button>`;
