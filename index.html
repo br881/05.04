@@ -593,32 +593,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div class="settings-scroll" id="settingsScroll" style="padding-top:calc(var(--safe-top)+56px)"></div>
 </div>
 
-<!-- MONEY SCREEN -->
-<div id="moneyOverlay" style="position:fixed;inset:0;z-index:500;background:#000;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .55s cubic-bezier(.16,1,.3,1);">
-  <!-- Back arrow -->
-  <div class="settings-header">
-    <button class="btn-back" onclick="closeMoney()">‹</button>
-  </div>
 
-  <!-- Center content -->
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 24px;gap:0;min-height:0;padding-bottom:calc(var(--safe-bottom)+20px);">
-    <!-- Visible tappable number input -->
-    <input id="moneyAmountInput" type="text" inputmode="decimal" enterkeyhint="done"
-      autocomplete="off" placeholder="0"
-      oninput="moneyAmountOninput(this.value)"
-      onkeydown="moneyAmountKeydown(event)"
-      style="font-size:62px;font-weight:400;color:#fff;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;text-align:center;line-height:1;margin-bottom:44px;background:none;border:none;outline:none;width:100%;max-width:400px;caret-color:var(--accent);font-family:'SF Pro Rounded','Nunito','Varela Round',ui-rounded,system-ui,sans-serif;-webkit-user-select:text;user-select:text;">
-    <!-- Categories -->
-    <div id="moneyCatRow" style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:400px;"></div>
-    <!-- Note field -->
-    <input id="moneyNoteInput" type="text" inputmode="text" enterkeyhint="done" autocapitalize="sentences" autocomplete="off"
-      placeholder=""
-      style="margin-top:10px;width:100%;max-width:400px;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:var(--radius);padding:16px 18px;color:#ffffff;font-size:19px;font-weight:400;text-align:center;font-family:inherit;outline:none;box-sizing:border-box;letter-spacing:-.02em;"
-      onkeydown="if(event.key==='Enter'){event.preventDefault();saveMoney();}">
-  </div>
-
-
-</div>
 
 <!-- TIME TRACKER -->
 <div id="timeTracker" class="screen" style="overflow:visible;">
@@ -635,6 +610,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
     <div class="tt-entry-handle" onclick="closeTTEntry()"></div>
     <div class="tt-entry-duration" id="ttEntryDuration"></div>
     <input class="tt-entry-field" id="ttEntryField" placeholder="" autocomplete="off" autocapitalize="sentences" enterkeyhint="done">
+    <div id="ttSuggestions" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px;min-height:0"></div>
     <div class="tt-cat-row" id="ttCatRow"></div>
   </div>
   <!-- Bottom Zapisz — shown in habit mode after selection, same look as entry panel -->
@@ -787,11 +763,7 @@ function defaultState(){
       {id:'tc3',name:'❌',color:'#991b1b'},
     ],
     timeEntries:{}, // keyed by date → array of {id,label,catId,blocks:[{h,q}]}
-    moneyCategories:[
-      {id:'mc1',name:'🍎 Food',order:0,color:'#b03a2e'},
     ],
-    moneyEntries:[], // array of {id,date,amount,catId,note}
-    _moneyOpen:false,
   };
 }
 
@@ -822,10 +794,7 @@ function migrateState(s){
   const emojiMap={'💼 Praca':{name:'💼',color:'#8B6914'},'🌱 Rozwój':{name:'🌱',color:'#2d7a3a'},'❌ Strata':{name:'❌',color:'#7a2d2d'}};
   for(const c of (s.timeCategories||[])){ if(emojiMap[c.name]){ c.name=emojiMap[c.name].name; if(!c.color) c.color=emojiMap[c.name]?.color||'#555'; } }
   if(!s.timeEntries) s.timeEntries={};
-  if(!s.moneyCategories) s.moneyCategories=[{id:'mc1',name:'🍎 Food',order:0,color:'#b03a2e'},{id:'mc_other',name:'Other',order:99,color:'rgba(255,255,255,0.32)'}];
-  if(!s.moneyEntries) s.moneyEntries=[];
-  if(s.moneyCategories&&!s.moneyCategories.find(x=>x.id==='mc_other')) s.moneyCategories.push({id:'mc_other',name:'Other',order:99,color:'rgba(255,255,255,0.32)'});
-  if(!s._moneyOpen) s._moneyOpen=false;
+  if(!s);
   return s;
 }
 
@@ -1540,7 +1509,7 @@ function openExtraDetail(eId){
   const typeBtnsDiv=document.createElement('div');
   typeBtnsDiv.className='type-mini-btns';
   typeBtnsDiv.style.cssText='justify-content:center;display:flex;gap:8px;margin-bottom:28px';
-  [{k:'checkbox',lbl:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="7 13 10 16 17 9"/></svg>'},{k:'number',lbl:'<span style="font-size:16px">#</span>'},{k:'text',lbl:'<span style="font-size:16px">t</span>'}].forEach(t=>{
+  [{k:'checkbox',lbl:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="7 13 10 16 17 9"/></svg>'},{k:'number',lbl:'<span style="font-size:18px">#</span>'},{k:'text',lbl:'<span style="font-size:18px">t</span>'}].forEach(t=>{
     const btn=document.createElement('button');
     btn.className='type-mini-btn'+(e.type===t.k?' active':'');
     btn.innerHTML=t.lbl;
@@ -1714,7 +1683,7 @@ function renderSettings(){
     for(let i=sharedPeriod-1;i>=0;i--){ const d=new Date(now3); d.setDate(now3.getDate()-i); days.push(fmtDate(d)); }
     const allActiveHabits=state.habits.filter(h=>!h.archived&&days.some(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])));
 
-    // ── TIME + MONEY — side by side pie charts ──
+    // ── TIME pie chart ──
     const _tStats=getTimeStats(sharedPeriod===7?'week':'month');
     const _tCats=state.timeCategories||[];
     const _tTotal=Object.values(_tStats).reduce((a,b)=>a+b,0);
@@ -1731,15 +1700,6 @@ function renderSettings(){
       }
     }
 
-    const _mEntries=(state.moneyEntries||[]).filter(e=>{
-      const d=new Date(e.date+'T00:00:00'); const now=new Date();
-      return (now-d)/(1000*60*60*24)<=(sharedPeriod||7);
-    });
-    const _mCats=state.moneyCategories||[];
-    const byCatM={};
-    _mEntries.forEach(e=>{ const cid=e.catId||'mc_other'; byCatM[cid]=(byCatM[cid]||0)+Number(e.amount||0); });
-    const _mTotal=Object.values(byCatM).reduce((a,b)=>a+b,0);
-
     function buildArcs(dataEntries,cats,fallbackColors){
       const R=44,r=28,cx=52,cy=52,circ=2*Math.PI*R;
       let offset=0,arcs='';
@@ -1755,13 +1715,10 @@ function renderSettings(){
       return {arcs,R,r,cx,cy};
     }
 
-    const hasBoth=_tTotal>0&&_mTotal>0;
     const hasTime=_tTotal>0;
-    const hasMoney=_mTotal>0;
     const FB_TIME=['#166534','#1d4ed8','#92400e','#991b1b','#6d28d9','#0f766e'];
-    const FB_MONEY=['#b03a2e','#f97316','#eab308','#22c55e','#3b82f6','#a855f7'];
-
-    if(hasTime||hasMoney){
+    
+    if(hasTime){
       html+=`<div style="display:flex;gap:10px">`;
 
       // ── TIME card ──
@@ -1803,59 +1760,7 @@ function renderSettings(){
         html+=`</div>`;
       }
 
-      // ── MONEY card ──
-      if(hasMoney){
-        const mEntries=Object.entries(byCatM).sort((a,b)=>b[1]-a[1]);
-        const {arcs,R,r,cx,cy}=buildArcs(mEntries,_mCats,FB_MONEY);
-        const totAmtStr=_mTotal%1===0?String(_mTotal):_mTotal.toFixed(1);
-        const svgSize=hasBoth?105:135;
-        const moneyOpen=state._moneyCardOpen===true;
-        html+=`<div onclick="event.stopPropagation();toggleStatCard('money')" style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
-        html+=`<div style="display:flex;justify-content:center;margin-bottom:${moneyOpen?'12px':'0'}">`;
-        html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
-        html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
-        html+=arcs;
-        html+=`</svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:${hasBoth?17:21}px;font-weight:600;color:#fff">${totAmtStr}</span></div></div>`;
-        html+=`</div>`;
-        if(moneyOpen){
-          mEntries.forEach(([cid,amt],idx)=>{
-            const cat=_mCats.find(c=>c.id===cid);
-            const color=cat?.color||FB_MONEY[idx%FB_MONEY.length];
-            const dispAmt=amt%1===0?String(amt):amt.toFixed(1);
-            html+=`<div style="margin-bottom:6px">`;
-            html+=`<div style="display:flex;align-items:center;gap:7px">`;
-            const catDisplayName=cat?.name||'Other';
-            const catDotColor=cat?.color?cat.color:'rgba(255,255,255,0.32)';
-            html+=`<div style="width:8px;height:8px;border-radius:50%;background:${catDotColor};flex-shrink:0"></div>`;
-            html+=`<span style="font-size:13px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${catDisplayName}</span>`;
-            html+=`<span style="font-size:13px;font-weight:600;color:#fff">${dispAmt}</span>`;
-            html+=`</div>`;
-            const catEntries=_mEntries.filter(e=>e.catId===cid);
-            if(catEntries.length){
-              html+=`<div style="padding-left:15px;margin-top:2px">`;
-              catEntries.forEach(e=>{
-                const note=e.note||'Other';
-                const eAmt=Number(e.amount||0);
-                const eStr=eAmt%1===0?String(eAmt):eAmt.toFixed(1);
-                html+=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">`;
-                html+=`<div style="width:6px;height:6px;border-radius:50%;background:${color};opacity:0.5;flex-shrink:0"></div>`;
-                html+=`<span style="font-size:13px;color:rgba(255,255,255,0.7);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${note}</span>`;
-                html+=`<span style="font-size:13px;color:rgba(255,255,255,0.5);flex-shrink:0">${eStr}</span>`;
-                html+=`</div>`;
-              });
-              html+=`</div>`;
-            }
-            html+=`</div>`;
-          });
-        }
-        html+=`</div>`;
-      }
-
-      html+=`</div>`;
-    }
-
-    html+=`<div style="height:10px"></div>`;
-
+  
     // ── HABITS — pinned shown by default, expand shows all + pin picker ──
     const pinnedIds=new Set(state._pinnedHabitIds||[]);
     const pinnedHabits=allActiveHabits.filter(h=>pinnedIds.has(h.id));
@@ -2095,7 +2000,7 @@ function renderSettings(){
   }
   html+=`<button class="add-sector-btn-icon" onclick="openExtraSheet()">${plusSVG}</button></div>`;
 
-  // Kategorie Czas + Money
+  // Kategorie Czas
   html+=`<div class="s-section" style="margin-top:4px"><div style="padding:0 0 8px">`;
   html+=`<div style="padding:12px 16px 8px">`;
   html+=`<div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px;text-align:center">Czas</div>`;
@@ -2113,24 +2018,7 @@ function renderSettings(){
   });
   html+=`</div>`;
   html+=`<button onclick="openAddTimeCat()" style="display:flex;align-items:center;justify-content:center;width:100%;padding:10px;margin-top:6px;border:none;border-radius:12px;background:none;color:rgba(255,255,255,0.3);cursor:pointer;">${plusSVG}</button>`;
-  html+=`<div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:.07em;text-transform:uppercase;margin:16px 0 10px;text-align:center">Money</div>`;
-  const _mCats2=(state.moneyCategories||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
-  const _mPal2=['#7dd3fc','#f9a8d4','#fdba74','#c4b5fd','#6ee7b7','#fde68a','#fca5a5','#67e8f9'];
-  html+=`<div style="display:flex;flex-direction:column;gap:8px">`;
-  _mCats2.forEach((mc,i)=>{
-    const mcol=mc.color||_mPal2[i%_mPal2.length];
-    const safeMcol=mcol.startsWith('#')?mcol:_mPal2[0];
-    html+=`<div id="mcr-${mc.id}" data-mcid="${mc.id}" onclick="openCatEditOverlay('mc','${mc.id}')"
-      style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;border-left:4px solid ${safeMcol}">
-      <span style="font-size:16px;color:#fff;flex:1">${mc.name}</span>
-      <button onclick="event.stopPropagation();deleteMoneyCat('${mc.id}')" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:22px;cursor:pointer;padding:4px 8px;line-height:1;touch-action:manipulation;flex-shrink:0">×</button>
-    </div>`;
-  });
-  html+=`</div>`;
-  html+=`<button onclick="openAddMoneyCat()" style="display:flex;align-items:center;justify-content:center;width:100%;padding:10px;margin-top:6px;border:none;border-radius:12px;background:none;color:rgba(255,255,255,0.3);cursor:pointer;">${plusSVG}</button>`;
-  html+=`</div></div>`;
-
-  // Pobierz
+  
   html+=`<div style="display:flex;justify-content:center;margin-top:16px;margin-bottom:8px">
     <button onclick="showExportSheet()" style="background:none;border:none;color:#ffffff;cursor:pointer;padding:14px 28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-family:inherit">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -2269,7 +2157,6 @@ function saveHabitPins(){
 }
 function toggleStatCard(type){
   if(type==='time'){ state._timeCardOpen=!state._timeCardOpen; save(); renderSettings(); return; }
-  if(type==='money'){ state._moneyCardOpen=!state._moneyCardOpen; save(); renderSettings(); return; }
   if(type==='habits'){ state._habitsCardOpen=!state._habitsCardOpen; save(); renderSettings(); return; }
 }
 function focusHabitStats(hId){
@@ -2294,19 +2181,7 @@ function setCsvSector(id){ state._csvSectorId=id; save(); renderSettings(); }
 function setTimePeriod(p){ state._timePeriod=p; save(); renderSettings(); }
 function openCatEditOverlay(type,id){
   document.getElementById('catColorOverlay')?.remove();
-  const cats=type==='tc'?(state.timeCategories||[]):(state.moneyCategories||[]);
-  const cat=cats.find(c=>c.id===id);
-  if(!cat) return;
-  const pal=['#b03a2e','#f97316','#f59e0b','#eab308','#84cc16','#22c55e',
-    '#3ddd65','#10b981','#14b8a6','#06b6d4','#3b82f6','#6366f1',
-    '#8b5cf6','#a855f7','#ec4899','#f43f5e','#ffffff','#d4d4d8',
-    '#a1a1aa','#71717a','#52525b','#000000','#7dd3fc','#f9a8d4',
-    '#fdba74','#fde68a','#bbf7d0','#c4b5fd','#fca5a5','#67e8f9'];
-  const cur=cat.color||pal[0];
-  const ov=document.createElement('div');
-  ov.id='catColorOverlay';
-  ov.style.cssText='position:fixed;inset:0;z-index:800;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)';
-  const sw=pal.map(c=>`<div data-color="${c}" onclick="ceoSwatchTap(this)" style="width:36px;height:36px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${c.toLowerCase()===cur.toLowerCase()?'#fff':'transparent'};box-sizing:border-box;flex-shrink:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation"></div>`).join('');
+  const cats=type==='tc'?(state.timeCategories||[]):(state" onclick="ceoSwatchTap(this)" style="width:36px;height:36px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${c.toLowerCase()===cur.toLowerCase()?'#fff':'transparent'};box-sizing:border-box;flex-shrink:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation"></div>`).join('');
   ov.innerHTML=`<div style="width:100%;max-width:420px;background:#1a1a1a;border-radius:24px 24px 0 0;padding:20px 20px calc(env(safe-area-inset-bottom,20px)+20px);box-sizing:border-box">
     <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 18px"></div>
     <input id="ceoName" value="${cat.name.replace(/"/g,'&quot;')}" autocapitalize="sentences" autocomplete="off"
@@ -2330,31 +2205,9 @@ function ceoConfirm(type,id){
   const name=document.getElementById('ceoName')?.value.trim();
   const color=document.getElementById('ceoPreview')?.style.background||'#3ddd65';
   document.getElementById('catColorOverlay')?.remove();
-  const cats=type==='tc'?(state.timeCategories||[]):(state.moneyCategories||[]);
-  const cat=cats.find(c=>c.id===id);
-  if(!cat) return;
-  if(name) cat.name=name;
-  cat.color=color;
-  save(); renderSettings();
-}
-
-function openCatColorPicker(type,id){
-  const existing=document.getElementById('catColorOverlay');
-  if(existing){ existing.remove(); return; }
-  let cur='#3ddd65';
+  const cats=type==='tc'?(state.timeCategories||[]):(statelet cur='#3ddd65';
   if(type==='tc'){ const c=(state.timeCategories||[]).find(x=>x.id===id); if(c?.color) cur=c.color; }
-  else { const c=(state.moneyCategories||[]).find(x=>x.id===id); if(c?.color) cur=c.color; }
-  const colors=[
-    '#b03a2e','#f97316','#f59e0b','#eab308','#84cc16','#22c55e',
-    '#3ddd65','#10b981','#14b8a6','#06b6d4','#3b82f6','#6366f1',
-    '#8b5cf6','#a855f7','#ec4899','#f43f5e','#ffffff','#d4d4d8',
-    '#a1a1aa','#71717a','#52525b','#000000','#7dd3fc','#f9a8d4',
-    '#fdba74','#fde68a','#bbf7d0','#c4b5fd','#fca5a5','#67e8f9'
-  ];
-  const ov=document.createElement('div');
-  ov.id='catColorOverlay';
-  ov.style.cssText='position:fixed;inset:0;z-index:800;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)';
-  const sw=colors.map(c=>`<div data-color="${c}" onclick="catColorSwatchTap(this,'${type}','${id}')" style="width:36px;height:36px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${c.toLowerCase()===cur.toLowerCase()?'#fff':'transparent'};box-sizing:border-box;flex-shrink:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:border-color .1s"></div>`).join('');
+  else { const c=(state" onclick="catColorSwatchTap(this,'${type}','${id}')" style="width:36px;height:36px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${c.toLowerCase()===cur.toLowerCase()?'#fff':'transparent'};box-sizing:border-box;flex-shrink:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:border-color .1s"></div>`).join('');
   ov.innerHTML=`<div style="width:100%;max-width:420px;background:#1a1a1a;border-radius:24px 24px 0 0;padding:20px 20px calc(env(safe-area-inset-bottom,20px)+20px);box-sizing:border-box">
     <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 18px"></div>
     <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:0 4px">${sw}</div>
@@ -2400,11 +2253,7 @@ function catColorConfirm(type,id){
 function pickCatColor(type,id,color,isFinal){
   // update state
   if(type==='tc'){ const cat=(state.timeCategories||[]).find(c=>c.id===id); if(cat) cat.color=color; }
-  else { const cat=(state.moneyCategories||[]).find(c=>c.id===id); if(cat) cat.color=color; }
-  // update the label color live without full re-render
-  const row=document.getElementById((type==='tc'?'tcr-':'mcr-')+id);
-  if(row){ const lbl=row.querySelector('label'); if(lbl) lbl.style.background=color; }
-  // only save & re-render when done (onchange), not on every oninput tick
+  else { const cat=(state// only save & re-render when done (onchange), not on every oninput tick
   if(isFinal){ save(); renderSettings(); }
 }
 function updateTimeCatColor(id,color){
@@ -2595,7 +2444,7 @@ function openHabitDetail(hId,defaultSector){
   const typeBtnsDiv=document.createElement('div');
   typeBtnsDiv.className='type-mini-btns';
   typeBtnsDiv.style.cssText='justify-content:center;display:flex;gap:8px;margin-bottom:28px';
-  [{k:'checkbox',lbl:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="7 13 10 16 17 9"/></svg>'},{k:'number',lbl:'<span style="font-size:16px">#</span>'},{k:'text',lbl:'<span style="font-size:16px">t</span>'}].forEach(t=>{
+  [{k:'checkbox',lbl:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="7 13 10 16 17 9"/></svg>'},{k:'number',lbl:'<span style="font-size:18px">#</span>'},{k:'text',lbl:'<span style="font-size:18px">t</span>'}].forEach(t=>{
     const btn=document.createElement('button');
     btn.className='type-mini-btn'+(h.type===t.k?' active':'');
     btn.innerHTML=t.lbl;
@@ -2827,12 +2676,6 @@ function buildCSVRows(){
   rows.push(['','','']);
   // ── WYDATKI ──
   rows.push(['data','kategoria','kwota','notatka']);
-  const sortedMoney=[...(state.moneyEntries||[])].sort((a,b)=>a.date.localeCompare(b.date));
-  for(const e of sortedMoney){
-    const cat=(state.moneyCategories||[]).find(c=>c.id===e.catId);
-    rows.push([e.date,cat?.name||'',e.amount,e.note||'']);
-  }
-  return rows;
 }
 
 function exportCSV(sep){
@@ -3177,6 +3020,60 @@ function updateTTSelectionBar(){
   if(hd) hd.innerHTML=bigHTML;
 }
 
+function getTTSuggestions(query){
+  // Collect labels from last 30 days, count frequency per (catId+label)
+  const now=new Date();
+  const freq={};
+  for(const[dk,entries] of Object.entries(state.timeEntries||{})){
+    const d=new Date(dk+'T00:00:00');
+    if((now-d)/(864e5)>30) continue;
+    for(const e of entries){
+      if(!e.label||e.empty) continue;
+      const key=e.label.trim();
+      if(!freq[key]) freq[key]={label:key,count:0,catId:e.catId};
+      freq[key].count++;
+    }
+  }
+  let items=Object.values(freq).sort((a,b)=>b.count-a.count);
+  if(query){
+    const q=query.toLowerCase();
+    items=items.filter(x=>x.label.toLowerCase().includes(q));
+  }
+  return items.slice(0,5);
+}
+
+function renderTTSuggestions(query){
+  const box=document.getElementById('ttSuggestions');
+  if(!box) return;
+  const items=getTTSuggestions(query);
+  if(!items.length){ box.style.display='none'; return; }
+  box.style.display='flex';
+  box.innerHTML=items.map(item=>
+    `<div onclick="applyTTSuggestion(${JSON.stringify(item.label)},${JSON.stringify(item.catId)})"
+      style="padding:7px 14px;border-radius:20px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.75);
+             font-size:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;
+             transition:background .12s;touch-action:manipulation"
+      ontouchstart="this.style.background='rgba(61,221,101,0.25)'"
+      ontouchend="this.style.background='rgba(255,255,255,0.1)'">${item.label}</div>`
+  ).join('');
+}
+
+function applyTTSuggestion(label,catId){
+  ttEntryLabel=label;
+  if(catId) ttSelectedCat=catId;
+  // save immediately
+  const blocks=Array.from(ttSelBlocks).map(k=>{const[h,q]=k.split(':');return{h:+h,q:+q};});
+  if(!blocks.length){ closeTTEntry(); return; }
+  const k=today();
+  if(!state.timeEntries) state.timeEntries={};
+  if(!state.timeEntries[k]) state.timeEntries[k]=[];
+  state.timeEntries[k].push({id:'tt'+Date.now(),label,catId:ttSelectedCat||(state.timeCategories||[])[0]?.id,blocks});
+  save(); renderTTGrid(); ttSelBlocks.clear(); ttSelecting=false;
+  closeTTEntry();
+  if(_ttHabitId) completeHabit(_ttHabitId,true);
+  renderHome();
+}
+
 function showTTEntryPanel(){
   updateTTSelectionBar();
   const cats=state.timeCategories||[];
@@ -3188,8 +3085,12 @@ function showTTEntryPanel(){
     +`</div>`
     +`<button onclick="cancelTTSelection()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.06);border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;font-weight:300">×</button>`;
   document.getElementById('ttEntryField').value=ttEntryLabel;
-
-  // Check if any selected blocks are filled — show clear button
+  // Suggestions: render initial + update on input
+  renderTTSuggestions(ttEntryLabel);
+  const _f=document.getElementById('ttEntryField');
+  if(_f._sugHandler) _f.removeEventListener('input',_f._sugHandler);
+  _f._sugHandler=()=>{ ttEntryLabel=_f.value; renderTTSuggestions(_f.value); };
+  _f.addEventListener('input',_f._sugHandler);
   const filled=getFilledBlocks();
   const hasFilledSelected=Array.from(ttSelBlocks).some(k=>filled.has(k));
   let clearBtn=document.getElementById('ttClearBtn');
@@ -3368,7 +3269,6 @@ function saveTTEntry(){
   },{passive:true});
 })();
 
-// Swipe from right edge on home → money overlay
 (()=>{
   let sx=0,sy=0,moved=false;
   const home=document.getElementById('home');
@@ -3385,7 +3285,6 @@ function saveTTEntry(){
     if(!moved){ moved=false; return; }
     moved=false;
     const dx=sx-e.changedTouches[0].clientX;
-    if(dx>50) openMoney();
   },{passive:true});
 })();
 
@@ -3510,183 +3409,45 @@ function saveTTEntry(){
 /* ══════════════════════════════════════════
    MONEY
 ══════════════════════════════════════════ */
-let _moneySelCat=null;
-let _moneyAmount='0';
 
-function openMoney(){
-  _moneySelCat=(state.moneyCategories||[])[0]?.id||null;
-  _moneyAmount='0';
-  const inp=document.getElementById('moneyAmountInput');
-  inp.value='';
-  document.getElementById('moneyNoteInput').value='';
-  renderMoneyCats();
-  document.getElementById('home').classList.add('slide-out');
-  document.getElementById('moneyOverlay').style.transform='translateX(0)';
-  inp.focus();
-  setTimeout(()=>{ inp.focus(); },80);
-  setTimeout(()=>{ inp.focus(); },320);
+
+
+
+
+
+
+
+
+).join('');
 }
 
-function closeMoney(){
-  document.activeElement?.blur();
-  document.getElementById('moneyOverlay').style.transform='translateX(100%)';
-  document.getElementById('home').classList.remove('slide-out');
-  document.getElementById('home').style.transform='';
-  _moneySelCat=null;
-}
 
-function moneyAmountOninput(val){
-  const clean=val.replace(/[^0-9.,]/g,'').replace(',','.').replace(/(\.\.*)\./g,'$1');
-  const inp=document.getElementById('moneyAmountInput');
-  if(inp.value!==clean) inp.value=clean;
-  _moneyAmount=clean||'0';
-}
 
-function moneyAmountKeydown(e){
-  if(e.key!=='Enter') return;
-  e.preventDefault();
-  document.getElementById('moneyAmountInput').blur();
-  saveMoney();
-}
 
-function renderMoneyCats(){
-  const row=document.getElementById('moneyCatRow');
-  if(!row) return;
-  const cats=(state.moneyCategories||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
-  row.innerHTML=cats.map(cat=>{
-    const isSel=_moneySelCat===cat.id;
-    const isOther=cat.id==='mc_other';
-    const dotColor=isOther?'rgba(255,255,255,0.32)':(cat.color||'rgba(255,255,255,0.32)');
-    const bg=isSel?'rgba(61,221,101,0.28)':(isOther?'rgba(255,255,255,0.10)':'rgba(255,255,255,0.32)');
-    const fw=isSel?'600':'500';
-    const textColor=isOther?'rgba(255,255,255,0.55)':'#fff';
-    return `<div onclick="selectAndSave('${cat.id}')" style="padding:18px 26px;border-radius:var(--radius);background:${bg};backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:${textColor};font-size:18px;font-weight:${fw};cursor:pointer;transition:all .15s;text-align:left;letter-spacing:-.02em;">${cat.name}</div>`;
-  }).join('');
-}
 
-function selectAndSave(id){
-  _moneySelCat=id;
-  saveMoney();
-}
-
-function saveMoney(){
-  const amount=parseFloat(_moneyAmount.replace(',','.'));
-  if(!amount||isNaN(amount)){ closeMoney(); return; }
-  const note=document.getElementById('moneyNoteInput').value.trim();
-  if(!state.moneyEntries) state.moneyEntries=[];
-  state.moneyEntries.push({id:'m'+Date.now(),date:today(),amount,catId:_moneySelCat||'mc_other',note});
-  save(); closeMoney();
-}
-
-// Swipe right from left edge of money → close
 (()=>{
   let sx=0,sy=0,ok=false;
-  const ov=document.getElementById('moneyOverlay');
-  ov.addEventListener('touchstart',e=>{
-    sx=e.touches[0].clientX; sy=e.touches[0].clientY; ok=sx<28;
-  },{passive:true});
   ov.addEventListener('touchend',e=>{
     if(!ok) return; ok=false;
     const dx=e.changedTouches[0].clientX-sx;
     const dy=Math.abs(e.changedTouches[0].clientY-sy);
-    if(dx>52&&dy<80) closeMoney();
   },{passive:true});
 })();
 
 
-function getMoneyStats(days){
-  const now=new Date();
-  const entries=(state.moneyEntries||[]).filter(e=>{
-    const d=new Date(e.date);
-    return (now-d)/(1000*60*60*24)<=days;
-  });
-  const byCat={};
-  for(const e of entries){
-    if(!byCat[e.catId]) byCat[e.catId]={total:0,entries:[]};
-    byCat[e.catId].total+=e.amount;
-    byCat[e.catId].entries.push(e);
-  }
-  return byCat;
-}
 
-function renderMoneySettings(){
-  const cats=(state.moneyCategories||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
-  const period=state._statPeriod||7;
-  const now=new Date();
-  const entries=(state.moneyEntries||[]).filter(e=>{
-    const d=new Date(e.date+'T00:00:00');
-    return (now-d)/(1000*60*60*24)<=period;
-  });
-  const total=entries.reduce((s,e)=>s+e.amount,0);
-  if(total===0) return '<div style="text-align:center;color:rgba(255,255,255,0.18);font-size:13px;padding:20px 0">—</div>';
-  const catTotals={};
-  entries.forEach(e=>{ catTotals[e.catId]=(catTotals[e.catId]||0)+e.amount; });
-  const sorted=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
-  const totalStr=total%1===0?Math.round(total):total.toFixed(2);
-  let html='<div style="padding:12px 0 4px">';
-  html+='<div style="font-size:32px;font-weight:200;color:#fff;letter-spacing:-.03em;text-align:center;margin-bottom:16px">'+totalStr+' <span style="font-size:18px;opacity:.45">zł</span></div>';
-  html+='<div style="display:flex;flex-direction:column;gap:6px">';
-  sorted.forEach(([cid,amt])=>{
-    const cat=cats.find(c=>c.id===cid);
-    const pct=Math.round(amt/total*100);
-    const amtStr=amt%1===0?Math.round(amt):amt.toFixed(2);
-    html+='<div style="display:flex;align-items:center;gap:10px">';
-    html+='<span style="font-size:15px;min-width:32px;text-align:center">'+(cat?.name||'')+'</span>';
-    html+='<div style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden"><div style="height:3px;width:'+pct+'%;background:rgba(255,255,255,0.5);border-radius:2px"></div></div>';
-    html+='<span style="font-size:14px;font-weight:500;color:#fff;min-width:52px;text-align:right">'+amtStr+'</span>';
-    html+='</div>';
-  });
-  html+='</div></div>';
-  return html;
-}
+
+
 
 function setHabitStatPeriod(d){ state._habitStatPeriod=d; save(); renderSettings(); }
 function setStatPeriod(d){ state._statPeriod=d; save(); renderSettings(); }
 function setTimeStatPeriod(p){ setStatPeriod(p==='month'?30:p); }
-function setMoneyStatPeriod(days){ setStatPeriod(days); }
-
-function updateMoneyCatColor(id,color){
-  const cat=(state.moneyCategories||[]).find(c=>c.id===id);
-  if(cat){ cat.color=color; save(); renderSettings(); }
-}
 
 
-function openAddMoneyCat(){
-  const existing=document.getElementById('mcAddOverlay');
-  if(existing){ existing.remove(); return; }
-  const ov=document.createElement('div');
-  ov.id='mcAddOverlay';
-  ov.style.cssText='position:fixed;inset:0;z-index:600;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);padding:0 20px 40px';
-  ov.innerHTML=`<div style="width:100%;max-width:400px;background:#1a1a1a;border-radius:16px;padding:20px">
-    <input id="mcAddInput" style="width:100%;background:rgba(255,255,255,0.1);border:none;border-radius:10px;padding:12px 14px;color:#fff;font-size:16px;font-family:inherit;outline:none;margin-bottom:12px;text-align:center" placeholder="" autocapitalize="sentences">
-    <button onclick="confirmAddMoneyCat()" class="save-btn">Zapisz</button>
-  </div>`;
-  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
-  document.body.appendChild(ov);
-  setTimeout(()=>document.getElementById('mcAddInput')?.focus(),50);
-  document.getElementById('mcAddInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); confirmAddMoneyCat(); } });
-}
 
-function confirmAddMoneyCat(){
-  const input=document.getElementById('mcAddInput');
-  const name=input?.value.trim();
-  document.getElementById('mcAddOverlay')?.remove();
-  if(!name) return;
-  if(!state.moneyCategories) state.moneyCategories=[];
-  const order=state.moneyCategories.length;
-  state.moneyCategories.push({id:'mc'+Date.now(),name,order});
-  save(); renderSettings();
-}
 
-function deleteMoneyCat(id){
-  state.moneyCategories=(state.moneyCategories||[]).filter(c=>c.id!==id);
-  save(); renderSettings();
-}
 
-// Drag reorder for money categories
-let mcDragId=null;
-function mcDragStart(e,id){ mcDragId=id; e.dataTransfer.effectAllowed='move'; }
-function mcDragOver(e,id){ e.preventDefault(); }
+
 function mcDragDrop(e,id){ e.preventDefault(); mcReorder(mcDragId,id); }
 function mcDragEnd(){ mcDragId=null; }
 let mcTDragId=null,mcTDragOver=null,mcTMoved=false,mcTActive=false,mcTStartX=0,mcTStartY=0,mcTTimer=null;
@@ -3704,10 +3465,7 @@ function mcTouchMove(e){
 function mcTouchEnd(e,id){ clearTimeout(mcTTimer); if(mcTActive&&mcTMoved&&mcTDragOver&&mcTDragOver!==mcTDragId) mcReorder(mcTDragId,mcTDragOver); else renderSettings(); mcTDragId=null; mcTDragOver=null; mcTMoved=false; mcTActive=false; }
 function mcReorder(fromId,toId){
   if(!fromId||!toId||fromId===toId){ renderSettings(); return; }
-  const arr=state.moneyCategories;
-  const fi=arr.findIndex(c=>c.id===fromId),ti=arr.findIndex(c=>c.id===toId);
-  if(fi<0||ti<0){ renderSettings(); return; }
-  const [item]=arr.splice(fi,1); arr.splice(ti,0,item);
+  const arr=stateconst [item]=arr.splice(fi,1); arr.splice(ti,0,item);
   arr.forEach((c,i)=>c.order=i); save(); renderSettings();
 }
 
