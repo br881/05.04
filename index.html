@@ -763,7 +763,6 @@ function defaultState(){
       {id:'tc3',name:'❌',color:'#991b1b'},
     ],
     timeEntries:{}, // keyed by date → array of {id,label,catId,blocks:[{h,q}]}
-    ],
   };
 }
 
@@ -794,7 +793,6 @@ function migrateState(s){
   const emojiMap={'💼 Praca':{name:'💼',color:'#8B6914'},'🌱 Rozwój':{name:'🌱',color:'#2d7a3a'},'❌ Strata':{name:'❌',color:'#7a2d2d'}};
   for(const c of (s.timeCategories||[])){ if(emojiMap[c.name]){ c.name=emojiMap[c.name].name; if(!c.color) c.color=emojiMap[c.name]?.color||'#555'; } }
   if(!s.timeEntries) s.timeEntries={};
-  if(!s);
   return s;
 }
 
@@ -1717,51 +1715,46 @@ function renderSettings(){
 
     const hasTime=_tTotal>0;
     const FB_TIME=['#166534','#1d4ed8','#92400e','#991b1b','#6d28d9','#0f766e'];
-    
+
     if(hasTime){
-      html+=`<div style="display:flex;gap:10px">`;
-
-      // ── TIME card ──
-      if(hasTime){
-        const tEntries=Object.entries(_tStats).sort((a,b)=>b[1]-a[1]);
-        const {arcs,R,r,cx,cy}=buildArcs(tEntries,_tCats,FB_TIME);
-        const totalH=Math.floor(_tTotal/60),totalM=_tTotal%60;
-        const cLabel=totalH>0?(totalM>0?totalH+'h '+totalM+'m':totalH+'h'):_tTotal+'m';
-        const svgSize=hasBoth?105:135;
-        const timeOpen=state._timeCardOpen===true;
-        html+=`<div onclick="event.stopPropagation();toggleStatCard('time')" style="flex:1;background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
-        html+=`<div style="display:flex;justify-content:center;margin-bottom:${timeOpen?'12px':'0'}">`;
-        html+=`<div style="position:relative;flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
-        html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
-        html+=arcs;
-        html+=`</svg></div>`;
-        html+=`</div>`;
-        if(timeOpen){
-          tEntries.forEach(([cid,mins],idx)=>{
-            const cat=_tCats.find(c=>c.id===cid);
-            const color=cat?.color||FB_TIME[idx%FB_TIME.length];
-            const hh=Math.floor(mins/60),m=mins%60;
-            const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
-            const labels=_tLabels[cid]?[..._tLabels[cid]]:[];
-            html+=`<div style="margin-bottom:6px">`;
-            html+=`<div style="display:flex;align-items:center;gap:7px">`;
-            html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
-            html+=`<span style="font-size:13px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</span>`;
-            html+=`<span style="font-size:13px;font-weight:600;color:#fff">${str}</span>`;
+      const tEntries=Object.entries(_tStats).sort((a,b)=>b[1]-a[1]);
+      const {arcs,R,r,cx,cy}=buildArcs(tEntries,_tCats,FB_TIME);
+      const svgSize=165;
+      const timeOpen=state._timeCardOpen===true;
+      html+=`<div onclick="event.stopPropagation();toggleStatCard('time')" style="background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
+      html+=`<div style="display:flex;justify-content:center;margin-bottom:${timeOpen?'12px':'0'}">`;
+      html+=`<div style="flex-shrink:0"><svg width="${svgSize}" height="${svgSize}" viewBox="0 0 104 104">`;
+      html+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="${R-r}"/>`;
+      html+=arcs;
+      html+=`</svg></div>`;
+      html+=`</div>`;
+      if(timeOpen){
+        tEntries.forEach(([cid,mins],idx)=>{
+          const cat=_tCats.find(c=>c.id===cid);
+          const color=cat?.color||FB_TIME[idx%FB_TIME.length];
+          const hh=Math.floor(mins/60),m=mins%60;
+          const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
+          const labels=_tLabels[cid]?[..._tLabels[cid]]:[];
+          html+=`<div style="margin-bottom:6px">`;
+          html+=`<div style="display:flex;align-items:center;gap:7px">`;
+          html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
+          html+=`<span style="font-size:13px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</span>`;
+          html+=`<span style="font-size:13px;font-weight:600;color:#fff">${str}</span>`;
+          html+=`</div>`;
+          if(labels.length){
+            html+=`<div style="padding-left:15px;margin-top:2px">`;
+            labels.forEach(lbl=>{ html+=`<div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6">${lbl}</div>`; });
             html+=`</div>`;
-            if(labels.length){
-              html+=`<div style="padding-left:15px;margin-top:2px">`;
-              labels.forEach(lbl=>{ html+=`<div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lbl}</div>`; });
-              html+=`</div>`;
-            }
-            html+=`</div>`;
-          });
-        }
-        html+=`</div>`;
+          }
+          html+=`</div>`;
+        });
       }
+      html+=`</div>`;
+    }
 
-  
-    // ── HABITS — pinned shown by default, expand shows all + pin picker ──
+    html+=`<div style="height:10px"></div>`;
+
+        // ── HABITS — pinned shown by default, expand shows all + pin picker ──
     const pinnedIds=new Set(state._pinnedHabitIds||[]);
     const pinnedHabits=allActiveHabits.filter(h=>pinnedIds.has(h.id));
     const habitsExpanded=state._habitsExpanded===true;
@@ -2181,7 +2174,15 @@ function setCsvSector(id){ state._csvSectorId=id; save(); renderSettings(); }
 function setTimePeriod(p){ state._timePeriod=p; save(); renderSettings(); }
 function openCatEditOverlay(type,id){
   document.getElementById('catColorOverlay')?.remove();
-  const cats=type==='tc'?(state.timeCategories||[]):(state" onclick="ceoSwatchTap(this)" style="width:36px;height:36px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${c.toLowerCase()===cur.toLowerCase()?'#fff':'transparent'};box-sizing:border-box;flex-shrink:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation"></div>`).join('');
+  const cats=type==='tc'?(state.timeCategories||[]):[];
+  const cat=cats.find(c=>c.id===id);
+  if(!cat) return;
+  let cur=cat.color||'#3ddd65';
+  const presets=['#166534','#1d4ed8','#92400e','#991b1b','#6d28d9','#0f766e','#3ddd65','#f59e0b','#ec4899','#06b6d4'];
+  const sw=presets.map(c=>`<div data-color="${c}" onclick="ceoSwatchTap(this)" style="width:36px;height:36px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${c.toLowerCase()===cur.toLowerCase()?'#fff':'transparent'};box-sizing:border-box;flex-shrink:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation"></div>`).join('');
+  const ov=document.createElement('div');
+  ov.id='catColorOverlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);display:flex;align-items:flex-end;justify-content:center';
   ov.innerHTML=`<div style="width:100%;max-width:420px;background:#1a1a1a;border-radius:24px 24px 0 0;padding:20px 20px calc(env(safe-area-inset-bottom,20px)+20px);box-sizing:border-box">
     <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 18px"></div>
     <input id="ceoName" value="${cat.name.replace(/"/g,'&quot;')}" autocapitalize="sentences" autocomplete="off"
@@ -2205,22 +2206,11 @@ function ceoConfirm(type,id){
   const name=document.getElementById('ceoName')?.value.trim();
   const color=document.getElementById('ceoPreview')?.style.background||'#3ddd65';
   document.getElementById('catColorOverlay')?.remove();
-  const cats=type==='tc'?(state.timeCategories||[]):(statelet cur='#3ddd65';
-  if(type==='tc'){ const c=(state.timeCategories||[]).find(x=>x.id===id); if(c?.color) cur=c.color; }
-  else { const c=(state" onclick="catColorSwatchTap(this,'${type}','${id}')" style="width:36px;height:36px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${c.toLowerCase()===cur.toLowerCase()?'#fff':'transparent'};box-sizing:border-box;flex-shrink:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:border-color .1s"></div>`).join('');
-  ov.innerHTML=`<div style="width:100%;max-width:420px;background:#1a1a1a;border-radius:24px 24px 0 0;padding:20px 20px calc(env(safe-area-inset-bottom,20px)+20px);box-sizing:border-box">
-    <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 18px"></div>
-    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:0 4px">${sw}</div>
-    <div style="display:flex;align-items:center;gap:10px;margin-top:18px">
-      <div id="ccPreview" style="width:40px;height:40px;border-radius:50%;background:${cur};flex-shrink:0;border:2px solid rgba(255,255,255,0.2)"></div>
-      <input id="ccHex" maxlength="7" value="${cur}" autocomplete="off" autocorrect="off" spellcheck="false"
-        style="flex:1;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:10px 14px;color:#fff;font-size:16px;font-family:inherit;outline:none;letter-spacing:.05em"
-        oninput="catColorHexInput(this,'${type}','${id}')">
-      <button onclick="catColorConfirm('${type}','${id}')" style="padding:10px 18px;background:rgba(61,221,101,0.25);border:none;border-radius:10px;color:#fff;font-size:15px;font-family:inherit;cursor:pointer;touch-action:manipulation;white-space:nowrap">OK</button>
-    </div>
-  </div>`;
-  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
-  document.body.appendChild(ov);
+  if(!name) return;
+  const cats=type==='tc'?(state.timeCategories||[]):[];
+  const cat=cats.find(c=>c.id===id);
+  if(cat){ cat.name=name; cat.color=color; }
+  save(); renderSettings();
 }
 function catColorSwatchTap(el,type,id){
   const color=el.dataset.color;
@@ -2251,9 +2241,7 @@ function catColorConfirm(type,id){
   pickCatColor(type,id,color,true);
 }
 function pickCatColor(type,id,color,isFinal){
-  // update state
   if(type==='tc'){ const cat=(state.timeCategories||[]).find(c=>c.id===id); if(cat) cat.color=color; }
-  else { const cat=(state// only save & re-render when done (onchange), not on every oninput tick
   if(isFinal){ save(); renderSettings(); }
 }
 function updateTimeCatColor(id,color){
@@ -3406,33 +3394,6 @@ function saveTTEntry(){
   },{passive:true});
 })();
 
-/* ══════════════════════════════════════════
-   MONEY
-══════════════════════════════════════════ */
-
-
-
-
-
-
-
-
-
-).join('');
-}
-
-
-
-
-
-(()=>{
-  let sx=0,sy=0,ok=false;
-  ov.addEventListener('touchend',e=>{
-    if(!ok) return; ok=false;
-    const dx=e.changedTouches[0].clientX-sx;
-    const dy=Math.abs(e.changedTouches[0].clientY-sy);
-  },{passive:true});
-})();
 
 
 
@@ -3465,7 +3426,10 @@ function mcTouchMove(e){
 function mcTouchEnd(e,id){ clearTimeout(mcTTimer); if(mcTActive&&mcTMoved&&mcTDragOver&&mcTDragOver!==mcTDragId) mcReorder(mcTDragId,mcTDragOver); else renderSettings(); mcTDragId=null; mcTDragOver=null; mcTMoved=false; mcTActive=false; }
 function mcReorder(fromId,toId){
   if(!fromId||!toId||fromId===toId){ renderSettings(); return; }
-  const arr=stateconst [item]=arr.splice(fi,1); arr.splice(ti,0,item);
+  const arr=state.timeCategories||[];
+  const fi=arr.findIndex(c=>c.id===fromId), ti=arr.findIndex(c=>c.id===toId);
+  if(fi<0||ti<0){ renderSettings(); return; }
+  const [item]=arr.splice(fi,1); arr.splice(ti,0,item);
   arr.forEach((c,i)=>c.order=i); save(); renderSettings();
 }
 
