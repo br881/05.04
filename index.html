@@ -609,7 +609,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div class="tt-entry-panel" id="ttEntryPanel">
     <div class="tt-entry-handle" onclick="closeTTEntry()"></div>
     <div class="tt-entry-duration" id="ttEntryDuration"></div>
-    <input class="tt-entry-field" id="ttEntryField" placeholder="Wpisz..." autocomplete="off" autocapitalize="sentences" enterkeyhint="done" style="display:none">
+    <input class="tt-entry-field" id="ttEntryField" placeholder="" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" style="display:none">
     <div id="ttSuggestions" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px;min-height:0"></div>
     <div class="tt-cat-row" id="ttCatRow"></div>
   </div>
@@ -3106,11 +3106,6 @@ function showTTEntryPanel(){
 
   document.getElementById('ttEntryPanel').classList.add('open');
   document.getElementById('ttEntryBackdrop').style.display='block';
-  // Focus after panel animation completes — iOS ignores focus during transform
-  setTimeout(()=>{
-    const f=document.getElementById('ttEntryField');
-    f.focus();
-  },400);
 }
 
 function cancelTTSelection(){
@@ -3214,22 +3209,18 @@ function selectTTCatAndShowLabels(catId){
   ttSelectedCat=catId;
   ttLabelPhase=true;
   ttEntryLabel='';
-  // Update cat pills active state
   document.querySelectorAll('#ttCatRow .tt-cat-pill').forEach(p=>{
     p.classList.toggle('active', p.getAttribute('onclick')?.includes(catId));
   });
-  // Show input and suggestions
   const field=document.getElementById('ttEntryField');
   field.value='';
   field.style.display='';
-  // Render suggestions for this category
   renderTTSuggestions('', catId);
-  // Wire input handler
   if(field._sugHandler) field.removeEventListener('input',field._sugHandler);
   field._sugHandler=()=>{ ttEntryLabel=field.value; renderTTSuggestions(field.value, catId); };
   field.addEventListener('input', field._sugHandler);
-  // Focus
-  setTimeout(()=>field.focus(), 100);
+  // Open keyboard immediately
+  field.focus();
 }
 
 document.getElementById('ttEntryField').addEventListener('input',e=>{ ttEntryLabel=e.target.value; });
