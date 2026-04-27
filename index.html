@@ -609,7 +609,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div class="tt-entry-panel" id="ttEntryPanel">
     <div class="tt-entry-handle" onclick="closeTTEntry()"></div>
     <div class="tt-entry-duration" id="ttEntryDuration"></div>
-    <input class="tt-entry-field" id="ttEntryField" placeholder="" autocomplete="off" autocapitalize="sentences" enterkeyhint="done">
+    <input class="tt-entry-field" id="ttEntryField" placeholder="Wpisz..." autocomplete="off" autocapitalize="sentences" enterkeyhint="done" style="display:none">
     <div id="ttSuggestions" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px;min-height:0"></div>
     <div class="tt-cat-row" id="ttCatRow"></div>
   </div>
@@ -3008,8 +3008,7 @@ function updateTTSelectionBar(){
   if(hd) hd.innerHTML=bigHTML;
 }
 
-function getTTSuggestions(query){
-  // Collect labels from last 30 days, count frequency per (catId+label)
+function getTTSuggestions(query, catId){
   const now=new Date();
   const freq={};
   for(const[dk,entries] of Object.entries(state.timeEntries||{})){
@@ -3017,6 +3016,7 @@ function getTTSuggestions(query){
     if((now-d)/(864e5)>30) continue;
     for(const e of entries){
       if(!e.label||e.empty) continue;
+      if(catId && e.catId!==catId) continue;
       const key=e.label.trim();
       if(!freq[key]) freq[key]={label:key,count:0,catId:e.catId};
       freq[key].count++;
@@ -3027,23 +3027,35 @@ function getTTSuggestions(query){
     const q=query.toLowerCase();
     items=items.filter(x=>x.label.toLowerCase().includes(q));
   }
-  return items.slice(0,5);
+  return items.slice(0,8);
 }
 
-function renderTTSuggestions(query){
+function renderTTSuggestions(query, catId){
   const box=document.getElementById('ttSuggestions');
   if(!box) return;
-  const items=getTTSuggestions(query);
-  if(!items.length){ box.style.display='none'; return; }
-  box.style.display='flex';
-  box.innerHTML=items.map(item=>
-    `<div onclick="applyTTSuggestion(${JSON.stringify(item.label)},${JSON.stringify(item.catId)})"
-      style="padding:7px 14px;border-radius:20px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.75);
-             font-size:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;
-             transition:background .12s;touch-action:manipulation"
-      ontouchstart="this.style.background='rgba(61,221,101,0.25)'"
-      ontouchend="this.style.background='rgba(255,255,255,0.1)'">${item.label}</div>`
-  ).join('');
+  const items=getTTSuggestions(query, catId||ttSelectedCat);
+  box.style.display='';
+  box.style.cssText='margin:8px 0 0;display:flex;flex-direction:column;gap:0;';
+  if(!items.length && !query){
+    box.innerHTML='';
+    return;
+  }
+  let html='';
+  items.forEach((item,i)=>{
+    const isLast=i===items.length-1;
+    html+=`<div onclick="applyTTSuggestion(${JSON.stringify(item.label)},${JSON.stringify(item.catId)})"
+      style="padding:14px 16px;background:rgba(255,255,255,0.06);color:#fff;font-size:16px;
+             cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+             border-bottom:${isLast?'none':'1px solid rgba(255,255,255,0.06)'};
+             border-radius:${i===0?'12px 12px':'0'} ${isLast?'0 0 12px 12px':'0'};
+             display:flex;align-items:center;justify-content:space-between"
+      ontouchstart="this.style.background='rgba(61,221,101,0.15)'"
+      ontouchend="this.style.background='rgba(255,255,255,0.06)'">
+      <span>${item.label}</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`;
+  });
+  box.innerHTML=html;
 }
 
 function applyTTSuggestion(label,catId){
@@ -3066,19 +3078,16 @@ function showTTEntryPanel(){
   updateTTSelectionBar();
   const cats=state.timeCategories||[];
   if(!ttSelectedCat&&cats.length) ttSelectedCat=cats[0].id;
+  // Phase 1: show categories only; suggestions shown after category tap
+  ttLabelPhase=false;
   const row=document.getElementById('ttCatRow');
-  // Centered categories + × at right edge (lighter/more visible)
   row.innerHTML=`<div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;justify-content:center">`
-    +cats.map(c=>`<div class="tt-cat-pill${ttSelectedCat===c.id?' active':''}" onclick="selectTTCat('${c.id}',this)" style="font-size:20px;padding:8px 16px">${c.name}</div>`).join('')
+    +cats.map(cat=>`<div class="tt-cat-pill${ttSelectedCat===cat.id?' active':''}" onclick="selectTTCatAndShowLabels('${cat.id}')" style="font-size:20px;padding:8px 16px">${cat.name}</div>`).join('')
     +`</div>`
     +`<button onclick="cancelTTSelection()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.06);border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;font-weight:300">×</button>`;
-  document.getElementById('ttEntryField').value=ttEntryLabel;
-  // Suggestions: render initial + update on input
-  renderTTSuggestions(ttEntryLabel);
-  const _f=document.getElementById('ttEntryField');
-  if(_f._sugHandler) _f.removeEventListener('input',_f._sugHandler);
-  _f._sugHandler=()=>{ ttEntryLabel=_f.value; renderTTSuggestions(_f.value); };
-  _f.addEventListener('input',_f._sugHandler);
+  // Hide field and suggestions in phase 1
+  document.getElementById('ttEntryField').style.display='none';
+  document.getElementById('ttSuggestions').style.display='none';
   const filled=getFilledBlocks();
   const hasFilledSelected=Array.from(ttSelBlocks).some(k=>filled.has(k));
   let clearBtn=document.getElementById('ttClearBtn');
@@ -3147,6 +3156,7 @@ function clearSelectedFilledBlocks(){
 }
 let ttSelectedCat=null;
 let ttEntryLabel='';
+let ttLabelPhase=false;
 
 function closeTTEntry(){
   document.getElementById('ttEntryPanel').classList.remove('open');
@@ -3198,6 +3208,28 @@ function selectTTCat(id,el){
   // If there's text in the field, auto-save
   const label=document.getElementById('ttEntryField')?.value.trim();
   if(label||ttSelBlocks.size>0) saveTTEntry();
+}
+
+function selectTTCatAndShowLabels(catId){
+  ttSelectedCat=catId;
+  ttLabelPhase=true;
+  ttEntryLabel='';
+  // Update cat pills active state
+  document.querySelectorAll('#ttCatRow .tt-cat-pill').forEach(p=>{
+    p.classList.toggle('active', p.getAttribute('onclick')?.includes(catId));
+  });
+  // Show input and suggestions
+  const field=document.getElementById('ttEntryField');
+  field.value='';
+  field.style.display='';
+  // Render suggestions for this category
+  renderTTSuggestions('', catId);
+  // Wire input handler
+  if(field._sugHandler) field.removeEventListener('input',field._sugHandler);
+  field._sugHandler=()=>{ ttEntryLabel=field.value; renderTTSuggestions(field.value, catId); };
+  field.addEventListener('input', field._sugHandler);
+  // Focus
+  setTimeout(()=>field.focus(), 100);
 }
 
 document.getElementById('ttEntryField').addEventListener('input',e=>{ ttEntryLabel=e.target.value; });
