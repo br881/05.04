@@ -2172,7 +2172,7 @@ function openCatEditOverlay(type,id){
   const cat=cats.find(c=>c.id===id);
   if(!cat) return;
   let cur=cat.color||'#3ddd65';
-  const presets=['#166534','#15803d','#4ade80','#1d4ed8','#0ea5e9','#06b6d4','#92400e','#b45309','#f59e0b','#991b1b','#ec4899','#f43f5e','#6d28d9','#7c3aed','#a78bfa','#475569','#94a3b8','#ffffff'];
+  const presets=['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899','#ffffff','#94a3b8','#000000'];
   const sw=presets.map(clr=>`<div data-color="${clr}" onclick="ceoSwatchTap(this)" style="width:36px;height:36px;border-radius:50%;background:${clr};cursor:pointer;border:3px solid ${clr.toLowerCase()===cur.toLowerCase()?'#fff':'transparent'};box-sizing:border-box;flex-shrink:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation"></div>`).join('');
   const ov=document.createElement('div');
   ov.id='catColorOverlay';
@@ -3031,34 +3031,27 @@ function renderTTSuggestions(query, catId){
   const box=document.getElementById('ttSuggestions');
   if(!box) return;
   const items=getTTSuggestions(query, catId||ttSelectedCat);
-  box.style.display='';
-  box.style.cssText='margin:8px 0 0;display:flex;flex-direction:column;gap:0;';
-  if(!items.length && !query){
-    box.innerHTML='';
-    return;
-  }
+  if(!items.length && !query){ box.innerHTML=''; return; }
+  box.style.cssText='margin:12px 0 0;display:flex;flex-direction:column;gap:0';
   let html='';
   items.forEach((item,i)=>{
     const isLast=i===items.length-1;
+    const br=i===0?(isLast?'12px':'12px 12px 0 0'):(isLast?'0 0 12px 12px':'0');
     html+=`<div onclick="fillAndSaveTTSuggestion(${JSON.stringify(item.label)},${JSON.stringify(item.catId||ttSelectedCat)})"
-      style="padding:14px 16px;background:rgba(255,255,255,0.06);color:#fff;font-size:16px;
+      style="padding:14px 18px;background:rgba(255,255,255,0.07);color:#fff;font-size:16px;text-align:center;
              cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
-             border-bottom:${isLast?'none':'1px solid rgba(255,255,255,0.06)'};
-             border-radius:${i===0?'12px 12px':'0'} ${isLast?'0 0 12px 12px':'0'};
-             display:flex;align-items:center;justify-content:space-between"
-      ontouchstart="this.style.background='rgba(61,221,101,0.15)'"
-      ontouchend="this.style.background='rgba(255,255,255,0.06)'">
-      <span>${item.label}</span>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </div>`;
+             border-bottom:${isLast?'none':'1px solid rgba(255,255,255,0.05)'};border-radius:${br}"
+      ontouchstart="this.style.background='rgba(61,221,101,0.18)'"
+      ontouchend="this.style.background='rgba(255,255,255,0.07)'">${item.label}</div>`;
   });
   box.innerHTML=html;
 }
 
 function fillAndSaveTTSuggestion(label,catId){
+  // Show label in field briefly, then save
   const f=document.getElementById('ttEntryField');
-  if(f){ f.value=label; }
-  setTimeout(()=>applyTTSuggestion(label,catId),80);
+  if(f){ f.value=label; f.blur(); }
+  applyTTSuggestion(label, catId||ttSelectedCat);
 }
 function applyTTSuggestion(label,catId){
   ttEntryLabel=label;
@@ -3217,11 +3210,13 @@ function selectTTCatAndShowLabels(catId){
   const field=document.getElementById('ttEntryField');
   field.value='';
   field.style.display='';
+  // Make sure suggestions box is visible
+  const box=document.getElementById('ttSuggestions');
+  if(box){ box.style.display='flex'; box.style.flexDirection='column'; }
   renderTTSuggestions('', catId);
   if(field._sugHandler) field.removeEventListener('input',field._sugHandler);
   field._sugHandler=()=>{ ttEntryLabel=field.value; renderTTSuggestions(field.value, catId); };
   field.addEventListener('input', field._sugHandler);
-  // Open keyboard immediately
   field.focus();
 }
 
