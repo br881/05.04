@@ -728,7 +728,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   <div class="is-label" style="margin-top:4px">Typ</div>
   <div class="type-selector" style="margin-bottom:10px" id="extraTypePicker">
     <button class="type-btn active" onclick="setExtraType('checkbox',this)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="7 13 10 16 17 9"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="7 13 10 16 17 9"/></svg>
     </button>
     <button class="type-btn" onclick="setExtraType('number',this)">#</button>
     <button class="type-btn" onclick="setExtraType('text',this)">t</button>
@@ -1507,7 +1507,7 @@ function openExtraDetail(eId){
   const typeBtnsDiv=document.createElement('div');
   typeBtnsDiv.className='type-mini-btns';
   typeBtnsDiv.style.cssText='justify-content:center;display:flex;gap:8px;margin-bottom:28px';
-  [{k:'checkbox',lbl:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="7 13 10 16 17 9"/></svg>'},{k:'number',lbl:'<span style="font-size:18px">#</span>'},{k:'text',lbl:'<span style="font-size:18px">t</span>'}].forEach(t=>{
+  [{k:'checkbox',lbl:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="7 13 10 16 17 9"/></svg>'},{k:'number',lbl:'<span style="font-size:18px">#</span>'},{k:'text',lbl:'<span style="font-size:18px">t</span>'}].forEach(t=>{
     const btn=document.createElement('button');
     btn.className='type-mini-btn'+(e.type===t.k?' active':'');
     btn.innerHTML=t.lbl;
@@ -1668,7 +1668,7 @@ function renderSettings(){
 
   const statsOpen=state._statsOpen!==false;  // default open
   const settingsOpen=state._settingsOpen===true; // default closed
-  const sharedPeriod=state._statPeriod||7;
+  const sharedPeriod=7;
 
   // ══ ROW 1: STATS header bar — icon only, centered ══
   html+=`<div onclick="toggleFold('stats')" style="display:flex;align-items:center;justify-content:center;padding:14px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
@@ -2122,13 +2122,7 @@ function saveHabitTimePicks(){
 }
 let _swipeStatX=0;
 function swipeStatStart(e){ _swipeStatX=e.touches[0].clientX; }
-function swipeStatEnd(e){
-  const dx=e.changedTouches[0].clientX-_swipeStatX;
-  if(Math.abs(dx)<50) return;
-  const cur=state._statPeriod||7;
-  if(dx<0&&cur===7){ state._statPeriod=30; save(); renderSettings(); }
-  else if(dx>0&&cur===30){ state._statPeriod=7; save(); renderSettings(); }
-}
+function swipeStatEnd(e){ /* locked to 7 days */ }
 function toggleHabitsExpanded(){
   state._habitsExpanded=!state._habitsExpanded;
   if(!state._habitsExpanded) state._habitsPicking=false;
@@ -2178,8 +2172,8 @@ function openCatEditOverlay(type,id){
   const cat=cats.find(c=>c.id===id);
   if(!cat) return;
   let cur=cat.color||'#3ddd65';
-  const presets=['#166534','#1d4ed8','#92400e','#991b1b','#6d28d9','#0f766e','#3ddd65','#f59e0b','#ec4899','#06b6d4'];
-  const sw=presets.map(c=>`<div data-color="${c}" onclick="ceoSwatchTap(this)" style="width:36px;height:36px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${c.toLowerCase()===cur.toLowerCase()?'#fff':'transparent'};box-sizing:border-box;flex-shrink:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation"></div>`).join('');
+  const presets=['#166534','#15803d','#4ade80','#1d4ed8','#0ea5e9','#06b6d4','#92400e','#b45309','#f59e0b','#991b1b','#ec4899','#f43f5e','#6d28d9','#7c3aed','#a78bfa','#475569','#94a3b8','#ffffff'];
+  const sw=presets.map(clr=>`<div data-color="${clr}" onclick="ceoSwatchTap(this)" style="width:36px;height:36px;border-radius:50%;background:${clr};cursor:pointer;border:3px solid ${clr.toLowerCase()===cur.toLowerCase()?'#fff':'transparent'};box-sizing:border-box;flex-shrink:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation"></div>`).join('');
   const ov=document.createElement('div');
   ov.id='catColorOverlay';
   ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);display:flex;align-items:flex-end;justify-content:center';
@@ -2188,9 +2182,12 @@ function openCatEditOverlay(type,id){
     <input id="ceoName" value="${cat.name.replace(/"/g,'&quot;')}" autocapitalize="sentences" autocomplete="off"
       style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);border-radius:12px;padding:12px 16px;color:#fff;font-size:18px;font-family:inherit;outline:none;margin-bottom:16px;box-sizing:border-box;text-align:center">
     <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:0 4px">${sw}</div>
-    <div style="display:flex;gap:10px;margin-top:18px">
-      <div id="ceoPreview" style="width:44px;height:44px;border-radius:50%;background:${cur};flex-shrink:0;border:2px solid rgba(255,255,255,0.2)"></div>
-      <button onclick="ceoConfirm('${type}','${id}')" style="flex:1;padding:12px;background:rgba(61,221,101,0.25);border:none;border-radius:12px;color:#fff;font-size:17px;font-family:inherit;cursor:pointer;touch-action:manipulation">Zapisz</button>
+    <div style="display:flex;gap:10px;margin-top:16px;align-items:center">
+      <div id="ceoPreview" style="width:40px;height:40px;border-radius:50%;background:${cur};flex-shrink:0;border:2px solid rgba(255,255,255,0.2)"></div>
+      <input id="ceoHexInput" maxlength="7" placeholder="#hex" value="${cur}" autocomplete="off"
+        style="width:72px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:#fff;font-size:13px;font-family:monospace;outline:none;text-align:center;box-sizing:border-box"
+        oninput="const v=this.value.trim();if(/^#[0-9a-fA-F]{6}$/.test(v)){const p=document.getElementById('ceoPreview');if(p)p.style.background=v;}">
+      <button onclick="ceoConfirm('${type}','${id}')" style="flex:1;padding:12px;background:#1a7a3a;border:none;border-radius:12px;color:#fff;font-size:17px;font-family:inherit;cursor:pointer;touch-action:manipulation">Zapisz</button>
     </div>
   </div>`;
   ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
@@ -2204,7 +2201,7 @@ function ceoSwatchTap(el){
 }
 function ceoConfirm(type,id){
   const name=document.getElementById('ceoName')?.value.trim();
-  const color=document.getElementById('ceoPreview')?.style.background||'#3ddd65';
+  const hexVal=document.getElementById('ceoHexInput')?.value.trim(); const color=(hexVal&&/^#[0-9a-fA-F]{6}$/.test(hexVal))?hexVal:(document.getElementById('ceoPreview')?.style.background||'#3ddd65');
   document.getElementById('catColorOverlay')?.remove();
   if(!name) return;
   const cats=type==='tc'?(state.timeCategories||[]):[];
@@ -2432,7 +2429,7 @@ function openHabitDetail(hId,defaultSector){
   const typeBtnsDiv=document.createElement('div');
   typeBtnsDiv.className='type-mini-btns';
   typeBtnsDiv.style.cssText='justify-content:center;display:flex;gap:8px;margin-bottom:28px';
-  [{k:'checkbox',lbl:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="7 13 10 16 17 9"/></svg>'},{k:'number',lbl:'<span style="font-size:18px">#</span>'},{k:'text',lbl:'<span style="font-size:18px">t</span>'}].forEach(t=>{
+  [{k:'checkbox',lbl:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="7 13 10 16 17 9"/></svg>'},{k:'number',lbl:'<span style="font-size:18px">#</span>'},{k:'text',lbl:'<span style="font-size:18px">t</span>'}].forEach(t=>{
     const btn=document.createElement('button');
     btn.className='type-mini-btn'+(h.type===t.k?' active':'');
     btn.innerHTML=t.lbl;
@@ -3043,7 +3040,7 @@ function renderTTSuggestions(query, catId){
   let html='';
   items.forEach((item,i)=>{
     const isLast=i===items.length-1;
-    html+=`<div onclick="applyTTSuggestion(${JSON.stringify(item.label)},${JSON.stringify(item.catId)})"
+    html+=`<div onclick="fillAndSaveTTSuggestion(${JSON.stringify(item.label)},${JSON.stringify(item.catId||ttSelectedCat)})"
       style="padding:14px 16px;background:rgba(255,255,255,0.06);color:#fff;font-size:16px;
              cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
              border-bottom:${isLast?'none':'1px solid rgba(255,255,255,0.06)'};
@@ -3058,6 +3055,11 @@ function renderTTSuggestions(query, catId){
   box.innerHTML=html;
 }
 
+function fillAndSaveTTSuggestion(label,catId){
+  const f=document.getElementById('ttEntryField');
+  if(f){ f.value=label; }
+  setTimeout(()=>applyTTSuggestion(label,catId),80);
+}
 function applyTTSuggestion(label,catId){
   ttEntryLabel=label;
   if(catId) ttSelectedCat=catId;
