@@ -355,7 +355,7 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 /* ══════════════════════════════════════════
    TIME TRACKER SCREEN
 ══════════════════════════════════════════ */
-#timeTracker{background:#000;}
+#timeTracker{background:var(--bg);}
 .tt-header{
   position:absolute;top:0;left:0;z-index:10;
   padding:calc(var(--safe-top)+4px) 0 0 4px;
@@ -431,7 +431,7 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 /* TIME ENTRY PANEL */
 .tt-entry-panel{
   position:absolute;bottom:0;left:0;right:0;
-  z-index:120;background:#000;
+  z-index:120;background:var(--bg);
   border-radius:20px 20px 0 0;
   border:none;
   transform:translateY(100%);
@@ -1279,8 +1279,10 @@ function openTempScreen(){
   ts.style.transition='none';
   ts.style.transform='translateY(100%)';
   ts.offsetHeight;
+  ts.style.willChange='transform';
   ts.style.transition='transform .5s cubic-bezier(.32,.72,0,1)';
   ts.style.transform='translateY(0)';
+  ts.addEventListener('transitionend',()=>{ts.style.willChange='auto';},{once:true});
 }
 function closeTempScreen(){
   closeTempAddOverlay();
@@ -1288,8 +1290,10 @@ function closeTempScreen(){
   if(ds) ds.classList.remove('show');
   const ts=document.getElementById('tempScreen');
   const h=document.getElementById('home');
+  ts.style.willChange='transform';
   ts.style.transition='transform .5s cubic-bezier(.32,.72,0,1)';
   ts.style.transform='translateY(100%)';
+  ts.addEventListener('transitionend',()=>{ts.style.willChange='auto';},{once:true});
   h.classList.remove('slide-out');
   h.style.transform='';
 }
@@ -1697,7 +1701,7 @@ function openBgPicker(){
 function applyBgColor(){
   const v=document.getElementById('bgHexInput')?.value.trim();
   if(!v||!/^#[0-9a-fA-F]{6}$/.test(v)) return;
-  document.documentElement.style.setProperty('--bg',v); document.body.style.background=v;
+  document.documentElement.style.setProperty('--bg',v); document.body.style.background=v; document.querySelectorAll('.screen,[id*="Tracker"]').forEach(el=>el.style.background=v);
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content',v);
   try{ localStorage.setItem('customBg',v); }catch{}
   document.getElementById('bgPickerOv')?.remove();
@@ -1785,18 +1789,20 @@ function renderSettings(){
               _tLblFreq[cid2][e.label]=(_tLblFreq[cid2][e.label]||0)+1;
             }
           }
+          html+=`<div style="display:flex;gap:8px;align-items:flex-start">`;
           tEntries.slice(0,4).forEach(([cid,mins],idx)=>{
             const cat=_tCats.find(cat2=>cat2.id===cid);
             const color=cat?.color||FB_TIME[idx%FB_TIME.length];
             const hh=Math.floor(mins/60),m=mins%60;
             const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
             const topLabels=Object.entries(_tLblFreq[cid]||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>x[0]);
-            html+=`<div style="margin-bottom:12px;padding:14px 16px;background:rgba(255,255,255,0.06);border-radius:14px;border-left:4px solid ${color}">`;
-            html+=`<div style="font-size:26px;font-weight:300;color:#fff;letter-spacing:-.02em;line-height:1">${str}</div>`;
-            html+=`<div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:3px;margin-bottom:${topLabels.length?'10px':'0'}">${cat?.name||'?'}</div>`;
-            topLabels.forEach(lbl=>{ html+=`<div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">· ${lbl}</div>`; });
+            html+=`<div style="flex:1;padding:12px 10px;background:rgba(255,255,255,0.06);border-radius:12px;border-top:3px solid ${color};min-width:0">`;
+            html+=`<div style="font-size:20px;font-weight:400;color:#fff;letter-spacing:-.02em;line-height:1.1">${str}</div>`;
+            html+=`<div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:4px;margin-bottom:${topLabels.length?'8px':'0'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</div>`;
+            topLabels.forEach(lbl=>{ html+=`<div style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lbl}</div>`; });
             html+=`</div>`;
           });
+          html+=`</div>`;
         }
       html+=`</div>`;
     }
@@ -2063,7 +2069,7 @@ function renderSettings(){
   
   const _curBg=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#061E0C';
   html+=`<div style="display:flex;flex-direction:column;align-items:center;gap:0;margin-top:16px;margin-bottom:8px">
-    <button onclick="openBgPicker()" style="background:none;border:none;color:#fff;cursor:pointer;padding:10px 28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-family:inherit">
+    <button onclick="openBgPicker()" style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-family:inherit">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
       Kolor
     </button>
@@ -2787,12 +2793,16 @@ function swipePageMove(e,screenId){
   const dy=e.touches[0].clientY-_swipePageY;
   const dx=e.touches[0].clientX-_swipePageX;
   if(Math.abs(dx)>Math.abs(dy)*0.7) return;
+  const pct=dy/window.innerHeight*100;
+  const ts=document.getElementById('tempScreen');
+  if(!ts) return;
+  ts.style.transition='none';
   if(screenId==='home'&&dy<0){
-    const ts=document.getElementById('tempScreen');
-    if(ts){ ts.style.transition='none'; ts.style.transform=`translateY(${Math.max(-window.innerHeight,100+dy)}%)`; }
+    ts.style.willChange='transform';
+    ts.style.transform=`translateY(${Math.max(0,100+pct)}%)`;
   } else if(screenId==='tasks'&&dy>0){
-    const ts=document.getElementById('tempScreen');
-    if(ts){ ts.style.transition='none'; ts.style.transform=`translateY(${Math.min(100,dy/window.innerHeight*100)}%)`; }
+    ts.style.willChange='transform';
+    ts.style.transform=`translateY(${Math.min(100,Math.max(0,pct))}%)`;
   }
 }
 function swipePageEnd(e,screenId){
