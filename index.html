@@ -3031,20 +3031,20 @@ function renderTTSuggestions(query, catId){
   const box=document.getElementById('ttSuggestions');
   if(!box) return;
   const items=getTTSuggestions(query, catId||ttSelectedCat);
-  if(!items.length && !query){ box.innerHTML=''; return; }
-  box.style.cssText='margin:12px 0 0;display:flex;flex-direction:column;gap:0';
-  let html='';
+  box.style.cssText='margin:12px 0 0;display:block';
+  box.innerHTML='';
+  if(!items.length && !query) return;
   items.forEach((item,i)=>{
     const isLast=i===items.length-1;
     const br=i===0?(isLast?'12px':'12px 12px 0 0'):(isLast?'0 0 12px 12px':'0');
-    html+=`<div onclick="fillAndSaveTTSuggestion(${JSON.stringify(item.label)},${JSON.stringify(item.catId||ttSelectedCat)})"
-      style="padding:14px 18px;background:rgba(255,255,255,0.07);color:#fff;font-size:16px;text-align:center;
-             cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
-             border-bottom:${isLast?'none':'1px solid rgba(255,255,255,0.05)'};border-radius:${br}"
-      ontouchstart="this.style.background='rgba(61,221,101,0.18)'"
-      ontouchend="this.style.background='rgba(255,255,255,0.07)'">${item.label}</div>`;
+    const div=document.createElement('div');
+    div.style.cssText='padding:14px 18px;background:rgba(255,255,255,0.07);color:#fff;font-size:16px;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;border-bottom:'+(isLast?'none':'1px solid rgba(255,255,255,0.05)')+';border-radius:'+br;
+    div.textContent=item.label;
+    div.addEventListener('touchstart',()=>div.style.background='rgba(61,221,101,0.18)',{passive:true});
+    div.addEventListener('touchend',()=>div.style.background='rgba(255,255,255,0.07)',{passive:true});
+    div.addEventListener('click',()=>fillAndSaveTTSuggestion(item.label, item.catId||ttSelectedCat));
+    box.appendChild(div);
   });
-  box.innerHTML=html;
 }
 
 function fillAndSaveTTSuggestion(label,catId){
@@ -3216,17 +3216,19 @@ function selectTTCatAndShowLabels(catId){
   ttSelectedCat=catId;
   ttLabelPhase=true;
   ttEntryLabel='';
-  document.querySelectorAll('#ttCatRow .tt-cat-pill').forEach(p=>{
-    p.classList.toggle('active', p.getAttribute('onclick')?.includes(catId));
-  });
+  // Hide category row entirely
+  const row=document.getElementById('ttCatRow');
+  if(row) row.style.display='none';
+  // Show field
   const field=document.getElementById('ttEntryField');
-  field.value='';
   field.style.display='';
-  // Make sure suggestions box is visible
+  field.value='';
+  // Show suggestions
   const box=document.getElementById('ttSuggestions');
-  if(box){ box.style.display='flex'; box.style.flexDirection='column'; }
+  if(box) box.style.display='';
   renderTTSuggestions('', catId);
-  if(field._sugHandler) field.removeEventListener('input',field._sugHandler);
+  // Live filter on input
+  if(field._sugHandler) field.removeEventListener('input', field._sugHandler);
   field._sugHandler=()=>{ ttEntryLabel=field.value; renderTTSuggestions(field.value, catId); };
   field.addEventListener('input', field._sugHandler);
   field.focus();
