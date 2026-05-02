@@ -3088,13 +3088,18 @@ function showTTEntryPanel(){
   // Phase 1: show categories only; suggestions shown after category tap
   ttLabelPhase=false;
   const row=document.getElementById('ttCatRow');
+  row.style.display='';  // ensure visible
   row.innerHTML=`<div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;justify-content:center">`
     +cats.map(cat=>`<div class="tt-cat-pill${ttSelectedCat===cat.id?' active':''}" onclick="selectTTCatAndShowLabels('${cat.id}')" style="font-size:20px;padding:8px 16px">${cat.name}</div>`).join('')
     +`</div>`
     +`<button onclick="cancelTTSelection()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.06);border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;font-weight:300">×</button>`;
   // Hide field and suggestions in phase 1
-  document.getElementById('ttEntryField').style.display='none';
+  const field2=document.getElementById('ttEntryField');
+  if(field2._sugHandler){ field2.removeEventListener('input',field2._sugHandler); field2._sugHandler=null; }
+  field2.style.display='none';
+  field2.value='';
   document.getElementById('ttSuggestions').style.display='none';
+  document.getElementById('ttSuggestions').innerHTML='';
   const filled=getFilledBlocks();
   const hasFilledSelected=Array.from(ttSelBlocks).some(k=>filled.has(k));
   let clearBtn=document.getElementById('ttClearBtn');
