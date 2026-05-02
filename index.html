@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#061E0C">
 <title>·</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='black'/><circle cx='50' cy='50' r='32' stroke='white' stroke-width='6' fill='none'/></svg>">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='black'/><circle cx='50' cy='50' r='32' stroke='white' stroke-width='6' fill='none'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='#061E0C'/><circle cx='50' cy='50' r='32' stroke='white' stroke-width='6' fill='none'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='#061E0C'/><circle cx='50' cy='50' r='32' stroke='white' stroke-width='6' fill='none'/></svg>">
 <style>
 :root{
-  --bg:#000;--bg2:#0d0d0d;--tile:#181818;--tile2:#141414;--tile-border:rgba(255,255,255,0.07);
+  --bg:#061E0C;--bg2:#0d0d0d;--tile:#181818;--tile2:#141414;--tile-border:rgba(255,255,255,0.07);
   --accent:#3ddd65;--accent-dim:rgba(61,221,101,0.45);--accent-border:rgba(61,221,101,0.7);--accent-bright:#ffffff;
   --white:#e8e8e8;--ui:rgba(232,232,232,0.52);--ui2:rgba(232,232,232,0.32);
   --red:#e05555;--sep:rgba(255,255,255,0.06);--radius:16px;
@@ -138,13 +138,12 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
   border:none;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;pointer-events:all;
-  color:rgba(255,255,255,0.38);
+  color:rgba(255,255,255,0.55);
   transition:all .2s cubic-bezier(.34,1.56,.64,1);
   bottom:calc(var(--safe-bottom) + 44px);
   transform:translateX(-50%);
 }
-#btnTime{ left:33.33%; }
-#btnTasks{ left:66.66%; }
+#btnTime{ left:50%; }
 .btn-ghost-zone:active{color:#fff;opacity:.6;}
 
 /* OVERLAY */
@@ -549,7 +548,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
     </div>
   </div>
   <!-- Habits -->
-  <div class="habits-scroll">
+  <div class="habits-scroll" id="habitsScroll" ontouchstart="swipePageStart(event,'home')" ontouchend="swipePageEnd(event,'home')">
     <div class="habits-inner">
       <div class="habits-zone" id="habitsList"></div>
     </div>
@@ -562,12 +561,7 @@ html,body{background:#000;color:#ffffff;font-family:-apple-system,'SF Pro Text',
         <circle cx="22" cy="22" r="19" stroke-width="2"/>
       </svg>
     </button>
-    <!-- Right: temp tasks -->
-    <button class="btn-ghost-zone" id="btnTasks" onclick="openTempScreen()">
-      <svg width="56" height="56" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
-        <circle cx="22" cy="22" r="19" stroke-width="2"/>
-      </svg>
-    </button>
+
   </div>
 
   <!-- Ghost tap zones -->
@@ -758,9 +752,9 @@ function defaultState(){
     tempTasks:[],doneTasks:[],daily:{},streaks:{},streakSectorId:'s1',
     _doneOpen:false,_streakOpen:false,_archiveOpen:false,_lockOpen:false,_csvOpen:false,_csvSectorId:null,_timeStatsOpen:false,_statsOpen:true,_settingsOpen:false,_timePeriod:'week',
     timeCategories:[
-      {id:'tc1',name:'💼',color:'#92400e'},
-      {id:'tc2',name:'🌱',color:'#166534'},
-      {id:'tc3',name:'❌',color:'#991b1b'},
+      {id:'tc1',name:'💼',color:'#fbbf24'},
+      {id:'tc2',name:'🌱',color:'#34d399'},
+      {id:'tc3',name:'❌',color:'#f87171'},
     ],
     timeEntries:{}, // keyed by date → array of {id,label,catId,blocks:[{h,q}]}
   };
@@ -798,7 +792,17 @@ function migrateState(s){
 
 let state;
 try{ const r=localStorage.getItem('hs9'); state=r?migrateState(JSON.parse(r)):defaultState(); }catch{ state=defaultState(); }
-function save(){ try{ localStorage.setItem('hs9',JSON.stringify(state)); }catch{} }
+function save(){
+  // Archive timeEntries older than 60 days
+  const now=new Date();
+  if(state.timeEntries){
+    for(const dk of Object.keys(state.timeEntries)){
+      const d=new Date(dk+'T00:00:00');
+      if((now-d)/(864e5)>60){ delete state.timeEntries[dk]; }
+    }
+  }
+  try{ localStorage.setItem('hs9',JSON.stringify(state)); }catch{}
+}
 
 function today(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function jsDay(){ const d=new Date().getDay(); return d===0?6:d-1; }
@@ -1659,6 +1663,8 @@ function closeSettings(){
   document.querySelector('.habits-scroll').style.overflow='';
 }
 
+function uiGet(k,def){ try{ const v=sessionStorage.getItem('ui_'+k); return v===null?def:(v==='true'?true:v==='false'?false:v); }catch{ return state[k]!==undefined?state[k]:def; } }
+function uiSet(k,v){ try{ sessionStorage.setItem('ui_'+k,String(v)); }catch{} state[k]=v; }
 function renderSettings(){
   const scroll=document.getElementById('settingsScroll');
   if(!scroll) return;
@@ -1714,7 +1720,7 @@ function renderSettings(){
     }
 
     const hasTime=_tTotal>0;
-    const FB_TIME=['#166534','#1d4ed8','#92400e','#991b1b','#6d28d9','#0f766e'];
+    const FB_TIME=['#34d399','#60a5fa','#fbbf24','#f87171','#c084fc','#2dd4bf'];
 
     if(hasTime){
       const tEntries=Object.entries(_tStats).sort((a,b)=>b[1]-a[1]);
@@ -1729,26 +1735,29 @@ function renderSettings(){
       html+=`</svg></div>`;
       html+=`</div>`;
       if(timeOpen){
-        tEntries.forEach(([cid,mins],idx)=>{
-          const cat=_tCats.find(c=>c.id===cid);
-          const color=cat?.color||FB_TIME[idx%FB_TIME.length];
-          const hh=Math.floor(mins/60),m=mins%60;
-          const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
-          const labels=_tLabels[cid]?[..._tLabels[cid]]:[];
-          html+=`<div style="margin-bottom:6px">`;
-          html+=`<div style="display:flex;align-items:center;gap:7px">`;
-          html+=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>`;
-          html+=`<span style="font-size:13px;flex:1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</span>`;
-          html+=`<span style="font-size:13px;font-weight:600;color:#fff">${str}</span>`;
-          html+=`</div>`;
-          if(labels.length){
-            html+=`<div style="padding-left:15px;margin-top:2px">`;
-            labels.forEach(lbl=>{ html+=`<div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6">${lbl}</div>`; });
-            html+=`</div>`;
+          const _tLblFreq={};
+          for(const[dk2,ents] of Object.entries(state.timeEntries||{})){
+            if(!days.includes(dk2)) continue;
+            for(const e of ents){
+              if(!e.label||e.empty) continue;
+              const cid2=e.catId||'_';
+              if(!_tLblFreq[cid2]) _tLblFreq[cid2]={};
+              _tLblFreq[cid2][e.label]=(_tLblFreq[cid2][e.label]||0)+1;
+            }
           }
-          html+=`</div>`;
-        });
-      }
+          tEntries.slice(0,4).forEach(([cid,mins],idx)=>{
+            const cat=_tCats.find(cat2=>cat2.id===cid);
+            const color=cat?.color||FB_TIME[idx%FB_TIME.length];
+            const hh=Math.floor(mins/60),m=mins%60;
+            const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
+            const topLabels=Object.entries(_tLblFreq[cid]||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>x[0]);
+            html+=`<div style="margin-bottom:12px;padding:14px 16px;background:rgba(255,255,255,0.06);border-radius:14px;border-left:4px solid ${color}">`;
+            html+=`<div style="font-size:26px;font-weight:300;color:#fff;letter-spacing:-.02em;line-height:1">${str}</div>`;
+            html+=`<div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:3px;margin-bottom:${topLabels.length?'10px':'0'}">${cat?.name||'?'}</div>`;
+            topLabels.forEach(lbl=>{ html+=`<div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">· ${lbl}</div>`; });
+            html+=`</div>`;
+          });
+        }
       html+=`</div>`;
     }
 
@@ -2012,7 +2021,11 @@ function renderSettings(){
   html+=`</div>`;
   html+=`<button onclick="openAddTimeCat()" style="display:flex;align-items:center;justify-content:center;width:100%;padding:10px;margin-top:6px;border:none;border-radius:12px;background:none;color:rgba(255,255,255,0.3);cursor:pointer;">${plusSVG}</button>`;
   
-  html+=`<div style="display:flex;justify-content:center;margin-top:16px;margin-bottom:8px">
+  const _curBg=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#061E0C';
+  html+=`<div style="display:flex;flex-direction:column;align-items:center;gap:0;margin-top:16px;margin-bottom:8px">
+    <button onclick="openBgPicker()" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:10px 28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+    </button>
     <button onclick="showExportSheet()" style="background:none;border:none;color:#ffffff;cursor:pointer;padding:14px 28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-family:inherit">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Pobierz
@@ -2626,41 +2639,27 @@ function buildCSVRows(){
       const sec=state.sectors.find(s=>s.id===h?.sectorId);
       rows.push([k,sec?.name||'',h?.name||hId,val===true?1:String(val)]);
     }
-    for(const[eId,val]of Object.entries(data.extras||{})){
-      if(!isDone(val)) continue;
-      const e=(state.extraStats||[]).find(x=>x.id===eId);
-      rows.push([k,'extra',e?.name||eId,val===true?1:String(val)]);
-    }
   }
-  rows.push(['','','','']);
+  rows.push(['']);
   // ── CZAS ──
-  rows.push(['data','kategoria','zadanie','od','do','minuty']);
+  rows.push(['data','kategoria','aktywnosc','minuty']);
   for(const[k,entries]of Object.entries(state.timeEntries||{}).sort()){
     for(const e of entries){
       if(e.empty) continue;
       const cat=(state.timeCategories||[]).find(c=>c.id===e.catId);
       const mins=(e.blocks?.length||0)*15;
-      const sorted=(e.blocks||[]).slice().sort((a,b)=>blockIndex(a.h,a.q)-blockIndex(b.h,b.q));
-      const tStart=sorted.length?`${sorted[0].h}:${String(sorted[0].q*15).padStart(2,'0')}`:'' ;
-      const lastB=sorted[sorted.length-1];
-      const endMin=lastB?(lastB.q+1)*15:0;
-      const tEnd=lastB?`${lastB.h+Math.floor(endMin/60)}:${String(endMin%60).padStart(2,'0')}`:'' ;
-      rows.push([k,cat?.name||'',e.label||'',tStart,tEnd,mins]);
+      rows.push([k,cat?.name||'',e.label||'',mins]);
     }
   }
-  rows.push(['','','','','','']);
+  rows.push(['']);
   // ── TASKS ──
   rows.push(['data','sektor','nazwa']);
-  const allTasks=[
-    ...(state.doneTasks||[]).map(t=>({...t,date:t.doneDate||''}))
-  ].sort((a,b)=>a.date.localeCompare(b.date));
+  const allTasks=[...(state.doneTasks||[]).map(t=>({...t,date:t.doneDate||''}))].sort((a,b)=>a.date.localeCompare(b.date));
   for(const t of allTasks){
     const sec=state.sectors.find(s=>s.id===t.sectorId);
     rows.push([t.date,sec?.name||'',t.name||'']);
   }
-  rows.push(['','','']);
-  // ── WYDATKI ──
-  rows.push(['data','kategoria','kwota','notatka']);
+  return rows;
 }
 
 function exportCSV(sep){
@@ -2729,6 +2728,22 @@ function toggleTTSector(){
   const scroll=document.getElementById('ttScroll');
   const row=document.getElementById(`tt-row-${h}`);
   if(row&&scroll) scroll.scrollTop=Math.max(0,row.offsetTop-120);
+}
+
+
+let _swipePageY=0,_swipePageId=null;
+function swipePageStart(e,screenId){
+  _swipePageY=e.touches[0].clientY;
+  _swipePageId=screenId;
+}
+function swipePageEnd(e,screenId){
+  const dy=e.changedTouches[0].clientY-_swipePageY;
+  if(Math.abs(dy)<60) return;
+  if(screenId==='home'&&dy<0){ // swipe up on home → tasks
+    openTempScreen();
+  } else if(screenId==='tasks'&&dy>0){ // swipe down on tasks → home
+    closeTempScreen();
+  }
 }
 
 function openTimeTracker(habitId){
@@ -3022,9 +3037,11 @@ function getTTSuggestions(query, catId){
   let items=Object.values(freq).sort((a,b)=>b.count-a.count);
   if(query){
     const q=query.toLowerCase();
-    items=items.filter(x=>x.label.toLowerCase().includes(q));
+    items=items.filter(x=>x.label.toLowerCase().startsWith(q));
+    if(!items.length) items=Object.values(freq).sort((a,b)=>b.count-a.count).filter(x=>x.label.toLowerCase().includes(q));
+    return items.slice(0,5);
   }
-  return items.slice(0,8);
+  return items.slice(0,3);
 }
 
 function renderTTSuggestions(query, catId){
@@ -3038,10 +3055,10 @@ function renderTTSuggestions(query, catId){
     const isLast=i===items.length-1;
     const br=i===0?(isLast?'12px':'12px 12px 0 0'):(isLast?'0 0 12px 12px':'0');
     const div=document.createElement('div');
-    div.style.cssText='padding:14px 18px;background:rgba(255,255,255,0.07);color:#fff;font-size:16px;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;border-bottom:'+(isLast?'none':'1px solid rgba(255,255,255,0.05)')+';border-radius:'+br;
+    div.style.cssText='padding:14px 18px;background:rgba(255,255,255,0.32);color:#fff;font-size:17px;font-weight:400;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;margin-bottom:6px;border-radius:12px;';
     div.textContent=item.label;
     div.addEventListener('touchstart',()=>div.style.background='rgba(61,221,101,0.18)',{passive:true});
-    div.addEventListener('touchend',()=>div.style.background='rgba(255,255,255,0.07)',{passive:true});
+    div.addEventListener('touchend',()=>div.style.background='rgba(255,255,255,0.32)',{passive:true});
     div.addEventListener('click',()=>fillAndSaveTTSuggestion(item.label, item.catId||ttSelectedCat));
     box.appendChild(div);
   });
