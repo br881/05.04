@@ -3048,10 +3048,22 @@ function renderTTSuggestions(query, catId){
 }
 
 function fillAndSaveTTSuggestion(label,catId){
-  // Show label in field briefly, then save
+  // Snapshot blocks immediately before any blur/focus side effects
+  const blocks=Array.from(ttSelBlocks).map(k=>{const[h,q]=k.split(':');return{h:+h,q:+q};});
+  if(!blocks.length) return;
+  const resolvedCat=catId||ttSelectedCat||(state.timeCategories||[])[0]?.id;
+  // Show in field
   const f=document.getElementById('ttEntryField');
-  if(f){ f.value=label; f.blur(); }
-  applyTTSuggestion(label, catId||ttSelectedCat);
+  if(f) f.value=label;
+  // Save directly
+  const k=today();
+  if(!state.timeEntries) state.timeEntries={};
+  if(!state.timeEntries[k]) state.timeEntries[k]=[];
+  state.timeEntries[k].push({id:'tt'+Date.now(),label,catId:resolvedCat,blocks});
+  save(); renderTTGrid(); ttSelBlocks.clear(); ttSelecting=false;
+  closeTTEntry();
+  if(_ttHabitId) completeHabit(_ttHabitId,true);
+  renderHome();
 }
 function applyTTSuggestion(label,catId){
   ttEntryLabel=label;
