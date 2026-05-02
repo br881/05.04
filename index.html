@@ -556,9 +556,11 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
   <!-- Bottom bar: left = time tracker, right = temp tasks -->
   <div class="bottom-bar">
     <!-- Left: time tracker — clock face as ring/outline -->
-    <button class="btn-ghost-zone" id="btnTime" onclick="openTimeTracker()">
-      <svg width="56" height="56" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
+    <button class="btn-ghost-zone" id="btnTime" onclick="openTimeTracker()" style="background:rgba(96,165,250,0.18);color:#60a5fa">
+      <svg width="24" height="24" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
         <circle cx="22" cy="22" r="19" stroke-width="2"/>
+        <line x1="22" y1="12" x2="22" y2="22" stroke-width="2.5"/>
+        <line x1="22" y1="22" x2="29" y2="27" stroke-width="2.5"/>
       </svg>
     </button>
 
@@ -625,7 +627,7 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 </div>
 
 <!-- ══ TASKS SCREEN ══ -->
-<div id="tempScreen" style="position:absolute;inset:0;background:var(--bg);transform:translateY(100%);transition:transform .5s cubic-bezier(.32,.72,0,1);z-index:10;overflow:visible;" ontouchstart="swipePageStart(event,'tasks')" ontouchmove="swipePageMove(event,'tasks')" ontouchend="swipePageEnd(event,'tasks')">
+<div id="tempScreen" style="position:absolute;inset:0;background:var(--bg);transform:translateY(100%);transition:transform .5s cubic-bezier(.32,.72,0,1);z-index:10;overflow:visible;will-change:transform;" ontouchstart="swipePageStart(event,'tasks')" ontouchmove="swipePageMove(event,'tasks')" ontouchend="swipePageEnd(event,'tasks')">
 
   <!-- blue done checkmark -->
   <div class="done-state-tasks" id="doneStateTasks">
@@ -640,7 +642,7 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
     </div>
   </div>
   <!-- bottom row: back left, all-tasks right — same size as + button -->
-  <button onclick="closeTempScreen()" style="position:absolute;bottom:36px;left:18px;z-index:3;width:72px;height:72px;border-radius:50%;background:none;border:none;color:var(--accent);font-size:36px;font-weight:300;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;line-height:1">‹</button>
+  
   <button onclick="openAllTasksView()" style="position:absolute;bottom:36px;right:18px;z-index:3;width:72px;height:72px;border-radius:50%;background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;touch-action:manipulation">
     <span style="width:20px;height:1.5px;background:currentColor;border-radius:1px;display:block"></span>
     <span style="width:20px;height:1.5px;background:currentColor;border-radius:1px;display:block"></span>
@@ -1678,30 +1680,21 @@ function openBgPicker(){
   const inner=document.createElement('div');
   inner.style.cssText='width:100%;max-width:480px;background:#111;border-radius:24px 24px 0 0;padding:20px 24px calc(env(safe-area-inset-bottom,20px)+24px);box-sizing:border-box';
   inner.innerHTML=`
-    <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 20px"></div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:.08em;text-transform:uppercase;text-align:center;margin-bottom:16px">Kolor tła</div>
-    <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px">
-      <div id="bgPreview" style="width:44px;height:44px;border-radius:50%;background:${cur};flex-shrink:0;border:2px solid rgba(255,255,255,0.2)"></div>
-      <input id="bgHexInput" maxlength="7" value="${cur}" autocomplete="off" spellcheck="false"
-        style="flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:12px 14px;color:#fff;font-size:20px;font-family:monospace;outline:none;text-align:center;letter-spacing:.08em">
-    </div>
-    <button id="bgApplyBtn" style="width:100%;padding:14px;background:#1a7a3a;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;margin-bottom:10px">Zastosuj</button>
-    <button id="bgCancelBtn" style="width:100%;background:none;border:none;color:rgba(255,255,255,0.35);font-size:14px;cursor:pointer;font-family:inherit;padding:10px">Anuluj</button>`;
+    <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 16px"></div>
+    <input id="bgHexInput" maxlength="7" value="${cur}" autocomplete="off" spellcheck="false"
+      style="width:100%;background:rgba(255,255,255,0.32);border:none;border-radius:14px;padding:16px 18px;color:#fff;font-size:21px;font-weight:400;font-family:monospace;outline:none;text-align:center;letter-spacing:.05em;box-sizing:border-box;margin-bottom:14px">
+    <button id="bgApplyBtn" style="width:100%;padding:14px;background:#1a7a3a;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer">Zapisz</button>`;
   ov.appendChild(inner);
   ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
   document.body.appendChild(ov);
   // Wire events after DOM insertion
-  document.getElementById('bgHexInput').addEventListener('input',function(){
-    const v=this.value.trim();
-    if(/^#[0-9a-fA-F]{6}$/.test(v)) document.getElementById('bgPreview').style.background=v;
-  });
+  document.getElementById('bgHexInput').addEventListener('input',function(){ /* preview removed */ });
   document.getElementById('bgApplyBtn').addEventListener('click',applyBgColor);
-  document.getElementById('bgCancelBtn').addEventListener('click',()=>document.getElementById('bgPickerOv')?.remove());
 }
 function applyBgColor(){
   const v=document.getElementById('bgHexInput')?.value.trim();
   if(!v||!/^#[0-9a-fA-F]{6}$/.test(v)) return;
-  document.documentElement.style.setProperty('--bg',v); document.body.style.background=v; document.querySelectorAll('.screen,[id*="Tracker"]').forEach(el=>el.style.background=v);
+  document.documentElement.style.setProperty('--bg',v); document.body.style.background=v; document.querySelectorAll('.screen,#timeTracker,#tempScreen,#home,#settings,#allTasksView').forEach(el=>{if(el)el.style.background=v;});
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content',v);
   try{ localStorage.setItem('customBg',v); }catch{}
   document.getElementById('bgPickerOv')?.remove();
@@ -2054,18 +2047,15 @@ function renderSettings(){
   html+=`<div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px;text-align:center">Czas</div>`;
   const _aCats=state.timeCategories||[];
   const _aPal=['#7dd3fc','#f9a8d4','#fdba74','#c4b5fd','#6ee7b7','#fde68a','#fca5a5','#67e8f9'];
-  html+=`<div style="display:flex;flex-direction:column;gap:8px">`;
+  html+=`<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:4px 0">`;
   _aCats.forEach((cat,i)=>{
     const col=cat.color||(_aPal[i%_aPal.length]);
     const safeCol=col.startsWith('#')?col:_aPal[0];
-    html+=`<div id="tcr-${cat.id}" data-tcid="${cat.id}" onclick="openCatEditOverlay('tc','${cat.id}')"
-      style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;border-left:4px solid ${safeCol}">
-      <span style="font-size:16px;color:#fff;flex:1">${cat.name}</span>
-      <button onclick="event.stopPropagation();deleteTimeCat('${cat.id}')" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:22px;cursor:pointer;padding:4px 8px;line-height:1;touch-action:manipulation;flex-shrink:0">×</button>
-    </div>`;
+    html+=`<div onclick="openCatEditOverlay('tc','${cat.id}')" title="${cat.name}"
+      style="width:36px;height:36px;border-radius:50%;background:${safeCol};cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px" >${cat.name}</div>`;
   });
+  html+=`<div onclick="openAddTimeCat()" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.4);font-size:20px;flex-shrink:0">+</div>`;
   html+=`</div>`;
-  html+=`<button onclick="openAddTimeCat()" style="display:flex;align-items:center;justify-content:center;width:100%;padding:10px;margin-top:6px;border:none;border-radius:12px;background:none;color:rgba(255,255,255,0.3);cursor:pointer;">${plusSVG}</button>`;
   
   const _curBg=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#061E0C';
   html+=`<div style="display:flex;flex-direction:column;align-items:center;gap:0;margin-top:16px;margin-bottom:8px">
@@ -2238,17 +2228,12 @@ function openCatEditOverlay(type,id){
   ov.id='catColorOverlay';
   ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);display:flex;align-items:flex-end;justify-content:center';
   ov.innerHTML=`<div style="width:100%;max-width:420px;background:#1a1a1a;border-radius:24px 24px 0 0;padding:20px 20px calc(env(safe-area-inset-bottom,20px)+20px);box-sizing:border-box">
-    <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 18px"></div>
+    <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 16px"></div>
     <input id="ceoName" value="${cat.name.replace(/"/g,'&quot;')}" autocapitalize="sentences" autocomplete="off"
-      style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);border-radius:12px;padding:12px 16px;color:#fff;font-size:18px;font-family:inherit;outline:none;margin-bottom:16px;box-sizing:border-box;text-align:center">
-    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:0 4px">${sw}</div>
-    <div style="display:flex;gap:10px;margin-top:16px;align-items:center">
-      <div id="ceoPreview" style="width:40px;height:40px;border-radius:50%;background:${cur};flex-shrink:0;border:2px solid rgba(255,255,255,0.2)"></div>
-      <input id="ceoHexInput" maxlength="7" placeholder="#hex" value="${cur}" autocomplete="off"
-        style="width:72px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:#fff;font-size:13px;font-family:monospace;outline:none;text-align:center;box-sizing:border-box"
-        oninput="const v=this.value.trim();if(/^#[0-9a-fA-F]{6}$/.test(v)){const p=document.getElementById('ceoPreview');if(p)p.style.background=v;}">
-      <button onclick="ceoConfirm('${type}','${id}')" style="flex:1;padding:12px;background:#1a7a3a;border:none;border-radius:12px;color:#fff;font-size:17px;font-family:inherit;cursor:pointer;touch-action:manipulation">Zapisz</button>
-    </div>
+      style="width:100%;background:rgba(255,255,255,0.32);border:none;border-radius:14px;padding:16px 18px;color:#fff;font-size:21px;font-family:inherit;outline:none;margin-bottom:12px;box-sizing:border-box;text-align:center">
+    <input id="ceoHexInput" maxlength="7" placeholder="#hex" value="${cur}" autocomplete="off" spellcheck="false"
+      style="width:100%;background:rgba(255,255,255,0.32);border:none;border-radius:14px;padding:16px 18px;color:#fff;font-size:21px;font-family:monospace;outline:none;margin-bottom:12px;box-sizing:border-box;text-align:center;letter-spacing:.05em">
+    <button onclick="ceoConfirm('${type}','${id}')" style="width:100%;padding:14px;background:#1a7a3a;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">Zapisz</button>
   </div>`;
   ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
   document.body.appendChild(ov);
@@ -2261,7 +2246,7 @@ function ceoSwatchTap(el){
 }
 function ceoConfirm(type,id){
   const name=document.getElementById('ceoName')?.value.trim();
-  const hexVal=document.getElementById('ceoHexInput')?.value.trim(); const color=(hexVal&&/^#[0-9a-fA-F]{6}$/.test(hexVal))?hexVal:(document.getElementById('ceoPreview')?.style.background||'#3ddd65');
+  const hexVal=document.getElementById('ceoHexInput')?.value.trim(); const color=(hexVal&&/^#[0-9a-fA-F]{6}$/.test(hexVal))?hexVal:'#3ddd65';
   document.getElementById('catColorOverlay')?.remove();
   if(!name) return;
   const cats=type==='tc'?(state.timeCategories||[]):[];
