@@ -568,11 +568,6 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
   <!-- Left half top → extras/habits sheet -->
   <div style="position:fixed;top:0;left:0;width:50%;height:calc(var(--safe-top)+52px);z-index:50;cursor:pointer;" onclick="openSheet()"></div>
   <!-- Bottom zone → settings (invisible, behind progress bar) -->
-  <!-- Swipe up zone: invisible strip at bottom of home -->
-  <div id="swipeUpZone" style="position:fixed;bottom:0;left:0;right:0;height:120px;z-index:7;pointer-events:all;-webkit-tap-highlight-color:transparent"
-    ontouchstart="swipePageStart(event,'home')"
-    ontouchmove="swipePageMove(event,'home')"
-    ontouchend="swipePageEnd(event,'home')"></div>
   <div id="pbSettingsZone" onclick="openSettings()" style="position:fixed;bottom:0;left:0;right:0;height:calc(var(--safe-bottom) + 140px);z-index:9;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;"></div>
   <!-- All-done invisible settings button — full screen tap when doneState shown -->
   <div id="doneSettingsZone" onclick="openSettings()" style="position:fixed;inset:0;z-index:7;display:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;"></div>
@@ -630,40 +625,10 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 </div>
 
 <!-- ══ TASKS SCREEN ══ -->
-<div id="tempScreen" style="position:absolute;inset:0;background:var(--bg);transform:translateY(100%);transition:transform .5s cubic-bezier(.32,.72,0,1);z-index:10;overflow:visible;will-change:transform;" ontouchstart="swipePageStart(event,'tasks')" ontouchmove="swipePageMove(event,'tasks')" ontouchend="swipePageEnd(event,'tasks')">
 
-  <!-- blue done checkmark -->
-  <div class="done-state-tasks" id="doneStateTasks">
-    <div class="done-mark-tasks">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-    </div>
-  </div>
-  <!-- task list, centered vertically like habits -->
-  <div style="position:absolute;top:0;left:0;right:0;bottom:120px;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;align-items:center;justify-content:center;padding-top:calc(var(--safe-top) + 44px);">
-    <div style="width:100%;max-width:500px;padding:0 28px">
-      <div id="tempScreenList" style="display:flex;flex-direction:column;gap:10px"></div>
-    </div>
-  </div>
-  <!-- bottom row: back left, all-tasks right — same size as + button -->
-  
-  <button onclick="openAllTasksView()" style="position:absolute;bottom:36px;right:18px;z-index:3;width:72px;height:72px;border-radius:50%;background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;touch-action:manipulation">
-    <span style="width:20px;height:1.5px;background:currentColor;border-radius:1px;display:block"></span>
-    <span style="width:20px;height:1.5px;background:currentColor;border-radius:1px;display:block"></span>
-  </button>
-  <button ontouchstart="openTempAddOverlayTouch(event)" onclick="openTempAddOverlay()" style="position:absolute;bottom:36px;left:50%;transform:translateX(-50%);width:72px;height:72px;border-radius:50%;background:rgba(96,165,250,0.18);border:none;color:#60a5fa;display:flex;align-items:center;justify-content:center;cursor:pointer">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-  </button>
-</div>
 
 <!-- ══ ADD TASK OVERLAY ══ -->
-<div id="tempAddOverlay" style="position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;visibility:hidden;opacity:0;transition:opacity .22s,visibility .22s;">
-  <div onclick="closeTempAddOverlay()" style="position:absolute;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)"></div>
-  <div id="tempAddCard" style="position:relative;z-index:1;width:100%;max-width:440px;padding:0 24px 32px;display:flex;flex-direction:column;gap:20px;align-items:stretch">
-    <div id="tempAddSectors" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"></div>
-    <input id="tempAddField" enterkeyhint="done" inputmode="text" autocomplete="off" autocapitalize="sentences"
-      style="width:100%;background:rgba(255,255,255,0.32);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;border-radius:16px;padding:18px 20px;color:#fff;font-size:21px;font-weight:400;font-family:inherit;outline:none;text-align:center;letter-spacing:-.02em;box-sizing:border-box;-webkit-user-select:text;user-select:text;">
-  </div>
-</div>
+
 
 <!-- ══ ALL TASKS VIEW ══ -->
 <div id="allTasksView" class="screen" style="z-index:15;overflow:visible;display:flex;flex-direction:column;">
@@ -754,7 +719,7 @@ function defaultState(){
     ],
     habits:[],
     extraStats:[],
-    tempTasks:[],doneTasks:[],daily:{},streaks:{},streakSectorId:'s1',
+    daily:{},streaks:{},streakSectorId:'s1',
     _doneOpen:false,_streakOpen:false,_archiveOpen:false,_lockOpen:false,_csvOpen:false,_csvSectorId:null,_timeStatsOpen:false,_statsOpen:true,_settingsOpen:false,_timePeriod:'week',
     timeCategories:[
       {id:'tc1',name:'💼',color:'#fbbf24'},
@@ -968,18 +933,9 @@ function dismissUndoToast(){
 }
 function undoLastComplete(){
   dismissUndoToast();
-  // Undo: for habits remove from daily, for tasks restore from doneTasks
   if(!_undoKey) return;
-  if(_undoKey.startsWith('t')){
-    const tId=_undoKey.slice(1);
-    const t=state.doneTasks.find(x=>x.id===tId);
-    if(t){ state.doneTasks=state.doneTasks.filter(x=>x.id!==tId); state.tempTasks.push(t); }
-    const dd=getDayData(); if(dd.temps) delete dd.temps[tId];
-    save(); renderTempScreen&&renderTempScreen(); renderHome();
-  } else {
-    const hId=_undoKey;
-    const dd=getDayData(); delete dd.habits[hId]; updateStreak(hId,false); save(); renderHome();
-  }
+  const hId=_undoKey;
+  const dd=getDayData(); delete dd.habits[hId]; updateStreak(hId,false); save(); renderHome();
 }
 function handleHabitTap(hId){
   const h=state.habits.find(x=>x.id===hId); if(!h) return;
@@ -1021,23 +977,17 @@ function handleTempTap(tId){
   const key=`t${tId}`;
   const row=document.getElementById(`row-${key}`);
   if(!row) return;
-  const onConfirm=()=>{
-    const dd=getDayData(); if(!dd.temps) dd.temps={};
-    dd.temps[tId]=true;
-    const t=(state.tempTasks||[]).find(x=>x.id===tId);
-    if(t){ state.doneTasks.push({...t,doneDate:today()}); state.tempTasks=state.tempTasks.filter(x=>x.id!==tId); }
-    save();
-  };
+  const onConfirm=()=>{ save(); };
   if(timers[key]){ clearTimeout(timers[key]); delete timers[key]; row.classList.remove('dimmed','tapping'); return; }
   row.classList.add('dimmed','tapping');
   timers[key]=setTimeout(()=>{
     delete timers[key];
-    if(!row.isConnected){ renderTempScreen&&renderTempScreen(); return; }
+    if(!row.isConnected){ renderHome(); return; }
     row.style.maxHeight=row.offsetHeight+'px';
     const name=row.querySelector('.habit-name')?.textContent||'';
     onConfirm();
     requestAnimationFrame(()=>row.classList.add('vanishing'));
-    row.addEventListener('transitionend',()=>{ renderTempScreen&&renderTempScreen(); showUndoToast(name,key,onConfirm); },{once:true});
+    row.addEventListener('transitionend',()=>{ showUndoToast(name,key,onConfirm); },{once:true,passive:true});
   },600);
 }
 function completeHabit(hId,val){ const dd=getDayData(); dd.habits[hId]=val; updateStreak(hId,true); save(); }
@@ -1077,57 +1027,6 @@ function confirmInput(){
   else closeInputSheet();
 }
 
-/* ── ADD TEMP ── */
-let selTempSector=null;
-function openAddTemp(){
-  if(!state.tempTasks) state.tempTasks=[];
-  selTempSector=getActiveSector()?.id||state.sectors[0]?.id;
-  renderTempSectors();
-  document.getElementById('addTempField').value='';
-  document.getElementById('tempOverlay').classList.add('open');
-  setTimeout(()=>document.getElementById('addTempField').focus(),50);
-}
-function updateTempOverlayPos(){
-  const ov=document.getElementById('tempOverlay');
-  if(!ov.classList.contains('open')) return;
-  const vv=window.visualViewport;
-  if(!vv){ ov.style.paddingBottom='300px'; return; }
-  const kbHeight=window.innerHeight-(vv.offsetTop+vv.height);
-  ov.style.paddingBottom=Math.max(kbHeight+16,24)+'px';
-  ov.style.top='0'; ov.style.bottom='0'; ov.style.height='';
-}
-if(window.visualViewport){
-  window.visualViewport.addEventListener('resize',updateTempOverlayPos);
-  window.visualViewport.addEventListener('scroll',updateTempOverlayPos);
-}
-function renderTempSectors(){
-  document.getElementById('tempSectorPicker').innerHTML=state.sectors.map(s=>
-    `<div class="sector-pill${s.id===selTempSector?' active':''}" onclick="setTempSector('${s.id}',this)">${s.name}</div>`
-  ).join('');
-}
-function setTempSector(id,el){
-  selTempSector=id;
-  document.querySelectorAll('#tempSectorPicker .sector-pill').forEach(p=>p.classList.remove('active'));
-  el.classList.add('active');
-}
-function closeAddTemp(){
-  document.getElementById('addTempField').blur();
-  const ov=document.getElementById('tempOverlay');
-  ov.classList.remove('open');
-  ov.style.bottom='';ov.style.top='';ov.style.height='';
-}
-let _addTempCallback=null;
-function confirmAddTemp(){
-  const f=document.getElementById('addTempField');
-  const name=f?.value.trim(); f?.blur();
-  if(!name){ closeAddTemp(); _addTempCallback=null; return; }
-  if(!state.tempTasks) state.tempTasks=[];
-  state.tempTasks.push({id:'t'+Date.now(),name,sectorId:selTempSector||state.sectors[0]?.id,created:today()});
-  save(); closeAddTemp(); renderHome();
-  if(_addTempCallback){ _addTempCallback(); _addTempCallback=null; }
-}
-document.getElementById('addTempField').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.keyCode===13){ e.preventDefault(); confirmAddTemp(); } });
-document.getElementById('tempAddField').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.keyCode===13){ e.preventDefault(); confirmTempAdd(); } });
 
 /* ── EXTRAS SHEET ── */
 function openSheet(){
@@ -1274,183 +1173,25 @@ function updateEtDuration(){
 function closeSheet(){ hideSheet('mainSheet'); }
 
 /* ══ TASKS SCREEN ══ */
-let _tempAddSector=null;
 
-function openTempScreen(){
-  const ds=document.getElementById('doneStateTasks');
-  if(ds) ds.classList.remove('show');
-  renderTempScreen();
-  const ts=document.getElementById('tempScreen');
-  ts.style.transition='none';
-  ts.style.transform='translateY(100%)';
-  ts.offsetHeight;
-  ts.style.willChange='transform';
-  ts.style.transition='transform .5s cubic-bezier(.32,.72,0,1)';
-  ts.style.transform='translateY(0)';
-  ts.addEventListener('transitionend',()=>{ts.style.willChange='auto';},{once:true});
-}
-function closeTempScreen(){
-  closeTempAddOverlay();
-  const ds=document.getElementById('doneStateTasks');
-  if(ds) ds.classList.remove('show');
-  const ts=document.getElementById('tempScreen');
-  const h=document.getElementById('home');
-  ts.style.willChange='transform';
-  ts.style.transition='transform .5s cubic-bezier(.32,.72,0,1)';
-  ts.style.transform='translateY(100%)';
-  ts.addEventListener('transitionend',()=>{ts.style.willChange='auto';},{once:true});
-  h.classList.remove('slide-out');
-  h.style.transform='';
-}
-function renderTempScreen(){
-  const list=document.getElementById('tempScreenList'); if(!list) return;
-  const ds=document.getElementById('doneStateTasks');
-  const sector=getActiveSector();
-  const tasks=(state.tempTasks||[]).filter(t=>!sector||t.sectorId===sector.id);
-  if(!tasks.length){
-    list.innerHTML='';
-    const doneTodayForSector=(state.doneTasks||[]).filter(t=>t.doneDate===today()&&(!sector||t.sectorId===sector.id));
-    if(doneTodayForSector.length>0){
-      if(ds) ds.classList.add('show');
-    } else {
-      if(ds) ds.classList.remove('show');
-      // No tasks at all — show blue checkmark (same as done)
-      if(ds) ds.classList.add('show');
-    }
-    return;
-  }
-  if(ds) ds.classList.remove('show');
-  list.innerHTML=tasks.map(t=>`<div class="habit-row row-visible" id="trow-${t.id}" style="animation:none" onclick="completeTempFromScreen('${t.id}')"><span class="habit-name">${t.name}</span></div>`).join('');
-}
-function completeTempFromScreen(tId){
-  const row=document.getElementById('trow-'+tId);
-  if(row){
-    const name=row.querySelector('.habit-name')?.textContent||'';
-    row.style.maxHeight=row.offsetHeight+'px';
-    row.classList.add('dimmed','tapping');
-    const doComplete=()=>{
-      const dd=getDayData(); if(!dd.temps) dd.temps={};
-      dd.temps[tId]=true;
-      const t=(state.tempTasks||[]).find(x=>x.id===tId);
-      if(t){ state.doneTasks.push({...t,doneDate:today()}); state.tempTasks=state.tempTasks.filter(x=>x.id!==tId); }
-      save(); renderHome();
-    };
-    setTimeout(()=>{
-      doComplete();
-      const th=row.offsetHeight;
-      row.style.maxHeight=th+'px';
-      row.style.paddingTop=getComputedStyle(row).paddingTop;
-      row.style.paddingBottom=getComputedStyle(row).paddingBottom;
-      row.style.marginTop=getComputedStyle(row).marginTop;
-      row.style.marginBottom=getComputedStyle(row).marginBottom;
-      row.offsetHeight;
-      row.classList.add('vanishing');
-      row.style.opacity='0';
-      row.style.maxHeight='0px';
-      row.style.paddingTop='0px';
-      row.style.paddingBottom='0px';
-      row.style.marginTop='0px';
-      row.style.marginBottom='0px';
-      row.addEventListener('transitionend',()=>{ renderTempScreen(); showUndoToast(name,'t'+tId,doComplete); },{once:true,passive:true});
-    },600);
-    return;
-  }
-  const dd=getDayData(); if(!dd.temps) dd.temps={};
-  dd.temps[tId]=true;
-  const t=(state.tempTasks||[]).find(x=>x.id===tId);
-  if(t){ state.doneTasks.push({...t,doneDate:today()}); state.tempTasks=state.tempTasks.filter(x=>x.id!==tId); }
-  save(); renderHome(); renderTempScreen();
-}
+
+
+
+
 
 /* ══ ADD TASK OVERLAY ══ */
-function openTempAddOverlayTouch(e){
-  // touchstart — MUST focus synchronously, before visibility changes
-  // Show overlay first so element is actually visible (iOS ignores focus on hidden)
-  _tempAddSector=getActiveSector()?.id||state.sectors[0]?.id;
-  document.getElementById('tempAddField').value='';
-  document.getElementById('tempAddSectors').innerHTML=
-    state.sectors.map(s=>`<div class="sector-pill${s.id===_tempAddSector?' active':''}" onclick="setTempAddSec('${s.id}',this)" style="font-size:16px;padding:10px 20px">${s.name}</div>`).join('');
-  const ov=document.getElementById('tempAddOverlay');
-  ov.style.transition='none';
-  ov.style.visibility='visible'; ov.style.opacity='1';
-  // Now focus synchronously — element is visible, iOS will open keyboard
-  document.getElementById('tempAddField').focus();
-}
-function openTempAddOverlay(){
-  // onclick fires after touchstart; overlay already open, just re-focus
-  const ov=document.getElementById('tempAddOverlay');
-  ov.style.transition='opacity .22s,visibility .22s';
-  ov.style.visibility='visible'; ov.style.opacity='1';
-  document.getElementById('tempAddField').focus();
-}
-function closeTempAddOverlay(){
-  document.getElementById('tempAddField')?.blur();
-  const ov=document.getElementById('tempAddOverlay');
-  if(ov){ ov.style.opacity='0'; setTimeout(()=>{ ov.style.visibility='hidden'; },220); }
-}
-function setTempAddSec(id,el){
-  _tempAddSector=id;
-  document.querySelectorAll('#tempAddSectors .sector-pill').forEach(p=>p.classList.remove('active'));
-  el.classList.add('active');
-  // Auto-save if there's already text in the field
-  const f=document.getElementById('tempAddField');
-  const name=f?.value.trim();
-  if(name){
-    if(!state.tempTasks) state.tempTasks=[];
-    state.tempTasks.push({id:'t'+Date.now(),name,sectorId:id,created:today()});
-    if(f) f.value='';
-    save(); closeTempAddOverlay(); renderTempScreen(); renderHome();
-  }
-}
-function confirmTempAdd(){
-  const f=document.getElementById('tempAddField');
-  const name=f?.value.trim(); f?.blur();
-  if(!name){ closeTempAddOverlay(); return; }
-  if(!state.tempTasks) state.tempTasks=[];
-  state.tempTasks.push({id:'t'+Date.now(),name,sectorId:_tempAddSector||state.sectors[0]?.id,created:today()});
-  save(); closeTempAddOverlay(); renderTempScreen(); renderHome();
-}
+
+
+
+
+
 
 /* ══ ALL TASKS VIEW ══ */
-function openAllTasksView(){
-  renderAllTasksView();
-  const ts=document.getElementById('tempScreen');
-  const av=document.getElementById('allTasksView');
-  av.classList.add('active');
-  ts.style.transition='transform .62s cubic-bezier(.16,1,.3,1)';
-  ts.style.transform='translateX(-28%)';
-}
-function closeAllTasksView(){
-  const ts=document.getElementById('tempScreen');
-  const av=document.getElementById('allTasksView');
-  av.style.transition='transform .62s cubic-bezier(.16,1,.3,1)';
-  ts.style.transition='transform .62s cubic-bezier(.16,1,.3,1)';
-  av.classList.remove('active');
-  av.style.transform='';
-  ts.style.transform='translateX(0)';
-}
-function renderAllTasksView(){
-  const scroll=document.getElementById('allTasksScroll'); if(!scroll) return;
-  let html='';
-  for(const sec of state.sectors){
-    const tasks=(state.tempTasks||[]).filter(t=>t.sectorId===sec.id);
-    if(!tasks.length) continue;
-    html+=`<div class="s-section" style="margin-top:24px">
-      <div style="font-size:18px;color:#fff;text-align:center;margin-bottom:12px">${sec.name}</div>`;
-    tasks.forEach(t=>html+=`<div style="display:flex;align-items:center;gap:12px;padding:15px 18px;background:rgba(255,255,255,0.08);border-radius:12px;margin-bottom:8px">
-      <span style="flex:1;font-size:16px;color:#fff">${t.name}</span>
-      <button onclick="deleteTempTask('${t.id}')" style="background:none;border:none;font-size:24px;color:rgba(255,255,255,0.3);cursor:pointer;line-height:1;padding:0">×</button>
-    </div>`);
-    html+=`</div>`;
-  }
-  if(!html) html=`<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
-    <svg width="77" height="77" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="opacity:.9;stroke-dasharray:90;stroke-dashoffset:0"><polyline points="20 6 9 17 4 12"/></svg>
-  </div>`;
-  scroll.innerHTML=html;
-}
+
+
+
 function deleteTempTask(tId){
-  state.tempTasks=(state.tempTasks||[]).filter(t=>t.id!==tId);
-  save(); renderAllTasksView(); renderTempScreen(); renderHome();
+    save(); renderHome();
 }
 
 // keyboard-aware overlay
@@ -1471,10 +1212,10 @@ function deleteTempTask(tId){
   }
 })();
 
-function openTempSheet(){ openTempScreen(); }
-function closeTempSheet(){ closeTempScreen(); }
-function openAddTempFromScreen(){ openTempAddOverlay(); }
-function confirmAddTempScreen(){ confirmTempAdd(); }
+
+function closeTempSheet(){ }
+
+
 
 const ALL_SHEETS=['mainSheet','inputSheet','extraSheet'];
 function showSheet(id){ document.getElementById('overlay').classList.add('open'); document.getElementById(id).classList.add('open'); }
@@ -1785,17 +1526,20 @@ function renderSettings(){
               _tLblFreq[cid2][e.label]=(_tLblFreq[cid2][e.label]||0)+1;
             }
           }
+          // Sort by category order setting
+          const _orderedEntries=[..._tCats].sort((a,b)=>(a.order||0)-(b.order||0))
+            .map(cat=>{ const e=tEntries.find(([cid])=>cid===cat.id); return e?[cat,e[1]]:null; })
+            .filter(Boolean).slice(0,4);
           html+=`<div style="display:flex;gap:8px;align-items:flex-start">`;
-          tEntries.slice(0,4).forEach(([cid,mins],idx)=>{
-            const cat=_tCats.find(cat2=>cat2.id===cid);
-            const color=cat?.color||FB_TIME[idx%FB_TIME.length];
+          _orderedEntries.forEach(([cat,mins],idx)=>{
+            const color=cat.color||FB_TIME[idx%FB_TIME.length];
             const hh=Math.floor(mins/60),m=mins%60;
             const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
-            const topLabels=Object.entries(_tLblFreq[cid]||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>x[0]);
-            html+=`<div style="flex:1;padding:12px 10px;background:rgba(255,255,255,0.06);border-radius:12px;border-top:3px solid ${color};min-width:0">`;
-            html+=`<div style="font-size:20px;font-weight:400;color:#fff;letter-spacing:-.02em;line-height:1.1">${str}</div>`;
-            html+=`<div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:4px;margin-bottom:${topLabels.length?'8px':'0'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat?.name||'?'}</div>`;
-            topLabels.forEach(lbl=>{ html+=`<div style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lbl}</div>`; });
+            const topLabels=Object.entries(_tLblFreq[cat.id]||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>x[0]);
+            html+=`<div style="flex:1;padding:12px 10px;background:rgba(255,255,255,0.06);border-radius:12px;border-top:3px solid ${color};min-width:0;text-align:center">`;
+            html+=`<div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat.name}</div>`;
+            html+=`<div style="font-size:22px;font-weight:300;color:#fff;letter-spacing:-.02em;line-height:1.1;margin-bottom:${topLabels.length?'8px':'0'}">${str}</div>`;
+            topLabels.forEach(lbl=>{ html+=`<div style="font-size:11px;color:#fff;line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0.7">${lbl}</div>`; });
             html+=`</div>`;
           });
           html+=`</div>`;
@@ -2050,12 +1794,12 @@ function renderSettings(){
   html+=`<div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px;text-align:center">Czas</div>`;
   const _aCats=state.timeCategories||[];
   const _aPal=['#7dd3fc','#f9a8d4','#fdba74','#c4b5fd','#6ee7b7','#fde68a','#fca5a5','#67e8f9'];
-  html+=`<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:4px 0">`;
+  html+=`<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;padding:4px 0">`;
   _aCats.forEach((cat,i)=>{
     const col=cat.color||(_aPal[i%_aPal.length]);
     const safeCol=col.startsWith('#')?col:_aPal[0];
     html+=`<div onclick="openCatEditOverlay('tc','${cat.id}')" title="${cat.name}"
-      style="width:36px;height:36px;border-radius:50%;background:${safeCol};cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px" >${cat.name}</div>`;
+      style="width:38px;height:38px;border-radius:50%;background:transparent;border:3px solid ${safeCol};cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;box-sizing:border-box" >${cat.name}</div>`;
   });
   html+=`<div onclick="openAddTimeCat()" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.4);font-size:20px;flex-shrink:0">+</div>`;
   html+=`</div>`;
@@ -2686,14 +2430,6 @@ function buildCSVRows(){
       rows.push([k,cat?.name||'',e.label||'',mins]);
     }
   }
-  rows.push(['']);
-  // ── TASKS ──
-  rows.push(['data','sektor','nazwa']);
-  const allTasks=[...(state.doneTasks||[]).map(t=>({...t,date:t.doneDate||''}))].sort((a,b)=>a.date.localeCompare(b.date));
-  for(const t of allTasks){
-    const sec=state.sectors.find(s=>s.id===t.sectorId);
-    rows.push([t.date,sec?.name||'',t.name||'']);
-  }
   return rows;
 }
 
@@ -2766,46 +2502,9 @@ function toggleTTSector(){
 }
 
 
-let _swipePageY=0,_swipePageX=0,_swipePageId=null;
-function swipePageStart(e,screenId){
-  _swipePageY=e.touches[0].clientY;
-  _swipePageX=e.touches[0].clientX;
-  _swipePageId=screenId;
-  // Kill transition so drag follows finger instantly
-  if(screenId==='tasks'){
-    const ts=document.getElementById('tempScreen');
-    if(ts) ts.style.transition='none';
-  }
-}
-function swipePageMove(e,screenId){
-  const dy=e.touches[0].clientY-_swipePageY;
-  const dx=e.touches[0].clientX-_swipePageX;
-  if(Math.abs(dx)>Math.abs(dy)*0.7) return;
-  const pct=dy/window.innerHeight*100;
-  const ts=document.getElementById('tempScreen');
-  if(!ts) return;
-  ts.style.transition='none';
-  if(screenId==='home'&&dy<0){
-    ts.style.willChange='transform';
-    ts.style.transform=`translateY(${Math.max(0,100+pct)}%)`;
-  } else if(screenId==='tasks'&&dy>0){
-    ts.style.willChange='transform';
-    ts.style.transform=`translateY(${Math.min(100,Math.max(0,pct))}%)`;
-  }
-}
-function swipePageEnd(e,screenId){
-  const t=e.changedTouches[0];
-  const dy=t.clientY-_swipePageY;
-  const dx=t.clientX-_swipePageX;
-  const ts=document.getElementById('tempScreen');
-  const thr=40;
-  if(Math.abs(dy)<thr||Math.abs(dx)>Math.abs(dy)*0.9){
-    if(ts){ ts.style.transition='transform .35s cubic-bezier(.32,.72,0,1)'; ts.style.transform=screenId==='tasks'?'translateY(0)':'translateY(100%)'; }
-    return;
-  }
-  if(screenId==='home'&&dy<-thr){ openTempScreen(); }
-  else if(screenId==='tasks'&&dy>thr){ closeTempScreen(); }
-}
+
+
+
 
 function openTimeTracker(habitId){
   _ttHabitId=habitId||null;
@@ -3451,65 +3150,8 @@ function saveTTEntry(){
   },{passive:true});
 })();
 
-// Swipe back from Temp Screen
-(()=>{
-  let sx=0, moved=false;
-  const ts=document.getElementById('tempScreen');
-  const home=document.getElementById('home');
-  ts.addEventListener('touchstart',e=>{ sx=e.touches[0].clientX; moved=false; },{passive:true});
-  ts.addEventListener('touchmove',e=>{
-    if(sx>44) return;
-    const dx=e.touches[0].clientX-sx;
-    if(dx<4) return;
-    moved=true;
-    const pct=Math.min(dx/window.innerWidth*100,100);
-    ts.style.transition='none'; home.style.transition='none';
-    ts.style.transform=`translateX(${pct}%)`;
-    home.style.transform=`translateX(${-28+pct*0.28}%)`;
-  },{passive:true});
-  ts.addEventListener('touchend',e=>{
-    if(!moved) return;
-    const dx=e.changedTouches[0].clientX-sx;
-    moved=false;
-    requestAnimationFrame(()=>{
-      ts.style.transition=''; home.style.transition='';
-      requestAnimationFrame(()=>{
-        if(dy>70&&dx<40) closeTempScreen();
-        else{ ts.style.transform='translateX(0)'; home.style.transform='translateX(-28%)'; }
-      });
-    });
-  },{passive:true});
-})();
 
-// Swipe back from All Tasks View
-(()=>{
-  let sx=0, moved=false;
-  const av=document.getElementById('allTasksView');
-  const ts=document.getElementById('tempScreen');
-  av.addEventListener('touchstart',e=>{ sx=e.touches[0].clientX; moved=false; },{passive:true});
-  av.addEventListener('touchmove',e=>{
-    if(sx>44) return;
-    const dx=e.touches[0].clientX-sx;
-    if(dx<4) return;
-    moved=true;
-    const pct=Math.min(dx/window.innerWidth*100,100);
-    av.style.transition='none'; ts.style.transition='none';
-    av.style.transform=`translateX(${pct}%)`;
-    ts.style.transform=`translateX(${-28+pct*0.28}%)`;
-  },{passive:true});
-  av.addEventListener('touchend',e=>{
-    if(!moved) return;
-    const dx=e.changedTouches[0].clientX-sx;
-    moved=false;
-    requestAnimationFrame(()=>{
-      av.style.transition=''; ts.style.transition='';
-      requestAnimationFrame(()=>{
-        if(dx>70) closeAllTasksView();
-        else{ av.style.transform='translateX(0)'; ts.style.transform='translateX(-28%)'; }
-      });
-    });
-  },{passive:true});
-})();
+
 
 
 
@@ -3596,6 +3238,17 @@ document.addEventListener('visibilitychange',()=>{ if(!document.hidden) renderHo
     else{ ed.style.transform='translateY(0)'; }
     moved=false;
   },{passive:true});
+})();
+
+// Apply custom background to all screens on render
+(function applyCustomBgToScreens(){
+  try{
+    const bg=localStorage.getItem('customBg');
+    if(bg){
+      document.documentElement.style.setProperty('--bg',bg);
+      document.body.style.background=bg;
+    }
+  }catch{}
 })();
 </script>
 </body>
