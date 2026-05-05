@@ -319,7 +319,7 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 /* ══════════════════════════════════════════
    TIME TRACKER SCREEN
 ══════════════════════════════════════════ */
-#timeTracker{background:var(--bg);}
+#timeTracker{background:var(--bg);} #home{background:var(--bg);} #settingsPanel{background:var(--bg);}
 .tt-header{
   position:absolute;top:0;left:0;z-index:10;
   padding:calc(var(--safe-top)+4px) 0 0 4px;
@@ -675,8 +675,7 @@ function defaultState(){
       {id:'sw',name:'☀️',schedules:[{startH:8,startM:0,endH:22,endM:0,weekdays:[5,6]}]},
     ],
     habits:[],
-    extraStats:[],
-    daily:{},streaks:{},streakSectorId:'s1',
+      daily:{},streaks:{},streakSectorId:'s1',
     _doneOpen:false,_streakOpen:false,_archiveOpen:false,_lockOpen:false,_csvOpen:false,_csvSectorId:null,_timeStatsOpen:false,_statsOpen:true,_settingsOpen:false,_timePeriod:'week',
     timeCategories:[
       {id:'tc1',name:'💼',color:'#fbbf24'},
@@ -829,6 +828,13 @@ function thingsTap(key,onConfirm){
     if(!row.isConnected){ renderHome(); return; }
     const h=row.offsetHeight;
     const name=row.querySelector('.habit-name')?.textContent||'';
+    // Burst animation
+    const burst=document.createElement('div');
+    burst.className='habit-burst';
+    row.style.position='relative';
+    row.appendChild(burst);
+    row.classList.add('done-glow');
+    burst.addEventListener('animationend',()=>burst.remove(),{once:true});
     row.style.maxHeight=h+'px';
     row.style.paddingTop=getComputedStyle(row).paddingTop;
     row.style.paddingBottom=getComputedStyle(row).paddingBottom;
@@ -1365,8 +1371,6 @@ function openBgPicker(){
   ov.appendChild(inner);
   ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
   document.body.appendChild(ov);
-  // Wire events after DOM insertion
-  document.getElementById('bgHexInput').addEventListener('input',function(){ /* preview removed */ });
   document.getElementById('bgApplyBtn').addEventListener('click',applyBgColor);
 }
 function applyBgColor(){
@@ -1782,28 +1786,31 @@ function getTimeStats(period){
 function getTimeWeekStats(){ return getTimeStats('week'); }
 
 function openAddTimeCat(){
-  // Use a small inline overlay instead of prompt() (blocked in iOS PWA)
-  const existing=document.getElementById('ttCatAddOverlay');
+  const existing=document.getElementById('catColorOverlay');
   if(existing){ existing.remove(); return; }
   const ov=document.createElement('div');
-  ov.id='ttCatAddOverlay';
-  ov.style.cssText='position:fixed;inset:0;z-index:400;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);padding:0 20px 40px';
-  ov.innerHTML=`<div style="width:100%;max-width:400px;background:#1a1a1a;border-radius:16px;padding:20px;">
-    <input id="ttCatAddInput" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:10px;padding:12px 14px;color:#fff;font-size:16px;font-family:inherit;outline:none;margin-bottom:12px" placeholder="" autocapitalize="sentences">
-    <button onclick="confirmAddTimeCat()" style="width:100%;background:rgba(61,221,101,0.18);border:none;border-radius:10px;padding:13px;color:#fff;font-size:15px;font-family:inherit;cursor:pointer">Zapisz</button>
-  </div>`;
-  ov.addEventListener('click',e=>{ if(e.target===ov){ ov.remove(); } });
+  ov.id='catColorOverlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);display:flex;align-items:flex-end;justify-content:center';
+  const inner=document.createElement('div');
+  inner.style.cssText='width:100%;max-width:420px;background:#1a1a1a;border-radius:24px 24px 0 0;padding:20px 20px calc(env(safe-area-inset-bottom,20px)+20px);box-sizing:border-box';
+  inner.innerHTML=`<div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 16px"></div>
+    <input id="ceoName" placeholder="" autocapitalize="sentences" autocomplete="off"
+      style="width:100%;background:rgba(255,255,255,0.32);border:none;border-radius:14px;padding:16px 18px;color:#fff;font-size:21px;font-family:inherit;outline:none;margin-bottom:12px;box-sizing:border-box;text-align:center">
+    <input id="ceoHexInput" maxlength="7" placeholder="#hex" value="#3ddd65" autocomplete="off" spellcheck="false"
+      style="width:100%;background:rgba(255,255,255,0.32);border:none;border-radius:14px;padding:16px 18px;color:#fff;font-size:21px;font-family:monospace;outline:none;margin-bottom:12px;box-sizing:border-box;text-align:center;letter-spacing:.05em">
+    <button id="catAddSave" style="width:100%;padding:14px;background:#1a7a3a;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">Dodaj</button>`;
+  ov.appendChild(inner);
+  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
   document.body.appendChild(ov);
-  setTimeout(()=>document.getElementById('ttCatAddInput')?.focus(),50);
-  document.getElementById('ttCatAddInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); confirmAddTimeCat(); } });
+  document.getElementById('catAddSave').addEventListener('click', confirmAddTimeCat);
+  setTimeout(()=>document.getElementById('ceoName')?.focus(),80);
 }
 function confirmAddTimeCat(){
-  const input=document.getElementById('ttCatAddInput');
-  const name=input?.value.trim();
-  document.getElementById('ttCatAddOverlay')?.remove();
-  if(!name) return;
+  const name=document.getElementById('ceoName')?.value.trim(); if(!name) return;
+  const hexV=document.getElementById('ceoHexInput')?.value.trim();
+  document.getElementById('catColorOverlay')?.remove();
   if(!state.timeCategories) state.timeCategories=[];
-  state.timeCategories.push({id:'tc'+Date.now(),name});
+  state.timeCategories.push({id:'tc'+Date.now(),name,order:state.timeCategories.length,color:(/^#[0-9a-fA-F]{6}$/.test(hexV)?hexV:'#3ddd65')});
   save(); renderSettings();
 }
 function deleteTimeCat(id){
@@ -1915,7 +1922,7 @@ function openCatEditOverlay(type,id){
     <input id="ceoHexInput" maxlength="7" placeholder="#hex" value="${cur}" autocomplete="off" spellcheck="false"
       style="width:100%;background:rgba(255,255,255,0.32);border:none;border-radius:14px;padding:16px 18px;color:#fff;font-size:21px;font-family:monospace;outline:none;margin-bottom:12px;box-sizing:border-box;text-align:center;letter-spacing:.05em">
     <button onclick="ceoConfirm('${type}','${id}')" style="width:100%;padding:14px;background:#1a7a3a;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation;margin-bottom:10px">Zapisz</button>
-    <button onclick="ceoDelete('${type}','${id}')" style="width:100%;padding:12px;background:none;border:none;color:rgba(255,80,80,0.7);font-size:14px;font-family:inherit;cursor:pointer;touch-action:manipulation">Usuń kategorię</button>
+    <button onclick="ceoDelete('${type}','${id}')" style="width:100%;padding:12px;background:none;border:none;color:rgba(255,80,80,0.7);font-size:14px;font-family:inherit;cursor:pointer;touch-action:manipulation">Usuń</button>
   </div>`;
   ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
   document.body.appendChild(ov);
