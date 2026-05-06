@@ -110,7 +110,11 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 #btnTime{ left:50%; }
 .btn-ghost-zone:active{color:#fff;opacity:.6;}
 
-.confetti-piece{position:absolute;pointer-events:none;z-index:9999;}
+
+@keyframes rewardPop{0%{transform:scale(1);filter:brightness(1);}30%{transform:scale(1.06);filter:brightness(1.4);}60%{transform:scale(0.98);filter:brightness(1.1);}100%{transform:scale(1);filter:brightness(1);}}
+@keyframes rippleOut{0%{transform:scale(1);opacity:0.7;}100%{transform:scale(3.5);opacity:0;}}
+.reward-ripple{position:absolute;inset:0;border-radius:inherit;border:2px solid rgba(61,221,101,0.8);animation:rippleOut .5s ease-out forwards;pointer-events:none;}
+.habit-row.reward-pop{animation:rewardPop .4s cubic-bezier(.34,1.56,.64,1);}
 /* OVERLAY */
 .overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0);pointer-events:none;transition:background .3s;}
 .overlay.open{background:rgba(0,0,0,.8);pointer-events:all;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
@@ -149,7 +153,7 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 .sector-block-header:active{opacity:.6;}
 .sbn{font-size:18px;color:#ffffff;font-weight:400;}
 .sector-habits-box{margin-top:6px;background:rgba(255,255,255,0.32);border-radius:12px;overflow:hidden;padding:2px 0;}
-.sector-habit-row{display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;cursor:grab;touch-action:none;transition:opacity .15s;user-select:none;-webkit-user-select:none;}
+.sector-habit-row{display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;cursor:grab;touch-action:none;transition:opacity .15s;user-select:none;-webkit-user-select:none;position:relative;}
 .sector-habit-row:active{opacity:.5;cursor:grabbing;}
 .shr-name{font-size:18px;color:#ffffff;font-weight:400;text-align:center;}
 .add-habit-row{display:flex;align-items:center;justify-content:center;padding:10px 4px;color:rgba(255,255,255,0.35);cursor:pointer;touch-action:auto;transition:opacity .15s;background:transparent!important;}
@@ -774,35 +778,39 @@ function getActiveSector(){
 function chkSVG(){ return `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`; }
 
 /* ── RENDER HOME ── */
-function spawnConfetti(cx,cy){
-  const colors=['#3ddd65','#60a5fa','#fbbf24','#f87171','#c084fc','#ffa500'];
-  const container=document.body;
-  const N=10;
-  for(let i=0;i<N;i++){
-    const el=document.createElement('div');
-    // Shoot mostly upper-right (angle between -30° and 150° = upper right fan)
-    const baseAngle=-Math.PI/4; // 45° up-right
-    const spread=Math.PI*0.8;
-    const angle=baseAngle + (i/N-0.5)*spread;
-    const speed=80+Math.random()*100;
-    const vx=Math.cos(angle)*speed;
-    const vy=Math.sin(angle)*speed;
-    const size=3+Math.random()*4;
-    const color=colors[Math.floor(Math.random()*colors.length)];
-    const dur=0.45+Math.random()*0.25;
-    const rot0=(Math.random()-.5)*720;
-    el.style.cssText=`position:fixed;left:${cx}px;top:${cy}px;width:${size}px;height:${size}px;background:${color};border-radius:${Math.random()>.4?'50%':'2px'};pointer-events:none;z-index:9999;`;
-    container.appendChild(el);
-    const start=performance.now();
-    (function animate(now){
-      const t=(now-start)/1000;
-      if(t>dur){ el.remove(); return; }
-      const p=t/dur;
-      el.style.transform=`translate(${vx*t}px,${vy*t+200*t*t}px) rotate(${rot0*p}deg)`;
-      el.style.opacity=1-p*p;
-      requestAnimationFrame(animate);
-    })(start);
-  }
+function spawnConfetti(cx,cy){ rewardEffect(); }
+function rewardEffect(){
+  // Find the row being tapped and apply reward pop + ripple
+  const rows=document.querySelectorAll('.habit-row.tapping,.habit-row.done-glow');
+  rows.forEach(row=>{
+    row.classList.add('reward-pop');
+    const rip=document.createElement('div');
+    rip.className='reward-ripple';
+    row.appendChild(rip);
+    rip.addEventListener('animationend',()=>rip.remove(),{once:true});
+    row.addEventListener('animationend',()=>row.classList.remove('reward-pop'),{once:true});
+    // Star burst: 5 small stars from top-right
+    const rect=row.getBoundingClientRect();
+    const colors=['#3ddd65','#60a5fa','#fbbf24','#f87171','#c084fc'];
+    for(let i=0;i<6;i++){
+      const star=document.createElement('div');
+      const ang=-Math.PI/4+(i/5-0.5)*Math.PI*0.9;
+      const spd=70+Math.random()*60;
+      const vx=Math.cos(ang)*spd, vy=Math.sin(ang)*spd;
+      const sz=3+Math.random()*3;
+      star.style.cssText=`position:fixed;left:${rect.right-14}px;top:${rect.top+10}px;width:${sz}px;height:${sz}px;border-radius:50%;background:${colors[i%colors.length]};pointer-events:none;z-index:9999;`;
+      document.body.appendChild(star);
+      const t0=performance.now();
+      const dur=0.35+Math.random()*0.2;
+      (function anim(now){
+        const t=(now-t0)/1000;
+        if(t>dur){ star.remove(); return; }
+        star.style.transform=`translate(${vx*t}px,${vy*t+150*t*t}px)`;
+        star.style.opacity=1-t/dur;
+        requestAnimationFrame(anim);
+      })(t0);
+    }
+  });
 }
 function updateProgressBar(){
   const pb=document.getElementById('progressBar');
@@ -896,7 +904,7 @@ function thingsTap(key,onConfirm){
   const row=document.getElementById(`row-${key}`);
   if(!row) return;
   if(timers[key]){ clearTimeout(timers[key]); delete timers[key]; row.classList.remove('dimmed','tapping'); return; }
-  row.classList.add('dimmed','tapping');
+  row.classList.add('tapping');
   timers[key]=setTimeout(()=>{
     delete timers[key];
     if(!row.isConnected){ renderHome(); return; }
@@ -995,7 +1003,7 @@ function handleTempTap(tId){
   if(!row) return;
   const onConfirm=()=>{ save(); };
   if(timers[key]){ clearTimeout(timers[key]); delete timers[key]; row.classList.remove('dimmed','tapping'); return; }
-  row.classList.add('dimmed','tapping');
+  row.classList.add('tapping');
   timers[key]=setTimeout(()=>{
     delete timers[key];
     if(!row.isConnected){ renderHome(); return; }
@@ -1430,21 +1438,7 @@ function closeSettings(){
   document.querySelector('.habits-scroll').style.overflow='';
 }
 
-function openBgPicker(){
-  let inp=document.getElementById('_nativeBgPicker');
-  if(!inp){
-    inp=document.createElement('input');
-    inp.type='color';
-    inp.id='_nativeBgPicker';
-    inp.style.cssText='position:fixed;opacity:0;width:1px;height:1px;top:-9999px;left:-9999px;';
-    document.body.appendChild(inp);
-    inp.addEventListener('input',e=>applyBgColor(e.target.value));
-    inp.addEventListener('change',e=>applyBgColor(e.target.value));
-  }
-  const cur=(localStorage.getItem('customBg')||'#061e0c');
-  inp.value=cur;
-  inp.click();
-}
+function openBgPicker(){ document.getElementById('_nativeBgPicker')?.click(); }
 function applyBgColor(v){
   if(!v||!/^#[0-9a-fA-F]{6}$/i.test(v)) return;
   document.documentElement.style.setProperty('--bg',v);
@@ -1774,6 +1768,7 @@ function renderSettings(){
           ontouchend="touchDragEnd(event,'${sec.id}')"
           onclick="hRowClick(event,'${h.id}')">
           <span class="shr-name">${h.name}</span>
+          <span style="font-size:10px;color:rgba(255,255,255,0.3);flex-shrink:0;position:absolute;right:14px">${(()=>{const ds=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];return (h.days||[]).sort((a,b)=>a-b).map(d=>ds[d]).join('·');})()} </span>
         </div>`).join('')}
       </div>
       <div class="add-habit-row" onclick="openHabitDetail('new','${sec.id}')">${plusSVG}</div>
@@ -1821,10 +1816,11 @@ function renderSettings(){
   
   const _curBg=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#061E0C';
   html+=`<div style="display:flex;flex-direction:column;align-items:center;gap:0;margin-top:16px;margin-bottom:8px">
-    <button onclick="openBgPicker()" style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-family:inherit">
+    <label style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-family:inherit;position:relative">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
       Kolor
-    </button>
+      <input type="color" id="_nativeBgPicker" style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;cursor:pointer;" oninput="applyBgColor(this.value)" onchange="applyBgColor(this.value)">
+    </label>
     <button onclick="showExportSheet()" style="background:none;border:none;color:#ffffff;cursor:pointer;padding:14px 28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-family:inherit">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Pobierz
