@@ -493,6 +493,31 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 .tt-cats-box{background:rgba(255,255,255,0.14);border-radius:12px;overflow:hidden;padding:2px 0;margin-bottom:10px;}
 .tt-cat-setting-row{display:flex;align-items:center;gap:10px;padding:11px 16px;}
 .tt-cat-s-name{flex:1;font-size:17px;color:#ffffff;font-weight:400;}
+/* PROGRESS BAR */
+#progressBar{
+  position:fixed;
+  top:calc(var(--safe-top) + 4px);
+  left:calc(33.33% - 18px);
+  right:calc(33.33% - 18px);
+  z-index:11;pointer-events:none;
+  opacity:0;transition:opacity .35s;
+  height:9px;
+}
+#progressBar.visible{opacity:1;}
+#pbPill{
+  width:100%;height:100%;
+  border-radius:5px;
+  background:rgba(255,255,255,0.32);
+  overflow:hidden;
+  position:relative;
+}
+#pbFill{
+  position:absolute;left:0;top:0;bottom:0;
+  border-radius:5px;
+  background:rgba(61,221,101,0.75);
+  transition:width .55s cubic-bezier(.34,1.2,.64,1);
+  width:0%;
+}
 </style>
 </head>
 <body>
@@ -512,6 +537,7 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
     </div>
   </div>
   <!-- Bottom bar: left = time tracker, right = temp tasks -->
+  <div id="progressBar"><div id="pbPill"><div id="pbFill"></div></div></div>
   <div class="bottom-bar">
     <!-- Left: time tracker — clock face as ring/outline -->
     <button class="btn-ghost-zone" id="btnTime" onclick="openTimeTracker()">
@@ -747,9 +773,25 @@ function getActiveSector(){
 function chkSVG(){ return `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`; }
 
 /* ── RENDER HOME ── */
+function updateProgressBar(){
+  const pb=document.getElementById('progressBar');
+  const fill=document.getElementById('pbFill');
+  if(!pb||!fill) return;
+  const today_=today();
+  const d=new Date(today_+'T00:00:00');
+  const jsd=d.getDay()===0?6:d.getDay()-1;
+  const habits=(state.habits||[]).filter(h=>!h.archived&&(h.days||[]).includes(jsd));
+  const dd=state.daily?.[today_]?.habits||{};
+  const _done=habits.filter(h=>isDone(dd[h.id])).length;
+  const _total=habits.length;
+  if(_total===0){ pb.classList.remove('visible'); return; }
+  pb.classList.add('visible');
+  fill.style.width=Math.round(_done/_total*100)+'%';
+}
 function renderHome(){
   const sector=getActiveSector();
   const hList=document.getElementById('habitsList');
+  setTimeout(updateProgressBar,0);
   const ds=document.getElementById('doneState');
   if(!hList) return;
 
