@@ -20,7 +20,7 @@
 }
 
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro Text',BlinkMacSystemFont,sans-serif;height:100%;overflow:hidden;-webkit-font-smoothing:antialiased;font-weight:400;}
+html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro Text',BlinkMacSystemFont,sans-serif;height:100%;overflow:hidden;-webkit-font-smoothing:antialiased;font-weight:400;}
 #app{height:100dvh;display:flex;flex-direction:column;overflow:hidden;position:relative;}
 
 /* SCREENS */
@@ -32,7 +32,7 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 /* HOME LAYOUT */
 .habits-scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;flex-direction:column;justify-content:center;}
 .habits-scroll::-webkit-scrollbar{display:none;}
-.habits-inner{width:100%;max-width:500px;margin:0 auto;padding:calc(var(--safe-top) + 60px) 28px calc(var(--safe-bottom) + 160px);box-sizing:border-box;}
+.habits-inner{width:100%;max-width:500px;margin:0 auto;padding:calc(var(--safe-top) + 24px) 28px calc(var(--safe-bottom) + 160px);box-sizing:border-box;}
 .habits-zone{display:flex;flex-direction:column;gap:10px;}
 .habits-zone-spacer-top,.habits-zone-spacer-bottom,.temps-zone{display:none;}
 
@@ -97,7 +97,7 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 }
 .btn-ghost-zone{
   position:absolute;
-  width:72px;height:72px;border-radius:50%;
+  width:88px;height:88px;border-radius:50%;
   background:none;
   border:none;
   display:flex;align-items:center;justify-content:center;
@@ -110,6 +110,7 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 #btnTime{ left:50%; }
 .btn-ghost-zone:active{color:#fff;opacity:.6;}
 
+.confetti-piece{position:absolute;pointer-events:none;z-index:9999;}
 /* OVERLAY */
 .overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0);pointer-events:none;transition:background .3s;}
 .overlay.open{background:rgba(0,0,0,.8);pointer-events:all;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
@@ -541,7 +542,7 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
   <div class="bottom-bar">
     <!-- Left: time tracker — clock face as ring/outline -->
     <button class="btn-ghost-zone" id="btnTime" onclick="openTimeTracker()">
-      <svg width="56" height="56" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
+      <svg width="66" height="66" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-linecap="round">
         <circle cx="22" cy="22" r="19" stroke-width="2"/>
       </svg>
     </button>
@@ -773,6 +774,36 @@ function getActiveSector(){
 function chkSVG(){ return `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`; }
 
 /* ── RENDER HOME ── */
+function spawnConfetti(cx,cy){
+  const colors=['#3ddd65','#60a5fa','#fbbf24','#f87171','#c084fc','#ffa500','#ff69b4','#00ffcc'];
+  const container=document.body;
+  const N=18;
+  for(let i=0;i<N;i++){
+    const el=document.createElement('div');
+    const angle=(i/N)*2*Math.PI + (Math.random()-.5)*.5;
+    const speed=120+Math.random()*140;
+    const vx=Math.cos(angle)*speed;
+    const vy=Math.sin(angle)*speed - 180; // bias upward
+    const size=5+Math.random()*6;
+    const color=colors[Math.floor(Math.random()*colors.length)];
+    const dur=0.55+Math.random()*0.35;
+    el.style.cssText=`position:fixed;left:${cx}px;top:${cy}px;width:${size}px;height:${size}px;background:${color};border-radius:${Math.random()>.5?'50%':'2px'};pointer-events:none;z-index:9999;transition:none;`;
+    container.appendChild(el);
+    const start=performance.now();
+    (function animate(now){
+      const t=(now-start)/1000;
+      if(t>dur){ el.remove(); return; }
+      const progress=t/dur;
+      const curX=cx+vx*t;
+      const curY=cy+vy*t+300*t*t; // gravity
+      const opacity=1-progress;
+      const rot=progress*360*(Math.random()>.5?1:-1);
+      el.style.transform=`translate(${curX-cx}px,${curY-cy}px) rotate(${rot}deg)`;
+      el.style.opacity=opacity;
+      requestAnimationFrame(animate);
+    })(start);
+  }
+}
 function updateProgressBar(){
   const pb=document.getElementById('progressBar');
   const fill=document.getElementById('pbFill');
@@ -780,11 +811,12 @@ function updateProgressBar(){
   const today_=today();
   const d=new Date(today_+'T00:00:00');
   const jsd=d.getDay()===0?6:d.getDay()-1;
-  const habits=(state.habits||[]).filter(h=>!h.archived&&(h.days||[]).includes(jsd));
+  const sector=getActiveSector();
+  const habits=(state.habits||[]).filter(h=>!h.archived&&h.sectorId===sector?.id&&(h.days||[]).includes(jsd));
   const dd=state.daily?.[today_]?.habits||{};
   const _done=habits.filter(h=>isDone(dd[h.id])).length;
   const _total=habits.length;
-  if(_total===0){ pb.classList.remove('visible'); return; }
+  if(_total===0||_done===_total){ pb.classList.remove('visible'); return; }
   pb.classList.add('visible');
   fill.style.width=Math.round(_done/_total*100)+'%';
 }
@@ -870,13 +902,15 @@ function thingsTap(key,onConfirm){
     if(!row.isConnected){ renderHome(); return; }
     const h=row.offsetHeight;
     const name=row.querySelector('.habit-name')?.textContent||'';
-    // Burst animation
+    // Burst + confetti animation
     const burst=document.createElement('div');
     burst.className='habit-burst';
     row.style.position='relative';
     row.appendChild(burst);
     row.classList.add('done-glow');
     burst.addEventListener('animationend',()=>burst.remove(),{once:true});
+    const rect=row.getBoundingClientRect();
+    spawnConfetti(rect.left+rect.width/2, rect.top+rect.height/2);
     row.style.maxHeight=h+'px';
     row.style.paddingTop=getComputedStyle(row).paddingTop;
     row.style.paddingBottom=getComputedStyle(row).paddingBottom;
@@ -1418,7 +1452,12 @@ function openBgPicker(){
 function applyBgColor(){
   const v=document.getElementById('bgHexInput')?.value.trim();
   if(!v||!/^#[0-9a-fA-F]{6}$/.test(v)) return;
-  document.documentElement.style.setProperty('--bg',v); document.body.style.background=v; document.querySelectorAll('.screen,#timeTracker,#tempScreen,#home,#settings,#allTasksView').forEach(el=>{if(el)el.style.background=v;});
+  document.documentElement.style.setProperty('--bg',v);
+  document.body.style.background=v;
+  // Update all screens that might have their own bg
+  document.querySelectorAll('#home,#timeTracker,.screen').forEach(el=>{if(el) el.style.background=v;});
+  // Force repaint of root
+  document.documentElement.style.backgroundColor=v;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content',v);
   try{ localStorage.setItem('customBg',v); }catch{}
   document.getElementById('bgPickerOv')?.remove();
@@ -1517,9 +1556,9 @@ function renderSettings(){
             const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
             const topLabels=Object.entries(_tLblFreq[cat.id]||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>x[0]);
             html+=`<div style="flex:1;padding:12px 10px;background:rgba(255,255,255,0.06);border-radius:12px;border-top:3px solid ${color};min-width:0;text-align:center">`;
-            html+=`<div style="font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500">${cat.name}</div>`;
+            html+=`<div style="font-size:13px;color:#fff;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.04em;text-transform:uppercase;opacity:0.85">${cat.name}</div>`;
             html+=`<div style="font-size:26px;font-weight:300;color:#fff;letter-spacing:-.03em;line-height:1;margin-bottom:${topLabels.length?'10px':'0'}">${str}</div>`;
-            topLabels.forEach(lbl=>{ html+=`<div style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lbl}</div>`; });
+            topLabels.forEach(lbl=>{ html+=`<div style="font-size:13px;color:#fff;line-height:1.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400">${lbl}</div>`; });
             html+=`</div>`;
           });
           html+=`</div>`;
@@ -2816,14 +2855,9 @@ function renderTTSuggestions(query, catId){
 }
 
 function fillAndSaveTTSuggestion(label,catId){
-  // Snapshot blocks immediately before any blur/focus side effects
   const blocks=Array.from(ttSelBlocks).map(k=>{const[h,q]=k.split(':');return{h:+h,q:+q};});
   if(!blocks.length) return;
   const resolvedCat=catId||ttSelectedCat||(state.timeCategories||[])[0]?.id;
-  // Show in field
-  const f=document.getElementById('ttEntryField');
-  if(f) f.value=label;
-  // Save directly
   const k=today();
   if(!state.timeEntries) state.timeEntries={};
   if(!state.timeEntries[k]) state.timeEntries[k]=[];
@@ -2831,6 +2865,8 @@ function fillAndSaveTTSuggestion(label,catId){
   save(); renderTTGrid(); ttSelBlocks.clear(); ttSelecting=false;
   closeTTEntry();
   if(_ttHabitId) completeHabit(_ttHabitId,true);
+  // Close time tracker and return to home
+  closeTimeTracker();
   renderHome();
 }
 function applyTTSuggestion(label,catId){
