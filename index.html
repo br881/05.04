@@ -775,31 +775,31 @@ function chkSVG(){ return `<svg width="11" height="11" viewBox="0 0 24 24" fill=
 
 /* ── RENDER HOME ── */
 function spawnConfetti(cx,cy){
-  const colors=['#3ddd65','#60a5fa','#fbbf24','#f87171','#c084fc','#ffa500','#ff69b4','#00ffcc'];
+  const colors=['#3ddd65','#60a5fa','#fbbf24','#f87171','#c084fc','#ffa500'];
   const container=document.body;
-  const N=18;
+  const N=10;
   for(let i=0;i<N;i++){
     const el=document.createElement('div');
-    const angle=(i/N)*2*Math.PI + (Math.random()-.5)*.5;
-    const speed=120+Math.random()*140;
+    // Shoot mostly upper-right (angle between -30° and 150° = upper right fan)
+    const baseAngle=-Math.PI/4; // 45° up-right
+    const spread=Math.PI*0.8;
+    const angle=baseAngle + (i/N-0.5)*spread;
+    const speed=80+Math.random()*100;
     const vx=Math.cos(angle)*speed;
-    const vy=Math.sin(angle)*speed - 180; // bias upward
-    const size=5+Math.random()*6;
+    const vy=Math.sin(angle)*speed;
+    const size=3+Math.random()*4;
     const color=colors[Math.floor(Math.random()*colors.length)];
-    const dur=0.55+Math.random()*0.35;
-    el.style.cssText=`position:fixed;left:${cx}px;top:${cy}px;width:${size}px;height:${size}px;background:${color};border-radius:${Math.random()>.5?'50%':'2px'};pointer-events:none;z-index:9999;transition:none;`;
+    const dur=0.45+Math.random()*0.25;
+    const rot0=(Math.random()-.5)*720;
+    el.style.cssText=`position:fixed;left:${cx}px;top:${cy}px;width:${size}px;height:${size}px;background:${color};border-radius:${Math.random()>.4?'50%':'2px'};pointer-events:none;z-index:9999;`;
     container.appendChild(el);
     const start=performance.now();
     (function animate(now){
       const t=(now-start)/1000;
       if(t>dur){ el.remove(); return; }
-      const progress=t/dur;
-      const curX=cx+vx*t;
-      const curY=cy+vy*t+300*t*t; // gravity
-      const opacity=1-progress;
-      const rot=progress*360*(Math.random()>.5?1:-1);
-      el.style.transform=`translate(${curX-cx}px,${curY-cy}px) rotate(${rot}deg)`;
-      el.style.opacity=opacity;
+      const p=t/dur;
+      el.style.transform=`translate(${vx*t}px,${vy*t+200*t*t}px) rotate(${rot0*p}deg)`;
+      el.style.opacity=1-p*p;
       requestAnimationFrame(animate);
     })(start);
   }
@@ -910,7 +910,7 @@ function thingsTap(key,onConfirm){
     row.classList.add('done-glow');
     burst.addEventListener('animationend',()=>burst.remove(),{once:true});
     const rect=row.getBoundingClientRect();
-    spawnConfetti(rect.left+rect.width/2, rect.top+rect.height/2);
+    spawnConfetti(rect.right-18, rect.top+10);
     row.style.maxHeight=h+'px';
     row.style.paddingTop=getComputedStyle(row).paddingTop;
     row.style.paddingBottom=getComputedStyle(row).paddingBottom;
@@ -1431,36 +1431,32 @@ function closeSettings(){
 }
 
 function openBgPicker(){
-  const existing=document.getElementById('bgPickerOv');
-  if(existing){ existing.remove(); return; }
-  const cur=document.documentElement.style.getPropertyValue('--bg')||getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#061E0C';
-  const ov=document.createElement('div');
-  ov.id='bgPickerOv';
-  ov.style.cssText='position:fixed;inset:0;z-index:700;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)';
-  const inner=document.createElement('div');
-  inner.style.cssText='width:100%;max-width:480px;background:#111;border-radius:24px 24px 0 0;padding:20px 24px calc(env(safe-area-inset-bottom,20px)+24px);box-sizing:border-box';
-  inner.innerHTML=`
-    <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 16px"></div>
-    <input id="bgHexInput" maxlength="7" value="${cur}" autocomplete="off" spellcheck="false"
-      style="width:100%;background:rgba(255,255,255,0.32);border:none;border-radius:14px;padding:16px 18px;color:#fff;font-size:21px;font-weight:400;font-family:monospace;outline:none;text-align:center;letter-spacing:.05em;box-sizing:border-box;margin-bottom:14px">
-    <button id="bgApplyBtn" style="width:100%;padding:14px;background:#1a7a3a;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer">Zapisz</button>`;
-  ov.appendChild(inner);
-  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
-  document.body.appendChild(ov);
-  document.getElementById('bgApplyBtn').addEventListener('click',applyBgColor);
+  let inp=document.getElementById('_nativeBgPicker');
+  if(!inp){
+    inp=document.createElement('input');
+    inp.type='color';
+    inp.id='_nativeBgPicker';
+    inp.style.cssText='position:fixed;opacity:0;width:1px;height:1px;top:-9999px;left:-9999px;';
+    document.body.appendChild(inp);
+    inp.addEventListener('input',e=>applyBgColor(e.target.value));
+    inp.addEventListener('change',e=>applyBgColor(e.target.value));
+  }
+  const cur=(localStorage.getItem('customBg')||'#061e0c');
+  inp.value=cur;
+  inp.click();
 }
-function applyBgColor(){
-  const v=document.getElementById('bgHexInput')?.value.trim();
-  if(!v||!/^#[0-9a-fA-F]{6}$/.test(v)) return;
+function applyBgColor(v){
+  if(!v||!/^#[0-9a-fA-F]{6}$/i.test(v)) return;
   document.documentElement.style.setProperty('--bg',v);
-  document.body.style.background=v;
-  // Update all screens that might have their own bg
-  document.querySelectorAll('#home,#timeTracker,.screen').forEach(el=>{if(el) el.style.background=v;});
-  // Force repaint of root
   document.documentElement.style.backgroundColor=v;
+  document.body.style.background=v;
+  document.querySelectorAll('.screen').forEach(el=>el.style.background=v);
+  const home=document.getElementById('home');
+  const tt=document.getElementById('timeTracker');
+  if(home) home.style.background=v;
+  if(tt) tt.style.background=v;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content',v);
-  try{ localStorage.setItem('customBg',v); }catch{}
-  document.getElementById('bgPickerOv')?.remove();
+  try{localStorage.setItem('customBg',v);}catch{}
 }
 
 function uiGet(k,def){ try{ const v=sessionStorage.getItem('ui_'+k); return v===null?def:(v==='true'?true:v==='false'?false:v); }catch{ return state[k]!==undefined?state[k]:def; } }
@@ -1555,10 +1551,10 @@ function renderSettings(){
             const hh=Math.floor(mins/60),m=mins%60;
             const str=hh>0?(m>0?hh+'h '+m+'m':hh+'h'):m+'m';
             const topLabels=Object.entries(_tLblFreq[cat.id]||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>x[0]);
-            html+=`<div style="flex:1;padding:12px 10px;background:rgba(255,255,255,0.06);border-radius:12px;border-top:3px solid ${color};min-width:0;text-align:center">`;
-            html+=`<div style="font-size:13px;color:#fff;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.04em;text-transform:uppercase;opacity:0.85">${cat.name}</div>`;
-            html+=`<div style="font-size:26px;font-weight:300;color:#fff;letter-spacing:-.03em;line-height:1;margin-bottom:${topLabels.length?'10px':'0'}">${str}</div>`;
-            topLabels.forEach(lbl=>{ html+=`<div style="font-size:13px;color:#fff;line-height:1.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400">${lbl}</div>`; });
+            html+=`<div style="flex:1;padding:14px 12px;background:rgba(255,255,255,0.06);border-radius:12px;border-top:4px solid ${color};min-width:0;text-align:center">`;
+            html+=`<div style="font-size:15px;color:#fff;margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.04em;text-transform:uppercase;opacity:0.9;font-weight:600">${cat.name}</div>`;
+            html+=`<div style="font-size:30px;font-weight:300;color:#fff;letter-spacing:-.03em;line-height:1;margin-bottom:${topLabels.length?'12px':'0'}">${str}</div>`;
+            topLabels.forEach(lbl=>{ html+=`<div style="font-size:15px;color:#fff;line-height:1.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400;opacity:0.85">${lbl}</div>`; });
             html+=`</div>`;
           });
           html+=`</div>`;
@@ -1587,10 +1583,10 @@ function renderSettings(){
       let segsHtml='';
       for(let si=0;si<total;si++){
         const filled=si<doneCount;
-        segsHtml+=`<div style="flex:1;height:9px;border-radius:0;background:${filled?'rgba(61,221,101,0.85)':'rgba(255,255,255,0.13)'}"></div>`;
+        segsHtml+=`<div style="flex:1;height:11px;border-radius:0;background:${filled?'rgba(61,221,101,0.9)':'rgba(255,255,255,0.14)'}"></div>`;
       }
       let row=`<div style="display:flex;align-items:center;gap:0;margin-bottom:24px">`;
-      row+=`<span style="font-size:19px;color:#fff;flex-shrink:0;width:42%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400">${h.name}</span>`;
+      row+=`<span style="font-size:21px;color:#fff;flex-shrink:0;width:42%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400">${h.name}</span>`;
       row+=`<div style="display:flex;gap:0;flex:1;align-items:center;border-radius:3px;overflow:hidden;margin-right:0">${segsHtml}</div>`;
       
       row+=`</div>`;
