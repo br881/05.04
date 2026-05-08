@@ -544,6 +544,8 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
       <div class="habits-zone" id="habitsList"></div>
     </div>
   </div>
+  <!-- Week calendar view -->
+  <div id="weekCalContainer" style="display:none;position:relative;z-index:5;padding:0 12px 10px;box-sizing:border-box"></div>
   <!-- Bottom bar: left = time tracker, right = temp tasks -->
   <div id="progressBar"><div id="pbPill"><div id="pbFill"></div></div></div>
   <div class="bottom-bar">
@@ -841,7 +843,67 @@ function updateProgressBar(){
   pb.classList.add('visible');
   fill.style.width=Math.round(_done/_total*100)+'%';
 }
+
+function renderWeekCal(){
+  const el=document.getElementById('weekCalContainer');
+  if(!el) return;
+  const open=state._weekCalOpen===true;
+  if(!open){ el.style.display='none'; el.innerHTML=''; return; }
+  el.style.display='block';
+
+  const DAY=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];
+  const allH=state.habits.filter(h=>!h.archived);
+  const sectors=state.sectors||[];
+  const SEC_COLORS=[
+    ['rgba(96,165,250,0.9)','rgba(96,165,250,0.11)'],
+    ['rgba(52,211,153,0.9)','rgba(52,211,153,0.11)'],
+    ['rgba(251,191,36,0.9)','rgba(251,191,36,0.11)'],
+    ['rgba(192,132,252,0.9)','rgba(192,132,252,0.11)'],
+    ['rgba(248,113,113,0.9)','rgba(248,113,113,0.11)'],
+    ['rgba(45,212,191,0.9)','rgba(45,212,191,0.11)'],
+  ];
+
+  let html='';
+  html+=`<div style="border-radius:14px;overflow:hidden;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07)">`;
+
+  // Header row — day names
+  html+=`<div style="display:grid;grid-template-columns:48px repeat(7,1fr);border-bottom:1px solid rgba(255,255,255,0.08)">`;
+  html+=`<div></div>`;
+  DAY.forEach(d=>{
+    html+=`<div style="text-align:center;padding:7px 0 5px;font-size:9px;color:rgba(255,255,255,0.32);font-weight:600;letter-spacing:.06em;text-transform:uppercase">${d}</div>`;
+  });
+  html+=`</div>`;
+
+  // One row per sector
+  sectors.forEach((sec,si)=>{
+    const secH=allH.filter(h=>h.sectorId===sec.id).sort((a,b)=>(a.order||0)-(b.order||0));
+    if(!secH.length) return;
+    const [stroke,fill]=SEC_COLORS[si%SEC_COLORS.length];
+
+    html+=`<div style="display:grid;grid-template-columns:48px repeat(7,1fr);border-bottom:1px solid rgba(255,255,255,0.04);min-height:32px">`;
+    // Sector label — vertical, left column
+    html+=`<div style="display:flex;align-items:center;justify-content:flex-end;padding:4px 6px 4px 4px;border-right:1px solid rgba(255,255,255,0.06)">`;
+    html+=`<span style="font-size:8px;color:rgba(255,255,255,0.25);font-weight:600;letter-spacing:.05em;text-transform:uppercase;text-align:right;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${sec.name}</span>`;
+    html+=`</div>`;
+
+    // 7 day cells
+    for(let d=0;d<7;d++){
+      const dayH=secH.filter(h=>h.days.includes(d));
+      html+=`<div style="padding:3px 2px 3px 2px;display:flex;flex-direction:column;gap:2px;border-right:1px solid rgba(255,255,255,0.03)">`;
+      dayH.forEach(h=>{
+        html+=`<div style="background:${fill};border-left:2px solid ${stroke};border-radius:0 3px 3px 0;padding:2px 3px;font-size:8.5px;color:rgba(255,255,255,0.78);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;box-sizing:border-box">${h.name}</div>`;
+      });
+      html+=`</div>`;
+    }
+    html+=`</div>`;
+  });
+
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+
 function renderHome(){
+  renderWeekCal();
   const sector=getActiveSector();
   const hList=document.getElementById('habitsList');
   setTimeout(updateProgressBar,0);
@@ -1683,7 +1745,6 @@ function renderSettings(){
 
 
   // ══ ROW 2: SETTINGS + CALENDAR icons row ══
-  const weekCalOpen=state._weekCalOpen===true;
   html+=`<div style="display:flex;align-items:center;justify-content:center;gap:28px;padding:14px 20px;margin-top:1px">
     <div onclick="toggleFold('settings')" style="cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;padding:4px">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:${settingsOpen?'#fff':'rgba(255,255,255,0.35)'}"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -1786,45 +1847,6 @@ function renderSettings(){
     </button>
   </div>`;
   } // end settingsOpen
-
-  // ══ WEEK CALENDAR VIEW (below settings) ══
-  if(weekCalOpen){
-    const dayNames=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];
-    const allHabits=state.habits.filter(h=>!h.archived);
-    html+=`<div style="padding:0 14px 20px">`;
-    html+=`<div style="background:rgba(255,255,255,0.03);border-radius:16px;overflow:hidden;padding:8px 0 10px">`;
-    // Header — just day abbreviations, no dates
-    html+=`<div style="display:grid;grid-template-columns:1fr repeat(7,28px);gap:0;padding:0 10px 6px;border-bottom:1px solid rgba(255,255,255,0.05)">`;
-    html+=`<div></div>`;
-    dayNames.forEach(d=>{
-      html+=`<div style="text-align:center;font-size:9px;color:rgba(255,255,255,0.3);font-weight:500;letter-spacing:.04em;text-transform:uppercase;line-height:1">${d}</div>`;
-    });
-    html+=`</div>`;
-    // Each sector → habits as rows of dots
-    state.sectors.forEach(sec=>{
-      const secHabits=allHabits.filter(h=>h.sectorId===sec.id).sort((a,b)=>(a.order||0)-(b.order||0));
-      if(!secHabits.length) return;
-      // Sector label
-      html+=`<div style="font-size:9px;color:rgba(255,255,255,0.22);letter-spacing:.07em;text-transform:uppercase;padding:8px 10px 2px">${sec.name}</div>`;
-      secHabits.forEach(h=>{
-        html+=`<div style="display:grid;grid-template-columns:1fr repeat(7,28px);gap:0;padding:3px 10px;align-items:center">`;
-        html+=`<div style="font-size:12px;color:rgba(255,255,255,0.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:4px;font-weight:400;line-height:1.2">${h.name}</div>`;
-        for(let d=0;d<7;d++){
-          const on=h.days.includes(d);
-          html+=`<div style="display:flex;align-items:center;justify-content:center">`;
-          if(on){
-            html+=`<div style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.55)"></div>`;
-          } else {
-            html+=`<div style="width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,0.07)"></div>`;
-          }
-          html+=`</div>`;
-        }
-        html+=`</div>`;
-      });
-    });
-    html+=`</div>`;
-    html+=`</div>`;
-  }
 
   html+=`<div style="height:60px"></div>`;
   scroll.innerHTML=html;
@@ -1932,7 +1954,7 @@ function clearFocusedHabit(){
 function toggleFold(key){
   if(key==='settings'){ state._settingsOpen=!state._settingsOpen; save(); renderSettings(); return; }
   if(key==='stats'){ state._statsOpen=!state._statsOpen; save(); renderSettings(); return; }
-  if(key==='weekCal'){ state._weekCalOpen=!state._weekCalOpen; save(); renderSettings(); return; }
+  if(key==='weekCal'){ state._weekCalOpen=!state._weekCalOpen; save(); renderWeekCal(); renderSettings(); return; }
   if(key==='lock'){ state._lockOpen=!state._lockOpen; save(); renderSettings(); return; }
   if(key==='csv'){ state._csvOpen=!state._csvOpen; save(); renderSettings(); return; }
   if(key==='archive'){ state._archiveOpen=!state._archiveOpen; save(); renderSettings(); return; }
