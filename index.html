@@ -1682,77 +1682,15 @@ function renderSettings(){
   // ══ ROW 2: SETTINGS ══ (placeholder to be replaced)
 
 
-  // ══ WEEK CALENDAR VIEW ══
+  // ══ ROW 2: SETTINGS + CALENDAR icons row ══
   const weekCalOpen=state._weekCalOpen===true;
-  html+=`<div onclick="toggleFold('weekCal')" style="display:flex;align-items:center;justify-content:center;padding:14px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;margin-top:1px">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:${weekCalOpen?'#fff':'rgba(255,255,255,0.35)'}"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-  </div>`;
-
-  if(weekCalOpen){
-    const dayNames=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];
-    const allHabits=state.habits.filter(h=>!h.archived);
-    // Get current week dates (Mon-Sun)
-    const todayD=new Date(); const jsdToday=todayD.getDay()===0?6:todayD.getDay()-1;
-    const weekDates=[];
-    for(let i=0;i<7;i++){
-      const d=new Date(todayD); d.setDate(todayD.getDate()-jsdToday+i);
-      weekDates.push({date:fmtDate(d),jsd:i,d});
-    }
-    // Group habits by sector
-    const sectors=state.sectors;
-    html+=`<div style="padding:0 18px 20px">`;
-    html+=`<div style="background:rgba(255,255,255,0.03);border-radius:16px;overflow:hidden;padding:0 0 8px">`;
-    // Header row — day labels
-    html+=`<div style="display:grid;grid-template-columns:1fr repeat(7,1fr);gap:0;border-bottom:1px solid rgba(255,255,255,0.06);padding:10px 10px 8px">`;
-    html+=`<div style="font-size:11px;color:rgba(255,255,255,0);"></div>`;
-    weekDates.forEach(({jsd,d})=>{
-      const isToday=jsd===jsdToday;
-      const dayNum=d.getDate();
-      html+=`<div style="text-align:center">`;
-      html+=`<div style="font-size:10px;color:${isToday?'var(--accent)':'rgba(255,255,255,0.4)'};font-weight:${isToday?'700':'400'};letter-spacing:.03em;text-transform:uppercase">${dayNames[jsd]}</div>`;
-      html+=`<div style="font-size:13px;color:${isToday?'var(--accent)':'rgba(255,255,255,0.5)'};font-weight:${isToday?'700':'400'};margin-top:2px">${dayNum}</div>`;
-      html+=`</div>`;
-    });
-    html+=`</div>`;
-    // Each sector
-    sectors.forEach(sec=>{
-      const secHabits=allHabits.filter(h=>h.sectorId===sec.id).sort((a,b)=>(a.order||0)-(b.order||0));
-      if(!secHabits.length) return;
-      html+=`<div style="padding:6px 0 2px">`;
-      html+=`<div style="font-size:10px;color:rgba(255,255,255,0.3);text-align:center;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px 2px">${sec.name}</div>`;
-      secHabits.forEach(h=>{
-        html+=`<div style="display:grid;grid-template-columns:1fr repeat(7,1fr);gap:0;padding:4px 10px;align-items:center">`;
-        html+=`<div style="font-size:13px;color:rgba(255,255,255,0.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:6px;font-weight:400">${h.name}</div>`;
-        weekDates.forEach(({jsd,date})=>{
-          const scheduled=h.days.includes(jsd);
-          const done=scheduled&&isDone(state.daily?.[date]?.habits?.[h.id]);
-          const isToday=jsd===jsdToday;
-          let bg,border;
-          if(done){ bg='rgba(61,221,101,0.8)'; border='transparent'; }
-          else if(scheduled&&isToday){ bg='rgba(61,221,101,0.12)'; border='rgba(61,221,101,0.6)'; }
-          else if(scheduled){ bg='rgba(255,255,255,0.10)'; border='rgba(255,255,255,0.14)'; }
-          else { bg='transparent'; border='transparent'; }
-          html+=`<div style="display:flex;align-items:center;justify-content:center;padding:3px 2px">`;
-          if(scheduled){
-            html+=`<div style="width:22px;height:22px;border-radius:6px;background:${bg};border:1.5px solid ${border};box-sizing:border-box;display:flex;align-items:center;justify-content:center;transition:all .2s">`;
-            if(done) html+=`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
-            html+=`</div>`;
-          } else {
-            html+=`<div style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.07)"></div>`;
-          }
-          html+=`</div>`;
-        });
-        html+=`</div>`;
-      });
-      html+=`</div>`;
-    });
-    html+=`</div>`;
-    html+=`</div>`;
-  }
-
-  // ══ ROW 2: SETTINGS header bar — icon only, centered ══
-  html+=`<div onclick="toggleFold('settings')" style="display:flex;align-items:center;justify-content:center;padding:14px 20px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;margin-top:1px">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:${settingsOpen?'#fff':'rgba(255,255,255,0.35)'}"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  html+=`<div style="display:flex;align-items:center;justify-content:center;gap:28px;padding:14px 20px;margin-top:1px">
+    <div onclick="toggleFold('settings')" style="cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;padding:4px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:${settingsOpen?'#fff':'rgba(255,255,255,0.35)'}"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </div>
+    <div onclick="toggleFold('weekCal')" style="cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;padding:4px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:${weekCalOpen?'#fff':'rgba(255,255,255,0.35)'}"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    </div>
   </div>`;
 
   if(settingsOpen){
@@ -1805,7 +1743,7 @@ function renderSettings(){
           ontouchend="touchDragEnd(event,'${sec.id}')"
           onclick="hRowClick(event,'${h.id}')">
           <span class="shr-name">${h.name}</span>
-          <span style="font-size:10px;color:rgba(255,255,255,0.3);flex-shrink:0;position:absolute;right:14px">${(()=>{const ds=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];return (h.days||[]).sort((a,b)=>a-b).map(d=>ds[d]).join('·');})()} </span>
+
         </div>`).join('')}
       </div>
       <div class="add-habit-row" onclick="openHabitDetail('new','${sec.id}')">${plusSVG}</div>
@@ -1848,6 +1786,45 @@ function renderSettings(){
     </button>
   </div>`;
   } // end settingsOpen
+
+  // ══ WEEK CALENDAR VIEW (below settings) ══
+  if(weekCalOpen){
+    const dayNames=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];
+    const allHabits=state.habits.filter(h=>!h.archived);
+    html+=`<div style="padding:0 14px 20px">`;
+    html+=`<div style="background:rgba(255,255,255,0.03);border-radius:16px;overflow:hidden;padding:8px 0 10px">`;
+    // Header — just day abbreviations, no dates
+    html+=`<div style="display:grid;grid-template-columns:1fr repeat(7,28px);gap:0;padding:0 10px 6px;border-bottom:1px solid rgba(255,255,255,0.05)">`;
+    html+=`<div></div>`;
+    dayNames.forEach(d=>{
+      html+=`<div style="text-align:center;font-size:9px;color:rgba(255,255,255,0.3);font-weight:500;letter-spacing:.04em;text-transform:uppercase;line-height:1">${d}</div>`;
+    });
+    html+=`</div>`;
+    // Each sector → habits as rows of dots
+    state.sectors.forEach(sec=>{
+      const secHabits=allHabits.filter(h=>h.sectorId===sec.id).sort((a,b)=>(a.order||0)-(b.order||0));
+      if(!secHabits.length) return;
+      // Sector label
+      html+=`<div style="font-size:9px;color:rgba(255,255,255,0.22);letter-spacing:.07em;text-transform:uppercase;padding:8px 10px 2px">${sec.name}</div>`;
+      secHabits.forEach(h=>{
+        html+=`<div style="display:grid;grid-template-columns:1fr repeat(7,28px);gap:0;padding:3px 10px;align-items:center">`;
+        html+=`<div style="font-size:12px;color:rgba(255,255,255,0.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:4px;font-weight:400;line-height:1.2">${h.name}</div>`;
+        for(let d=0;d<7;d++){
+          const on=h.days.includes(d);
+          html+=`<div style="display:flex;align-items:center;justify-content:center">`;
+          if(on){
+            html+=`<div style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.55)"></div>`;
+          } else {
+            html+=`<div style="width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,0.07)"></div>`;
+          }
+          html+=`</div>`;
+        }
+        html+=`</div>`;
+      });
+    });
+    html+=`</div>`;
+    html+=`</div>`;
+  }
 
   html+=`<div style="height:60px"></div>`;
   scroll.innerHTML=html;
