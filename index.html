@@ -954,6 +954,7 @@ function thingsTap(key,onConfirm){
   onConfirm();
   row.addEventListener('transitionend',()=>{
     row.remove();
+    updateProgressBar();
     showUndoToast(name,key,onConfirm);
   },{once:true,passive:true});
 }
@@ -1027,7 +1028,7 @@ function handleTempTap(tId){
   row.style.maxHeight=row.offsetHeight+'px';
   onConfirm();
   requestAnimationFrame(()=>row.classList.add('vanishing'));
-  row.addEventListener('transitionend',()=>{ showUndoToast(name,key,onConfirm); },{once:true,passive:true});
+  row.addEventListener('transitionend',()=>{ row.remove(); updateProgressBar(); showUndoToast(name,key,onConfirm); },{once:true,passive:true});
 }
 function completeHabit(hId,val){ const dd=getDayData(); dd.habits[hId]=val; updateStreak(hId,true); save(); }
 function completeHabitInput(hId,input){
@@ -1710,30 +1711,32 @@ function _renderSettingsNow(){
 
   if(settingsOpen){
 
-  // ══ WEEK CALENDAR ══
+  // ══ WEEK CALENDAR — minimal dot grid ══
   {
-    const _DAY=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];
+    const _D=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];
     const _calH=state.habits.filter(h=>!h.archived);
-    const _SC=[['#60a5fa','rgba(96,165,250,0.1)'],['#34d399','rgba(52,211,153,0.1)'],['#fbbf24','rgba(251,191,36,0.1)'],['#c084fc','rgba(192,132,252,0.1)'],['#f87171','rgba(248,113,113,0.1)'],['#2dd4bf','rgba(45,212,191,0.1)']];
-    html+=`<div style="margin:0 -18px 14px;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06)">`;
-    // Day header
-    html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.18)">`;
-    _DAY.forEach(d=>{ html+=`<div style="text-align:center;padding:7px 0 5px;font-size:10px;color:#fff;font-weight:600;letter-spacing:.05em">${d}</div>`; });
+    const _SC=['#60a5fa','#34d399','#fbbf24','#c084fc','#f87171','#2dd4bf'];
+    html+=`<div style="margin:0 -18px 12px;padding:10px 18px 12px;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06)">`;
+    // Day header row
+    html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:8px">`;
+    _D.forEach(d=>html+=`<div style="text-align:center;font-size:9px;color:rgba(255,255,255,0.35);font-weight:600;letter-spacing:.06em;text-transform:uppercase">${d}</div>`);
     html+=`</div>`;
+    // Each sector: label + one dot-row per habit
     (state.sectors||[]).forEach((sec,si)=>{
       const sh=_calH.filter(h=>h.sectorId===sec.id).sort((a,b)=>(a.order||0)-(b.order||0));
       if(!sh.length) return;
-      const [s,f]=_SC[si%_SC.length];
-      // Sector name — centered, full width
-      html+=`<div style="text-align:center;padding:5px 8px 3px;border-top:1px solid rgba(255,255,255,0.05)"><span style="font-size:9px;color:${s};font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.9">${sec.name}</span></div>`;
+      const col=_SC[si%_SC.length];
+      html+=`<div style="margin-bottom:6px">`;
+      html+=`<div style="font-size:8px;color:${col};font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-align:center;opacity:.7;margin-bottom:3px">${sec.name}</div>`;
       sh.forEach(h=>{
-        html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:1px">`;
+        html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px">`;
         for(let d=0;d<7;d++){
           const on=h.days.includes(d);
-          html+=`<div style="padding:1px 2px">${on?`<div style="background:${f};border-left:2px solid ${s};border-radius:0 3px 3px 0;padding:2px 4px;font-size:10px;color:rgba(255,255,255,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35">${h.name}</div>`:`<div style="height:18px"></div>`}</div>`;
+          html+=`<div style="height:6px;border-radius:3px;background:${on?col:'rgba(255,255,255,0.07)'}"></div>`;
         }
         html+=`</div>`;
       });
+      html+=`</div>`;
     });
     html+=`</div>`;
   }
