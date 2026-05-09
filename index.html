@@ -52,7 +52,7 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 .habit-row.row-visible{opacity:1;transform:translateY(0);transition:opacity .32s ease,transform .32s cubic-bezier(.2,.8,.4,1);}
 .habit-row:active{opacity:.55;}
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
-.habit-row.vanishing{overflow:hidden;pointer-events:none;box-shadow:none;animation:none;transition:opacity .42s cubic-bezier(.4,0,.2,1),max-height .58s cubic-bezier(.4,0,.2,1),padding .52s cubic-bezier(.4,0,.2,1),margin .52s cubic-bezier(.4,0,.2,1);}
+.habit-row.vanishing{overflow:hidden;pointer-events:none;box-shadow:none!important;animation:none!important;will-change:opacity,max-height;transition:opacity .38s ease-out,max-height .44s cubic-bezier(.4,0,1,1),padding-top .44s cubic-bezier(.4,0,1,1),padding-bottom .44s cubic-bezier(.4,0,1,1),margin-top .44s cubic-bezier(.4,0,1,1),margin-bottom .44s cubic-bezier(.4,0,1,1);}
 .habit-row.temp-row .habit-name{color:rgba(120,235,120,1);font-weight:500;}
 .habit-name{font-size:21px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
 .habit-value-input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.38);color:#ffffff;font-size:17px;font-family:inherit;outline:none;width:72px;text-align:right;padding:2px 0 4px;transition:border-color .2s;font-weight:600;}
@@ -941,7 +941,10 @@ function thingsTap(key,onConfirm){
   row.style.marginTop='0px';
   row.style.marginBottom='0px';
   onConfirm();
-  row.addEventListener('transitionend',()=>{ renderHome(); showUndoToast(name,key,onConfirm); },{once:true,passive:true});
+  row.addEventListener('transitionend',()=>{
+    row.remove();
+    showUndoToast(name,key,onConfirm);
+  },{once:true,passive:true});
 }
 let _undoTimer=null,_undoKey=null,_undoConfirm=null;
 function showUndoToast(name,key,onConfirm){
@@ -1685,63 +1688,61 @@ function renderSettings(){
   // ══ ROW 2: SETTINGS ══ (placeholder to be replaced)
 
 
-  // ══ ROW 2: SETTINGS + CALENDAR icons row ══
-  const weekCalOpen=state._weekCalOpen===true;
-  html+=`<div style="display:flex;align-items:center;justify-content:center;gap:28px;padding:14px 20px;margin-top:1px">
+  // ══ ROW 2: SETTINGS icon ══
+  html+=`<div style="display:flex;align-items:center;justify-content:center;padding:14px 20px;margin-top:1px">
     <div onclick="toggleFold('settings')" style="cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;padding:4px">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:${settingsOpen?'#fff':'rgba(255,255,255,0.35)'}"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </div>
-    <div onclick="toggleFold('weekCal')" style="cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;padding:4px">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:${weekCalOpen?'#fff':'rgba(255,255,255,0.35)'}"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     </div>
   </div>`;
 
   if(settingsOpen){
 
-  // ══ WEEK CALENDAR (full-width, above sectors) ══
-  if(weekCalOpen){
+  // ══ WEEK CALENDAR (always open, full-width, above sectors) ══
+  {
     const DAY=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];
     const allH=state.habits.filter(h=>!h.archived);
-    const sectors=state.sectors||[];
+    const calSectors=state.sectors||[];
     const SEC_COLORS=[
-      ['rgba(96,165,250,0.9)','rgba(96,165,250,0.11)'],
-      ['rgba(52,211,153,0.9)','rgba(52,211,153,0.11)'],
-      ['rgba(251,191,36,0.9)','rgba(251,191,36,0.11)'],
-      ['rgba(192,132,252,0.9)','rgba(192,132,252,0.11)'],
-      ['rgba(248,113,113,0.9)','rgba(248,113,113,0.11)'],
-      ['rgba(45,212,191,0.9)','rgba(45,212,191,0.11)'],
+      ['rgba(96,165,250,1)','rgba(96,165,250,0.13)'],
+      ['rgba(52,211,153,1)','rgba(52,211,153,0.13)'],
+      ['rgba(251,191,36,1)','rgba(251,191,36,0.13)'],
+      ['rgba(192,132,252,1)','rgba(192,132,252,0.13)'],
+      ['rgba(248,113,113,1)','rgba(248,113,113,0.13)'],
+      ['rgba(45,212,191,1)','rgba(45,212,191,0.13)'],
     ];
-    // full-width wrapper — no side padding, bleeds to screen edges
-    html+=`<div style="margin:0 -18px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch">`;
-    html+=`<div style="min-width:340px;background:rgba(255,255,255,0.03);border-top:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07)">`;
-    // Header — day names
-    html+=`<div style="display:grid;grid-template-columns:56px repeat(7,1fr);border-bottom:1px solid rgba(255,255,255,0.08)">`;
-    html+=`<div></div>`;
+    // bleed to screen edges
+    html+=`<div style="margin:0 -18px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;background:rgba(255,255,255,0.025);border-top:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07)">`;
+    html+=`<div style="min-width:320px">`;
+    // Sticky header — day names, white
+    html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid rgba(255,255,255,0.1);position:sticky;top:0;background:rgba(18,28,18,0.97);z-index:2">`;
     DAY.forEach(d=>{
-      html+=`<div style="text-align:center;padding:8px 0 6px;font-size:10px;color:rgba(255,255,255,0.35);font-weight:600;letter-spacing:.06em;text-transform:uppercase">${d}</div>`;
+      html+=`<div style="text-align:center;padding:9px 0 7px;font-size:11px;color:#fff;font-weight:600;letter-spacing:.05em;text-transform:uppercase">${d}</div>`;
     });
     html+=`</div>`;
-    // One row per sector
-    sectors.forEach((sec,si)=>{
+    // One group per sector: sector name as full-width header, then habit rows
+    calSectors.forEach((sec,si)=>{
       const secH=allH.filter(h=>h.sectorId===sec.id).sort((a,b)=>(a.order||0)-(b.order||0));
       if(!secH.length) return;
       const [stroke,fill]=SEC_COLORS[si%SEC_COLORS.length];
-      html+=`<div style="display:grid;grid-template-columns:56px repeat(7,1fr);border-bottom:1px solid rgba(255,255,255,0.05)">`;
-      // Sector label
-      html+=`<div style="display:flex;align-items:flex-start;justify-content:flex-end;padding:5px 7px 5px 4px;border-right:1px solid rgba(255,255,255,0.07)">`;
-      html+=`<span style="font-size:8.5px;color:rgba(255,255,255,0.28);font-weight:600;letter-spacing:.04em;text-transform:uppercase;text-align:right;line-height:1.3;word-break:break-word">${sec.name}</span>`;
+      // Sector name row — full width
+      html+=`<div style="padding:7px 12px 4px;border-top:1px solid rgba(255,255,255,0.06)">`;
+      html+=`<span style="font-size:10px;color:${stroke};font-weight:700;letter-spacing:.07em;text-transform:uppercase">${sec.name}</span>`;
       html+=`</div>`;
-      // 7 cells
-      for(let d=0;d<7;d++){
-        const dayH=secH.filter(h=>h.days.includes(d));
-        const isLast=d===6;
-        html+=`<div style="padding:4px 3px;display:flex;flex-direction:column;gap:2px${isLast?'':';border-right:1px solid rgba(255,255,255,0.04)'}">`;
-        dayH.forEach(h=>{
-          html+=`<div style="background:${fill};border-left:2.5px solid ${stroke};border-radius:0 3px 3px 0;padding:2px 4px;font-size:9px;color:rgba(255,255,255,0.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35;box-sizing:border-box">${h.name}</div>`;
-        });
+      // Each habit: 7 cells across full width
+      secH.forEach(h=>{
+        html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:2px">`;
+        for(let d=0;d<7;d++){
+          const on=h.days.includes(d);
+          html+=`<div style="padding:2px 3px">`;
+          if(on){
+            html+=`<div style="background:${fill};border-left:2.5px solid ${stroke};border-radius:0 4px 4px 0;padding:3px 5px;font-size:11px;color:rgba(255,255,255,0.88);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;box-sizing:border-box">${h.name}</div>`;
+          } else {
+            html+=`<div style="height:20px"></div>`;
+          }
+          html+=`</div>`;
+        }
         html+=`</div>`;
-      }
-      html+=`</div>`;
+      });
     });
     html+=`</div></div>`;
   }
@@ -2805,12 +2806,13 @@ function showTTEntryPanel(){
 
 function buildWorkToggleRow(){
   const active=ttEntryIsWork;
+  const accent='#3ddd65';
   return `<div style="flex:1;display:flex;align-items:center;justify-content:center">
-    <div onclick="toggleTTWork()" style="display:flex;align-items:center;gap:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:6px 14px;border-radius:20px;background:${active?'rgba(251,191,36,0.18)':'rgba(255,255,255,0.06)'};transition:background .2s">
-      <div style="width:22px;height:22px;border-radius:6px;border:2px solid ${active?'#fbbf24':'rgba(255,255,255,0.3)'};background:${active?'#fbbf24':'transparent'};display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0">
+    <div onclick="toggleTTWork()" style="display:flex;align-items:center;gap:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:6px 14px;border-radius:20px;background:${active?'rgba(61,221,101,0.12)':'rgba(255,255,255,0.06)'};transition:background .2s">
+      <div style="width:22px;height:22px;border-radius:6px;border:2px solid ${active?accent:'rgba(255,255,255,0.3)'};background:${active?accent:'transparent'};display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0">
         ${active?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':''}
       </div>
-      <span style="font-size:15px;color:${active?'#fbbf24':'rgba(255,255,255,0.5)'};font-weight:${active?'600':'400'}">praca</span>
+      <span style="font-size:15px;color:${active?accent:'rgba(255,255,255,0.5)'};font-weight:${active?'600':'400'}">work</span>
     </div>
   </div>
   <button onclick="cancelTTSelection()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.06);border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;font-weight:300">×</button>`;
