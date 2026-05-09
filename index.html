@@ -52,7 +52,7 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 .habit-row.row-visible{opacity:1;transform:translateY(0);transition:opacity .32s ease,transform .32s cubic-bezier(.2,.8,.4,1);}
 .habit-row:active{opacity:.55;}
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
-.habit-row.vanishing{overflow:hidden;pointer-events:none;box-shadow:none!important;animation:none!important;will-change:opacity,max-height;transition:opacity .38s ease-out,max-height .44s cubic-bezier(.4,0,1,1),padding-top .44s cubic-bezier(.4,0,1,1),padding-bottom .44s cubic-bezier(.4,0,1,1),margin-top .44s cubic-bezier(.4,0,1,1),margin-bottom .44s cubic-bezier(.4,0,1,1);}
+.habit-row.vanishing{overflow:hidden;pointer-events:none;box-shadow:none!important;animation:none!important;will-change:transform,opacity;transform-origin:top center;transition:transform .32s cubic-bezier(.4,0,1,1),opacity .28s ease-out;transform:scaleY(0);opacity:0;margin-bottom:0!important;padding-top:0!important;padding-bottom:0!important;max-height:0!important;}
 .habit-row.temp-row .habit-name{color:rgba(120,235,120,1);font-weight:500;}
 .habit-name{font-size:21px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
 .habit-value-input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.38);color:#ffffff;font-size:17px;font-family:inherit;outline:none;width:72px;text-align:right;padding:2px 0 4px;transition:border-color .2s;font-weight:600;}
@@ -930,33 +930,21 @@ const timers={};
 function thingsTap(key,onConfirm){
   const row=document.getElementById(`row-${key}`);
   if(!row) return;
-  // Cancel if already in progress (double-tap to undo before undo toast)
-  if(timers[key]){ clearTimeout(timers[key]); delete timers[key]; row.classList.remove('dimmed','tapping'); return; }
-  const h=row.offsetHeight;
+  if(timers[key]){ clearTimeout(timers[key]); delete timers[key]; return; }
   const name=row.querySelector('.habit-name')?.textContent||'';
-  // Immediate vanish — no hold delay
   const rect=row.getBoundingClientRect();
   spawnConfetti(rect.right-18, rect.top+10);
-  row.classList.add('done-glow');
-  row.style.maxHeight=h+'px';
-  row.style.paddingTop=getComputedStyle(row).paddingTop;
-  row.style.paddingBottom=getComputedStyle(row).paddingBottom;
-  row.style.marginTop=getComputedStyle(row).marginTop;
-  row.style.marginBottom=getComputedStyle(row).marginBottom;
-  row.offsetHeight; // force reflow
+  // Lock height before collapse so siblings don't jump
+  row.style.height=row.offsetHeight+'px';
+  row.style.minHeight='0';
+  row.style.overflow='hidden';
+  row.offsetHeight; // reflow
   row.classList.add('vanishing');
-  row.style.opacity='0';
-  row.style.maxHeight='0px';
-  row.style.paddingTop='0px';
-  row.style.paddingBottom='0px';
-  row.style.marginTop='0px';
-  row.style.marginBottom='0px';
   onConfirm();
-  row.addEventListener('transitionend',()=>{
-    row.remove();
-    updateProgressBar();
-    showUndoToast(name,key,onConfirm);
-  },{once:true,passive:true});
+  const done=()=>{ row.remove(); updateProgressBar(); showUndoToast(name,key,onConfirm); };
+  row.addEventListener('transitionend', done, {once:true,passive:true});
+  // Fallback in case transitionend never fires
+  setTimeout(done, 500);
 }
 let _undoTimer=null,_undoKey=null,_undoConfirm=null;
 function showUndoToast(name,key,onConfirm){
@@ -1139,7 +1127,7 @@ function saveExtraTime(){
     const k=today();
     if(!state.timeEntries) state.timeEntries={};
     if(!state.timeEntries[k]) state.timeEntries[k]=[];
-    state.timeEntries[k].push({id:'tt'+Date.now(),label:e.name,isWork:false,blocks});
+    state.timeEntries[k].push({id:'tt'+Date.now(),label:e.name,blocks});
   }
   save(); closeExtraTimeScreen(); openSheet();
 }
@@ -1483,54 +1471,6 @@ function _renderSettingsNow(){
     const _hiddenIds=new Set(state._hiddenHabitIds||[]);
     const allActiveHabits=state.habits.filter(h=>!h.archived&&!_hiddenIds.has(h.id)&&days.some(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])));
 
-    // ── TIME: praca vs reszta ──
-    {
-      let workMins=0, otherMins=0;
-      const workLabels={}, otherLabels={};
-      for(const dk of days){
-        for(const e of (state.timeEntries?.[dk]||[])){
-          if(e.empty||!e.label) continue;
-          const m=(e.blocks?.length||0)*15;
-          if(e.isWork){ workMins+=m; workLabels[e.label]=(workLabels[e.label]||0)+1; }
-          else{ otherMins+=m; otherLabels[e.label]=(otherLabels[e.label]||0)+1; }
-        }
-      }
-      const totalMins=workMins+otherMins;
-      if(totalMins>0){
-        const timeOpen=state._timeCardOpen===true;
-        html+=`<div onclick="event.stopPropagation();toggleStatCard('time')" style="background:rgba(255,255,255,0.04);border-radius:14px;padding:14px 12px;cursor:pointer;margin-bottom:14px;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`;
-        // Horizontal split bar
-        const workPct=(workMins/totalMins*100).toFixed(1);
-        const otherPct=(otherMins/totalMins*100).toFixed(1);
-        const fmtT=m=>m>=60?(Math.floor(m/60)+'h'+(m%60?(' '+m%60+'m'):'')):(m+'m');
-        html+=`<div style="display:flex;height:10px;border-radius:5px;overflow:hidden;margin-bottom:${timeOpen?'14px':'0'}">`;
-        if(workMins>0) html+=`<div style="flex:${workPct};background:#fbbf24;opacity:0.85"></div>`;
-        if(otherMins>0) html+=`<div style="flex:${otherPct};background:rgba(255,255,255,0.25)"></div>`;
-        html+=`</div>`;
-        if(timeOpen){
-          html+=`<div style="display:flex;gap:8px">`;
-          if(workMins>0){
-            const topW=Object.entries(workLabels).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>x[0]);
-            html+=`<div style="flex:1;padding:14px 12px;background:rgba(251,191,36,0.08);border-radius:12px;border-top:3px solid #fbbf24;min-width:0;text-align:center">`;
-            html+=`<div style="font-size:12px;color:#fbbf24;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">praca</div>`;
-            html+=`<div style="font-size:28px;font-weight:300;color:#fff;letter-spacing:-.02em;margin-bottom:${topW.length?'10px':'0'}">${fmtT(workMins)}</div>`;
-            topW.forEach(l=>html+=`<div style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l}</div>`);
-            html+=`</div>`;
-          }
-          if(otherMins>0){
-            const topO=Object.entries(otherLabels).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>x[0]);
-            html+=`<div style="flex:1;padding:14px 12px;background:rgba(255,255,255,0.05);border-radius:12px;border-top:3px solid rgba(255,255,255,0.25);min-width:0;text-align:center">`;
-            html+=`<div style="font-size:12px;color:rgba(255,255,255,0.5);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">inne</div>`;
-            html+=`<div style="font-size:28px;font-weight:300;color:#fff;letter-spacing:-.02em;margin-bottom:${topO.length?'10px':'0'}">${fmtT(otherMins)}</div>`;
-            topO.forEach(l=>html+=`<div style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l}</div>`);
-            html+=`</div>`;
-          }
-          html+=`</div>`;
-        }
-        html+=`</div>`;
-      }
-    }
-
     html+=`<div style="height:10px"></div>`;
 
         // ── HABITS — pinned shown by default, expand shows all + pin picker ──
@@ -1540,6 +1480,21 @@ function _renderSettingsNow(){
     const habitsPicking=state._habitsPicking===true;
     const habitsToRender=habitsExpanded ? allActiveHabits : pinnedHabits;
 
+    function computeHabitStreak(hId, hDays){
+      // Count consecutive scheduled days done, backwards from yesterday
+      let streak=0;
+      const now=new Date();
+      for(let back=1; back<365; back++){
+        const d=new Date(now); d.setDate(now.getDate()-back);
+        const jsd=d.getDay()===0?6:d.getDay()-1;
+        if(!hDays.includes(jsd)) continue; // skip non-scheduled
+        const dk=fmtDate(d);
+        if(isDone(state.daily?.[dk]?.habits?.[hId])) streak++;
+        else break;
+      }
+      return streak;
+    }
+
     function renderHabitBar(h){
       const scheduledDays=days.filter(dk=>{
         const d=new Date(dk+'T00:00:00');
@@ -1548,16 +1503,19 @@ function _renderSettingsNow(){
       });
       const doneCount=scheduledDays.filter(dk=>isDone(state.daily?.[dk]?.habits?.[h.id])).length;
       const total=scheduledDays.length||1;
-      const pct=Math.round(doneCount/total*100);
       let segsHtml='';
       for(let si=0;si<total;si++){
         const filled=si<doneCount;
-        segsHtml+=`<div style="flex:1;height:11px;border-radius:0;background:${filled?'rgba(61,221,101,0.9)':'rgba(255,255,255,0.14)'}"></div>`;
+        segsHtml+=`<div style="flex:1;height:10px;background:${filled?'rgba(61,221,101,0.9)':'rgba(255,255,255,0.12)'}"></div>`;
       }
-      let row=`<div style="display:flex;align-items:center;gap:0;margin-bottom:24px">`;
-      row+=`<span style="font-size:21px;color:#fff;flex-shrink:0;width:42%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400">${h.name}</span>`;
-      row+=`<div style="display:flex;gap:0;flex:1;align-items:center;border-radius:3px;overflow:hidden;margin-right:0">${segsHtml}</div>`;
-      
+      const streak=computeHabitStreak(h.id, h.days);
+      const streakHtml=streak>0
+        ?`<span style="font-size:11px;color:rgba(255,255,255,0.45);margin-left:7px;flex-shrink:0">🔥${streak}</span>`
+        :'';
+      let row=`<div style="display:flex;align-items:center;gap:0;margin-bottom:20px">`;
+      row+=`<span style="font-size:19px;color:#fff;flex-shrink:0;width:40%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400">${h.name}</span>`;
+      row+=`<div style="display:flex;gap:0;flex:1;align-items:center;border-radius:3px;overflow:hidden">${segsHtml}</div>`;
+      row+=streakHtml;
       row+=`</div>`;
       return row;
     }
@@ -1711,32 +1669,32 @@ function _renderSettingsNow(){
 
   if(settingsOpen){
 
-  // ══ WEEK CALENDAR — minimal dot grid ══
+  // ══ WEEK CALENDAR ══
   {
     const _D=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];
     const _calH=state.habits.filter(h=>!h.archived);
-    const _SC=['#60a5fa','#34d399','#fbbf24','#c084fc','#f87171','#2dd4bf'];
-    html+=`<div style="margin:0 -18px 12px;padding:10px 18px 12px;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06)">`;
-    // Day header row
-    html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:8px">`;
-    _D.forEach(d=>html+=`<div style="text-align:center;font-size:9px;color:rgba(255,255,255,0.35);font-weight:600;letter-spacing:.06em;text-transform:uppercase">${d}</div>`);
+    const _SC=[['#60a5fa','rgba(96,165,250,0.11)'],['#34d399','rgba(52,211,153,0.11)'],['#fbbf24','rgba(251,191,36,0.11)'],['#c084fc','rgba(192,132,252,0.11)'],['#f87171','rgba(248,113,113,0.11)'],['#2dd4bf','rgba(45,212,191,0.11)']];
+    html+=`<div style="margin:0 -18px 14px;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06)">`;
+    // Day header
+    html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);background:rgba(0,0,0,0.15);padding:6px 0 5px">`;
+    _D.forEach(d=>html+=`<div style="text-align:center;font-size:10px;color:#fff;font-weight:600;letter-spacing:.05em">${d}</div>`);
     html+=`</div>`;
-    // Each sector: label + one dot-row per habit
     (state.sectors||[]).forEach((sec,si)=>{
       const sh=_calH.filter(h=>h.sectorId===sec.id).sort((a,b)=>(a.order||0)-(b.order||0));
       if(!sh.length) return;
-      const col=_SC[si%_SC.length];
-      html+=`<div style="margin-bottom:6px">`;
-      html+=`<div style="font-size:8px;color:${col};font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-align:center;opacity:.7;margin-bottom:3px">${sec.name}</div>`;
+      const [s,f]=_SC[si%_SC.length];
+      // Sector name — centered, no border, just spacing
+      html+=`<div style="text-align:center;padding:6px 0 2px"><span style="font-size:9px;color:${s};font-weight:700;letter-spacing:.08em;text-transform:uppercase">${sec.name}</span></div>`;
       sh.forEach(h=>{
-        html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px">`;
+        html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);padding:0 0 2px">`;
         for(let d=0;d<7;d++){
           const on=h.days.includes(d);
-          html+=`<div style="height:6px;border-radius:3px;background:${on?col:'rgba(255,255,255,0.07)'}"></div>`;
+          html+=`<div style="padding:1px 2px">${on
+            ?`<div style="background:${f};border-left:2px solid ${s};border-radius:0 3px 3px 0;padding:2px 4px;font-size:10px;color:rgba(255,255,255,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35">${h.name}</div>`
+            :`<div style="height:18px"></div>`}</div>`;
         }
         html+=`</div>`;
       });
-      html+=`</div>`;
     });
     html+=`</div>`;
   }
@@ -1844,23 +1802,7 @@ function _renderSettingsNow(){
   }catch(err){ console.error('_renderSettingsNow error:',err,err.stack); scroll.innerHTML=`<div style="padding:40px 20px;color:rgba(255,100,100,.7);font-size:13px">Błąd: ${err.message}<br><pre style="font-size:10px;opacity:.6;white-space:pre-wrap">${err.stack?.split('\n').slice(0,4).join('\n')}</pre></div>`; }
 }
 
-function getTimeStats(period){
-  const stats={work:0,other:0};
-  const now=new Date();
-  for(const[k,entries] of Object.entries(state.timeEntries||{})){
-    const d=new Date(k+'T00:00:00');
-    const diff=(now-d)/(864e5);
-    if(period==='week'&&diff>7) continue;
-    if(period==='month'&&diff>30) continue;
-    for(const e of entries){
-      if(e.empty) continue;
-      const mins=(e.blocks?.length||0)*15;
-      if(e.isWork) stats.work+=mins; else stats.other+=mins;
-    }
-  }
-  return stats;
-}
-function getTimeWeekStats(){ return getTimeStats('week'); }
+function getTimeWeekStats(){ return {}; }
 
 
 
@@ -2240,7 +2182,7 @@ function saveHabitTime(){
   const k=today();
   if(!state.timeEntries) state.timeEntries={};
   if(!state.timeEntries[k]) state.timeEntries[k]=[];
-  state.timeEntries[k].push({id:'tt'+Date.now(),label:h.name,isWork:false,blocks});
+  state.timeEntries[k].push({id:'tt'+Date.now(),label:h.name,blocks});
   completeHabit(htHabitId,true);
   save(); closeHabitTimeScreen(); renderHome();
 }
@@ -2328,12 +2270,12 @@ function buildCSVRows(){
   }
   rows.push(['']);
   // ── CZAS ──
-  rows.push(['data','praca','aktywnosc','minuty']);
+  rows.push(['data','aktywnosc','minuty']);
   for(const[k,entries]of Object.entries(state.timeEntries||{}).sort()){
     for(const e of entries){
       if(e.empty) continue;
       const mins=(e.blocks?.length||0)*15;
-      rows.push([k,e.isWork?'tak':'nie',e.label||'',mins]);
+      rows.push([k,e.label||'',mins]);
     }
   }
   return rows;
@@ -2418,7 +2360,7 @@ function openTimeTracker(habitId){
   document.getElementById('ttSaveHabitBtn').style.display=_ttHabitId?'block':'none';
   if(_ttHabitId){
     const h=state.habits.find(x=>x.id===_ttHabitId);
-    ttEntryLabel=h?.name||''; ttEntryIsWork=false;
+    ttEntryLabel=h?.name||'';
   }
   document.getElementById('home').classList.add('slide-out');
   const tt=document.getElementById('timeTracker');
@@ -2476,7 +2418,7 @@ function saveTTHabitMode(){
     const k=today();
     if(!state.timeEntries) state.timeEntries={};
     if(!state.timeEntries[k]) state.timeEntries[k]=[];
-    state.timeEntries[k].push({id:'tt'+Date.now(),label:h?.name||ttEntryLabel||'',isWork:ttEntryIsWork,blocks});
+    state.timeEntries[k].push({id:'tt'+Date.now(),label:h?.name||ttEntryLabel||'',blocks});
     completeHabit(_ttHabitId,true); save();
   }
   closeTimeTracker(); renderHome();
@@ -2506,10 +2448,7 @@ function getFilledBlocks(){
   return filled;
 }
 
-// isWork → color helper
-function getWorkColor(isWork){
-  return isWork?'rgba(251,191,36,0.7)':'rgba(255,255,255,0.15)';
-}
+
 
 function renderTTGrid(){
   const filled=getFilledBlocks();
@@ -2681,7 +2620,7 @@ function updateTTSelectionBar(){
   if(hd) hd.innerHTML=bigHTML;
 }
 
-function getTTSuggestions(query, isWork){
+function getTTSuggestions(query){
   const now=new Date();
   const freq={};
   for(const[dk,entries] of Object.entries(state.timeEntries||{})){
@@ -2689,9 +2628,9 @@ function getTTSuggestions(query, isWork){
     if((now-d)/(864e5)>30) continue;
     for(const e of entries){
       if(!e.label||e.empty) continue;
-      if(isWork!==undefined && e.isWork!==isWork) continue;
+
       const key=e.label.trim();
-      if(!freq[key]) freq[key]={label:key,count:0,isWork:e.isWork||false};
+      if(!freq[key]) freq[key]={label:key,count:0};
       freq[key].count++;
     }
   }
@@ -2705,10 +2644,10 @@ function getTTSuggestions(query, isWork){
   return items.slice(0,3);
 }
 
-function renderTTSuggestions(query, isWork){
+function renderTTSuggestions(query){
   const box=document.getElementById('ttSuggestions');
   if(!box) return;
-  const items=getTTSuggestions(query, isWork!==undefined?isWork:ttEntryIsWork);
+  const items=getTTSuggestions(query);
   box.style.cssText='margin:12px 0 0;display:block';
   box.innerHTML='';
   if(!items.length && !query) return;
@@ -2720,18 +2659,18 @@ function renderTTSuggestions(query, isWork){
     div.textContent=item.label;
     div.addEventListener('touchstart',()=>div.style.background='rgba(61,221,101,0.18)',{passive:true});
     div.addEventListener('touchend',()=>div.style.background='rgba(255,255,255,0.32)',{passive:true});
-    div.addEventListener('click',()=>fillAndSaveTTSuggestion(item.label, item.isWork));
+    div.addEventListener('click',()=>fillAndSaveTTSuggestion(item.label));
     box.appendChild(div);
   });
 }
 
-function fillAndSaveTTSuggestion(label,isWork){
+function fillAndSaveTTSuggestion(label){
   const blocks=Array.from(ttSelBlocks).map(k=>{const[h,q]=k.split(':');return{h:+h,q:+q};});
   if(!blocks.length) return;
   const k=today();
   if(!state.timeEntries) state.timeEntries={};
   if(!state.timeEntries[k]) state.timeEntries[k]=[];
-  state.timeEntries[k].push({id:'tt'+Date.now(),label,isWork:isWork||ttEntryIsWork||false,blocks});
+  state.timeEntries[k].push({id:'tt'+Date.now(),label,blocks});
   save(); renderTTGrid(); ttSelBlocks.clear(); ttSelecting=false;
   closeTTEntry();
   if(_ttHabitId) completeHabit(_ttHabitId,true);
@@ -2739,16 +2678,15 @@ function fillAndSaveTTSuggestion(label,isWork){
   closeTimeTracker();
   renderHome();
 }
-function applyTTSuggestion(label,isWork){
+function applyTTSuggestion(label){
   ttEntryLabel=label;
-  ttEntryIsWork=isWork||false;
   // save immediately
   const blocks=Array.from(ttSelBlocks).map(k=>{const[h,q]=k.split(':');return{h:+h,q:+q};});
   if(!blocks.length){ closeTTEntry(); return; }
   const k=today();
   if(!state.timeEntries) state.timeEntries={};
   if(!state.timeEntries[k]) state.timeEntries[k]=[];
-  state.timeEntries[k].push({id:'tt'+Date.now(),label,isWork:ttEntryIsWork,blocks});
+  state.timeEntries[k].push({id:'tt'+Date.now(),label,blocks});
   save(); renderTTGrid(); ttSelBlocks.clear(); ttSelecting=false;
   closeTTEntry();
   if(_ttHabitId) completeHabit(_ttHabitId,true);
@@ -2757,12 +2695,11 @@ function applyTTSuggestion(label,isWork){
 
 function showTTEntryPanel(){
   updateTTSelectionBar();
-  ttEntryIsWork=false;
   ttLabelPhase=true;
-  // Show catRow as work-toggle + cancel
+  // Show cancel only in catRow
   const row=document.getElementById('ttCatRow');
   row.style.display='';
-  row.innerHTML=buildWorkToggleRow();
+  row.innerHTML=`<div style="flex:1"></div><button onclick="cancelTTSelection()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.06);border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;font-weight:300">×</button>`;
   // Show field + suggestions immediately
   const field=document.getElementById('ttEntryField');
   if(field._sugHandler){ field.removeEventListener('input',field._sugHandler); field._sugHandler=null; }
@@ -2770,8 +2707,8 @@ function showTTEntryPanel(){
   field.value='';
   const box=document.getElementById('ttSuggestions');
   box.style.display='';
-  renderTTSuggestions('', false);
-  field._sugHandler=()=>{ ttEntryLabel=field.value; renderTTSuggestions(field.value, ttEntryIsWork); };
+  renderTTSuggestions('');
+  field._sugHandler=()=>{ ttEntryLabel=field.value; renderTTSuggestions(field.value); };
   field.addEventListener('input', field._sugHandler);
   setTimeout(()=>field.focus(),80);
   // Clear btn
@@ -2792,29 +2729,7 @@ function showTTEntryPanel(){
   document.getElementById('ttEntryBackdrop').style.display='block';
 }
 
-function buildWorkToggleRow(){
-  const active=ttEntryIsWork;
-  const accent='#3ddd65';
-  return `<div style="flex:1;display:flex;align-items:center;justify-content:center">
-    <div onclick="toggleTTWork()" style="display:flex;align-items:center;gap:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:6px 14px;border-radius:20px;background:${active?'rgba(61,221,101,0.12)':'rgba(255,255,255,0.06)'};transition:background .2s">
-      <div style="width:22px;height:22px;border-radius:6px;border:2px solid ${active?accent:'rgba(255,255,255,0.3)'};background:${active?accent:'transparent'};display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0">
-        ${active?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':''}
-      </div>
-      <span style="font-size:15px;color:${active?accent:'rgba(255,255,255,0.5)'};font-weight:${active?'600':'400'}">work</span>
-    </div>
-  </div>
-  <button onclick="cancelTTSelection()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.06);border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;font-weight:300">×</button>`;
-}
 
-function toggleTTWork(){
-  ttEntryIsWork=!ttEntryIsWork;
-  // Update toggle row
-  const row=document.getElementById('ttCatRow');
-  if(row) row.innerHTML=buildWorkToggleRow();
-  // Re-render suggestions with new isWork filter
-  const field=document.getElementById('ttEntryField');
-  renderTTSuggestions(field?.value||'', ttEntryIsWork);
-}
 
 function cancelTTSelection(){
   // × = mark selected blocks as "empty time" — fill them so they appear as used but with no label
@@ -2831,7 +2746,7 @@ function cancelTTSelection(){
     getTodayEntries().push({id:'tt'+Date.now(),label:'',catId:null,blocks,empty:true});
     save();
   }
-  ttSelBlocks.clear(); ttSelecting=false; ttEntryIsWork=false; ttEntryLabel='';
+  ttSelBlocks.clear(); ttSelecting=false; ttEntryLabel='';
   document.getElementById('ttEntryPanel').classList.remove('open');
   document.getElementById('ttEntryBackdrop').style.display='none';
   document.getElementById('ttEntryField').blur();
@@ -2857,7 +2772,6 @@ function clearSelectedFilledBlocks(){
   if(state.timeEntries?.[k]) state.timeEntries[k]=state.timeEntries[k].filter(e=>!toDelete.has(e.id));
   save(); closeTTEntry();
 }
-let ttEntryIsWork=false;
 let ttEntryLabel='';
 let ttLabelPhase=false;
 
@@ -2867,7 +2781,7 @@ function closeTTEntry(){
   document.getElementById('ttEntryField').blur();
   document.getElementById('ttDelBtn')?.remove();
   document.getElementById('ttClearBtn')?.remove();
-  ttSelBlocks.clear(); ttSelecting=false; ttEntryIsWork=false; ttEntryLabel='';
+  ttSelBlocks.clear(); ttSelecting=false; ttEntryLabel='';
   ttEditingEntryId=null;
   renderTTGrid();
 }
@@ -2881,20 +2795,19 @@ function editTTEntry(entryId){
   ttSelBlocks.clear();
   for(const b of (entry.blocks||[])) ttSelBlocks.add(`${b.h}:${b.q}`);
   ttSelecting=true;
-  ttEntryIsWork=entry.isWork||false;
   ttEntryLabel=entry.label||'';
   updateTTSelectionBar();
   const row=document.getElementById('ttCatRow');
   row.style.display='';
-  row.innerHTML=buildWorkToggleRow();
+  row.innerHTML=`<div style="flex:1"></div><button onclick="cancelTTSelection()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.06);border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;font-weight:300">×</button>`;
   const field=document.getElementById('ttEntryField');
   field.style.display='';
   field.value=ttEntryLabel;
   // suggestions
   const box=document.getElementById('ttSuggestions');
-  if(box){ box.style.display=''; renderTTSuggestions('', ttEntryIsWork); }
+  if(box){ box.style.display=''; renderTTSuggestions(''); }
   if(field._sugHandler) field.removeEventListener('input', field._sugHandler);
-  field._sugHandler=()=>{ ttEntryLabel=field.value; renderTTSuggestions(field.value, ttEntryIsWork); };
+  field._sugHandler=()=>{ ttEntryLabel=field.value; renderTTSuggestions(field.value); };
   field.addEventListener('input', field._sugHandler);
   // Delete button
   document.getElementById('ttDelBtn')?.remove();
@@ -2929,7 +2842,7 @@ function saveTTEntry(){
   if(ttEditingEntryId){
     // Editing: update existing entry
     const idx=entries.findIndex(e=>e.id===ttEditingEntryId);
-    if(idx>=0) entries[idx]={...entries[idx],label,isWork:ttEntryIsWork||false,blocks};
+    if(idx>=0) entries[idx]={...entries[idx],label,blocks};
   } else {
     // New entry: remove selected blocks from any existing entries first
     for(const e of entries){
@@ -2937,7 +2850,7 @@ function saveTTEntry(){
     }
     // Remove entries with no blocks left
     if(state.timeEntries?.[k]) state.timeEntries[k]=entries.filter(e=>e.blocks.length>0);
-    getTodayEntries().push({id:'tt'+Date.now(),label,isWork:ttEntryIsWork||false,blocks});
+    getTodayEntries().push({id:'tt'+Date.now(),label,blocks});
   }
   save(); closeTTEntry(); closeTimeTracker();
 }
