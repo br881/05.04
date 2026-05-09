@@ -753,15 +753,26 @@ function migrateState(s){
 
 let state;
 try{ const r=localStorage.getItem('hs9'); state=r?migrateState(JSON.parse(r)):defaultState(); }catch{ state=defaultState(); }
+let _saveTimer=null;
 function save(){
-  // Archive timeEntries older than 60 days
-  const now=new Date();
-  if(state.timeEntries){
-    for(const dk of Object.keys(state.timeEntries)){
-      const d=new Date(dk+'T00:00:00');
-      if((now-d)/(864e5)>60){ delete state.timeEntries[dk]; }
+  // Debounce rapid saves (e.g. during animations)
+  if(_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(()=>{
+    _saveTimer=null;
+    // Archive timeEntries older than 60 days
+    const now=new Date();
+    if(state.timeEntries){
+      for(const dk of Object.keys(state.timeEntries)){
+        const d=new Date(dk+'T00:00:00');
+        if((now-d)/(864e5)>60){ delete state.timeEntries[dk]; }
+      }
     }
-  }
+    try{ localStorage.setItem('hs9',JSON.stringify(state)); }catch{}
+  },60);
+}
+function saveNow(){
+  if(_saveTimer){ clearTimeout(_saveTimer); _saveTimer=null; }
+  if(state.timeEntries){ const now=new Date(); for(const dk of Object.keys(state.timeEntries)){ const d=new Date(dk+'T00:00:00'); if((now-d)/(864e5)>60) delete state.timeEntries[dk]; } }
   try{ localStorage.setItem('hs9',JSON.stringify(state)); }catch{}
 }
 
@@ -1446,7 +1457,9 @@ function applyBgColor(v){
 
 function uiGet(k,def){ try{ const v=sessionStorage.getItem('ui_'+k); return v===null?def:(v==='true'?true:v==='false'?false:v); }catch{ return state[k]!==undefined?state[k]:def; } }
 function uiSet(k,v){ try{ sessionStorage.setItem('ui_'+k,String(v)); }catch{} state[k]=v; }
-function renderSettings(){
+let _rsTimer=null;
+function renderSettings(){ if(_rsTimer) return; _rsTimer=requestAnimationFrame(()=>{ _rsTimer=null; _renderSettingsNow(); }); }
+function _renderSettingsNow(){
   const scroll=document.getElementById('settingsScroll');
   if(!scroll) return;
   const _st=scroll.scrollTop;
@@ -1697,54 +1710,32 @@ function renderSettings(){
 
   if(settingsOpen){
 
-  // ══ WEEK CALENDAR (always open, full-width, above sectors) ══
+  // ══ WEEK CALENDAR ══
   {
-    const DAY=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];
-    const allH=state.habits.filter(h=>!h.archived);
-    const calSectors=state.sectors||[];
-    const SEC_COLORS=[
-      ['rgba(96,165,250,1)','rgba(96,165,250,0.13)'],
-      ['rgba(52,211,153,1)','rgba(52,211,153,0.13)'],
-      ['rgba(251,191,36,1)','rgba(251,191,36,0.13)'],
-      ['rgba(192,132,252,1)','rgba(192,132,252,0.13)'],
-      ['rgba(248,113,113,1)','rgba(248,113,113,0.13)'],
-      ['rgba(45,212,191,1)','rgba(45,212,191,0.13)'],
-    ];
-    // bleed to screen edges
-    html+=`<div style="margin:0 -18px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;background:rgba(255,255,255,0.025);border-top:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07)">`;
-    html+=`<div style="min-width:320px">`;
-    // Sticky header — day names, white
-    html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid rgba(255,255,255,0.1);position:sticky;top:0;background:rgba(18,28,18,0.97);z-index:2">`;
-    DAY.forEach(d=>{
-      html+=`<div style="text-align:center;padding:9px 0 7px;font-size:11px;color:#fff;font-weight:600;letter-spacing:.05em;text-transform:uppercase">${d}</div>`;
-    });
+    const _DAY=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];
+    const _calH=state.habits.filter(h=>!h.archived);
+    const _SC=[['#60a5fa','rgba(96,165,250,0.1)'],['#34d399','rgba(52,211,153,0.1)'],['#fbbf24','rgba(251,191,36,0.1)'],['#c084fc','rgba(192,132,252,0.1)'],['#f87171','rgba(248,113,113,0.1)'],['#2dd4bf','rgba(45,212,191,0.1)']];
+    html+=`<div style="margin:0 -18px 14px;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06)">`;
+    // Day header
+    html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.18)">`;
+    _DAY.forEach(d=>{ html+=`<div style="text-align:center;padding:7px 0 5px;font-size:10px;color:#fff;font-weight:600;letter-spacing:.05em">${d}</div>`; });
     html+=`</div>`;
-    // One group per sector: sector name as full-width header, then habit rows
-    calSectors.forEach((sec,si)=>{
-      const secH=allH.filter(h=>h.sectorId===sec.id).sort((a,b)=>(a.order||0)-(b.order||0));
-      if(!secH.length) return;
-      const [stroke,fill]=SEC_COLORS[si%SEC_COLORS.length];
-      // Sector name row — full width
-      html+=`<div style="padding:7px 12px 4px;border-top:1px solid rgba(255,255,255,0.06)">`;
-      html+=`<span style="font-size:10px;color:${stroke};font-weight:700;letter-spacing:.07em;text-transform:uppercase">${sec.name}</span>`;
-      html+=`</div>`;
-      // Each habit: 7 cells across full width
-      secH.forEach(h=>{
-        html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:2px">`;
+    (state.sectors||[]).forEach((sec,si)=>{
+      const sh=_calH.filter(h=>h.sectorId===sec.id).sort((a,b)=>(a.order||0)-(b.order||0));
+      if(!sh.length) return;
+      const [s,f]=_SC[si%_SC.length];
+      // Sector name — centered, full width
+      html+=`<div style="text-align:center;padding:5px 8px 3px;border-top:1px solid rgba(255,255,255,0.05)"><span style="font-size:9px;color:${s};font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.9">${sec.name}</span></div>`;
+      sh.forEach(h=>{
+        html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:1px">`;
         for(let d=0;d<7;d++){
           const on=h.days.includes(d);
-          html+=`<div style="padding:2px 3px">`;
-          if(on){
-            html+=`<div style="background:${fill};border-left:2.5px solid ${stroke};border-radius:0 4px 4px 0;padding:3px 5px;font-size:11px;color:rgba(255,255,255,0.88);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;box-sizing:border-box">${h.name}</div>`;
-          } else {
-            html+=`<div style="height:20px"></div>`;
-          }
-          html+=`</div>`;
+          html+=`<div style="padding:1px 2px">${on?`<div style="background:${f};border-left:2px solid ${s};border-radius:0 3px 3px 0;padding:2px 4px;font-size:10px;color:rgba(255,255,255,0.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35">${h.name}</div>`:`<div style="height:18px"></div>`}</div>`;
         }
         html+=`</div>`;
       });
     });
-    html+=`</div></div>`;
+    html+=`</div>`;
   }
 
   // SECTORS
@@ -1841,9 +1832,13 @@ function renderSettings(){
   } // end settingsOpen
 
   html+=`<div style="height:60px"></div>`;
-  scroll.innerHTML=html;
-  scroll.scrollTop=_st;
-  }catch(err){ console.error('renderSettings error:',err,err.stack); scroll.innerHTML=`<div style="padding:40px 20px;color:rgba(255,100,100,.7);font-size:13px">Błąd: ${err.message}<br><pre style="font-size:10px;opacity:.6;white-space:pre-wrap">${err.stack?.split('\n').slice(0,4).join('\n')}</pre></div>`; }
+  // Only update DOM if content changed (avoids unnecessary reflows)
+  if(scroll._lastHtml !== html){
+    scroll._lastHtml = html;
+    scroll.innerHTML=html;
+    scroll.scrollTop=_st;
+  }
+  }catch(err){ console.error('_renderSettingsNow error:',err,err.stack); scroll.innerHTML=`<div style="padding:40px 20px;color:rgba(255,100,100,.7);font-size:13px">Błąd: ${err.message}<br><pre style="font-size:10px;opacity:.6;white-space:pre-wrap">${err.stack?.split('\n').slice(0,4).join('\n')}</pre></div>`; }
 }
 
 function getTimeStats(period){
@@ -1868,16 +1863,6 @@ function getTimeWeekStats(){ return getTimeStats('week'); }
 
 function toggleHabitsArchive(){
   state._habitsArchiveOpen=!state._habitsArchiveOpen;
-  save(); renderSettings();
-}
-function toggleHabitsHidePanel(){
-  state._habitsHideOpen=!state._habitsHideOpen;
-  save(); renderSettings();
-}
-function toggleHideHabit(hId){
-  const hidden=new Set(state._hiddenHabitIds||[]);
-  if(hidden.has(hId)) hidden.delete(hId); else hidden.add(hId);
-  state._hiddenHabitIds=[...hidden];
   save(); renderSettings();
 }
 function toggleHabitsHidePanel(){
