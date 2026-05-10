@@ -33,7 +33,7 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 .habits-scroll{position:absolute;top:calc(var(--safe-top) + 18px);bottom:calc(var(--safe-bottom) + 90px);left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;flex-direction:column;justify-content:center;}
 .habits-scroll::-webkit-scrollbar{display:none;}
 .habits-inner{width:100%;max-width:500px;margin:0 auto;padding:calc(var(--safe-top) + 28px) 28px calc(var(--safe-bottom) + 155px);box-sizing:border-box;}
-.habits-zone{display:flex;flex-direction:column;gap:10px;}
+.habits-zone{display:flex;flex-direction:column;gap:0;}
 .habits-zone-spacer-top,.habits-zone-spacer-bottom,.temps-zone{display:none;}
 
 /* TEMPS TRAY */
@@ -46,13 +46,13 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 .temps-tray-inner::-webkit-scrollbar{display:none;}
 
 /* HABIT TILE */
-.habit-row{display:flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;will-change:opacity,transform;transition:opacity .3s ease,max-height .5s ease,padding .5s ease,margin .5s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+.habit-row{display:flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;margin-bottom:10px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;will-change:opacity,transform;transition:opacity .3s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
 
 .habit-row.row-enter{opacity:0;transform:translateY(6px);}
 .habit-row.row-visible{opacity:1;transform:translateY(0);transition:opacity .32s ease,transform .32s cubic-bezier(.2,.8,.4,1);}
 .habit-row:active{opacity:.55;}
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
-.habit-row.vanishing{overflow:hidden;pointer-events:none;box-shadow:none!important;animation:none!important;will-change:opacity,height;transition:opacity .45s cubic-bezier(.4,0,.2,1),height .5s cubic-bezier(.4,0,.2,1);}
+.habit-row.vanishing{overflow:hidden;pointer-events:none;box-shadow:none!important;animation:none!important;will-change:opacity,height,margin-bottom;transition:opacity .42s ease-out,height .48s cubic-bezier(.4,0,.2,1),margin-bottom .48s cubic-bezier(.4,0,.2,1);}
 .habit-row.temp-row .habit-name{color:rgba(120,235,120,1);font-weight:500;}
 .habit-name{font-size:21px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
 .habit-value-input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.38);color:#ffffff;font-size:17px;font-family:inherit;outline:none;width:72px;text-align:right;padding:2px 0 4px;transition:border-color .2s;font-weight:600;}
@@ -70,12 +70,12 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 .pb-fill.pop{animation:pbPop .4s cubic-bezier(.34,1.56,.64,1);}
 @keyframes toastIn{0%{opacity:0;transform:translateX(-50%) translateY(10px);}100%{opacity:1;transform:translateX(-50%) translateY(0);}}
 @keyframes toastOut{0%{opacity:1;}100%{opacity:0;transform:translateX(-50%) translateY(8px);}}
-@keyframes doneIn{0%{opacity:0;transform:translateX(-28px) scale(.92);}50%{opacity:1;transform:translateX(3px) scale(1.01);}80%{transform:translateX(-1px) scale(.995);}100%{opacity:1;transform:translateX(0) scale(1);}}
+@keyframes doneMarkFade{0%{opacity:0;transform:scale(.85);}100%{opacity:1;transform:scale(1);}}
 @keyframes checkDraw{0%{stroke-dashoffset:90;}100%{stroke-dashoffset:0;}}
 .done-mark{display:flex;align-items:center;justify-content:center;opacity:0;}
-.done-state.show .done-mark{animation:doneIn 1.4s .1s cubic-bezier(.16,1,.3,1) forwards;}
+.done-state.show .done-mark{animation:doneMarkFade 1s .1s cubic-bezier(.16,1,.3,1) forwards;}
 .done-mark svg{color:#4ade80;width:77px;height:77px;stroke-dasharray:90;stroke-dashoffset:90;opacity:1;}
-.done-state.show .done-mark svg{animation:checkDraw 1.6s .3s cubic-bezier(.4,0,.2,1) forwards;}
+.done-state.show .done-mark svg{animation:checkDraw 2.8s .15s cubic-bezier(.4,0,.01,1) forwards;}
 
 /* ADD TEMP overlay */
 .temp-overlay{position:fixed;inset:0;z-index:150;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 16px 24px;opacity:0;pointer-events:none;transition:opacity .22s ease;}
@@ -535,7 +535,7 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 <div id="home" class="screen active">
   <div class="done-state" id="doneState">
     <div class="done-mark">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
     </div>
   </div>
   <!-- Habits -->
@@ -954,7 +954,7 @@ function thingsTap(key,onConfirm){
       pb_el.classList.remove('visible');
       row.offsetHeight;
       row.classList.add('vanishing');
-      row.style.opacity='0'; row.style.height='0';
+      row.style.opacity='0'; row.style.height='0'; row.style.marginBottom='0';
       const done=()=>{ row.remove(); renderHome(); showUndoToast(name,key,onConfirm); };
       row.addEventListener('transitionend',done,{once:true,passive:true});
       setTimeout(done,700);
@@ -962,11 +962,11 @@ function thingsTap(key,onConfirm){
   } else {
     row.offsetHeight;
     row.classList.add('vanishing');
-    row.style.opacity='0'; row.style.height='0';
+    row.style.opacity='0'; row.style.height='0'; row.style.marginBottom='0';
     onConfirm();
     const done=()=>{ row.remove(); renderHome(); showUndoToast(name,key,onConfirm); };
     row.addEventListener('transitionend',done,{once:true,passive:true});
-    setTimeout(done,700);
+    setTimeout(done,650);
   }
 }
 let _undoTimer=null,_undoKey=null,_undoConfirm=null;
@@ -1511,7 +1511,7 @@ function _renderSettingsNow(){
   }
 
   // ── GEAR ICON — toggles sectors/settings below ──
-  html+=`<div onclick="toggleFold('settings')" style="display:flex;align-items:center;justify-content:center;padding:18px 20px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
+  html+=`<div onclick="toggleFold('settings')" style="display:flex;align-items:center;justify-content:center;padding:24px 20px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:${settingsOpen?'#fff':'rgba(255,255,255,0.35)'}"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </div>`;
 
