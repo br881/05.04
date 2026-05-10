@@ -1483,23 +1483,23 @@ function _renderSettingsNow(){
     const _calH=state.habits.filter(h=>!h.archived);
     const _SC=[['#60a5fa','rgba(96,165,250,0.13)'],['#34d399','rgba(52,211,153,0.13)'],['#fbbf24','rgba(251,191,36,0.13)'],['#c084fc','rgba(192,132,252,0.13)'],['#f87171','rgba(248,113,113,0.13)'],['#2dd4bf','rgba(45,212,191,0.13)']];
     html+=`<div style="padding-top:max(env(safe-area-inset-top,44px),44px)">`;
-    html+=`<div style="margin:0 18px 0;border-radius:14px;overflow:hidden;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07)">`;
+    html+=`<div style="margin:0 12px 0;border-radius:16px;overflow:hidden;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07)">`;
     // Day header
-    html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);background:rgba(0,0,0,0.2);padding:9px 0 7px">`;
-    _D.forEach(d=>html+=`<div style="text-align:center;font-size:12px;color:#fff;font-weight:700;letter-spacing:.04em">${d}</div>`);
+    html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);background:rgba(0,0,0,0.22);padding:13px 0 11px">`;
+    _D.forEach(d=>html+=`<div style="text-align:center;font-size:15px;color:#fff;font-weight:700;letter-spacing:.03em">${d}</div>`);
     html+=`</div>`;
     (state.sectors||[]).forEach((sec,si)=>{
       const sh=_calH.filter(h=>h.sectorId===sec.id).sort((a,b)=>(a.order||0)-(b.order||0));
       if(!sh.length) return;
       const [s,f]=_SC[si%_SC.length];
-      html+=`<div style="padding:6px 0 1px;text-align:center"><span style="font-size:10px;color:${s};font-weight:700;letter-spacing:.07em;text-transform:uppercase">${sec.name}</span></div>`;
+      html+=`<div style="padding:10px 0 4px;text-align:center"><span style="font-size:12px;color:${s};font-weight:700;letter-spacing:.07em;text-transform:uppercase">${sec.name}</span></div>`;
       sh.forEach(h=>{
-        html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr)">`;
+        html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:0">`;
         for(let d=0;d<7;d++){
           const on=h.days.includes(d);
-          html+=`<div style="padding:2px 3px">${on
-            ?`<div onclick="openHabitFromCal('${h.id}')" style="background:${f};border-left:2.5px solid ${s};border-radius:0 4px 4px 0;padding:4px 5px;font-size:11px;color:rgba(255,255,255,0.88);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">${h.name}</div>`
-            :`<div style="height:22px"></div>`}</div>`;
+          html+=`<div style="padding:2px 2px">${on
+            ?`<div onclick="openHabitFromCal('${h.id}')" style="background:${f};border-left:3px solid ${s};border-radius:0 5px 5px 0;padding:7px 6px;font-size:13px;color:rgba(255,255,255,0.92);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">${h.name}</div>`
+            :`<div style="height:31px"></div>`}</div>`;
         }
         html+=`</div>`;
       });
@@ -1619,8 +1619,8 @@ function renderCalPage(){
     if(!sh.length) return;
     const [s,f]=SC[si%SC.length];
     // Sector header
-    html+=`<div style="text-align:center;padding:16px 0 6px;border-top:1px solid rgba(255,255,255,0.06)">`;
-    html+=`<span style="font-size:11px;color:${s};font-weight:700;letter-spacing:.09em;text-transform:uppercase">${sec.name}</span>`;
+    html+=`<div style="text-align:center;padding:16px 0 6px;border-top:1px solid rgba(255,255,255,0.05)">`;
+    html+=`<span style="font-size:13px;color:${s};font-weight:700;letter-spacing:.07em;text-transform:uppercase">${sec.name}</span>`;
     html+=`</div>`;
     // Each habit row
     sh.forEach(h=>{
@@ -1629,9 +1629,9 @@ function renderCalPage(){
         const on=h.days.includes(d);
         html+=`<div style="padding:2px 3px">`;
         if(on){
-          html+=`<div onclick="openHabitFromCal('${h.id}')" style="background:${f};border-left:3px solid ${s};border-radius:0 6px 6px 0;padding:6px 8px;font-size:13px;color:rgba(255,255,255,0.9);line-height:1.3;word-break:break-word;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">${h.name}</div>`;
+          html+=`<div onclick="openHabitFromCal('${h.id}')" style="background:${f};border-left:3px solid ${s};border-radius:0 6px 6px 0;padding:9px 8px;font-size:15px;color:rgba(255,255,255,0.92);line-height:1.35;word-break:break-word;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">${h.name}</div>`;
         } else {
-          html+=`<div style="height:28px"></div>`;
+          html+=`<div style="height:38px"></div>`;
         }
         html+=`</div>`;
       }
