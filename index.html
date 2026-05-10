@@ -1471,16 +1471,9 @@ function _renderSettingsNow(){
   let html='';
   try{
 
-  const settingsOpen=state._settingsOpen===true; // default closed
+  const settingsOpen=true; // always open
 
-  // ══ ROW 2: SETTINGS icon ══
-  html+=`<div style="display:flex;align-items:center;justify-content:center;padding:14px 20px;margin-top:1px">
-    <div onclick="toggleFold('settings')" style="cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;padding:4px">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:${settingsOpen?'#fff':'rgba(255,255,255,0.35)'}"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </div>
-  </div>`;
 
-  if(settingsOpen){
 
   // ══ WEEK CALENDAR ══
   {
@@ -1604,7 +1597,6 @@ function _renderSettingsNow(){
       Pobierz
     </button>
   </div>`;
-  } // end settingsOpen
 
   html+=`<div style="height:60px"></div>`;
   // Only update DOM if content changed (avoids unnecessary reflows)
@@ -1731,7 +1723,6 @@ function clearFocusedHabit(){
   save(); renderSettings();
 }
 function toggleFold(key){
-  if(key==='settings'){ state._settingsOpen=!state._settingsOpen; save(); renderSettings(); return; }
   if(key==='weekCal'){ state._weekCalOpen=!state._weekCalOpen; save(); renderSettings(); return; }
   if(key==='lock'){ state._lockOpen=!state._lockOpen; save(); renderSettings(); return; }
   if(key==='csv'){ state._csvOpen=!state._csvOpen; save(); renderSettings(); return; }
