@@ -1475,16 +1475,44 @@ function _renderSettingsNow(){
   let html='';
   try{
 
-  const settingsOpen=true; // always open
+  const settingsOpen=state._settingsOpen===true;
 
-  // ── Calendar button ──
-  html+=`<div style="padding:max(env(safe-area-inset-top,44px),44px) 18px 16px">
-    <button onclick="openCalPage()" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border-radius:14px;padding:12px 16px;font-size:14px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;letter-spacing:.02em">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Calendar
-    </button>
+  // ── INLINE CALENDAR (always visible) ──
+  {
+    const _D=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];
+    const _calH=state.habits.filter(h=>!h.archived);
+    const _SC=[['#60a5fa','rgba(96,165,250,0.13)'],['#34d399','rgba(52,211,153,0.13)'],['#fbbf24','rgba(251,191,36,0.13)'],['#c084fc','rgba(192,132,252,0.13)'],['#f87171','rgba(248,113,113,0.13)'],['#2dd4bf','rgba(45,212,191,0.13)']];
+    html+=`<div style="padding-top:max(env(safe-area-inset-top,44px),44px)">`;
+    html+=`<div style="margin:0 18px 0;border-radius:14px;overflow:hidden;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07)">`;
+    // Day header
+    html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);background:rgba(0,0,0,0.2);padding:9px 0 7px">`;
+    _D.forEach(d=>html+=`<div style="text-align:center;font-size:12px;color:#fff;font-weight:700;letter-spacing:.04em">${d}</div>`);
+    html+=`</div>`;
+    (state.sectors||[]).forEach((sec,si)=>{
+      const sh=_calH.filter(h=>h.sectorId===sec.id).sort((a,b)=>(a.order||0)-(b.order||0));
+      if(!sh.length) return;
+      const [s,f]=_SC[si%_SC.length];
+      html+=`<div style="padding:6px 0 1px;text-align:center"><span style="font-size:10px;color:${s};font-weight:700;letter-spacing:.07em;text-transform:uppercase">${sec.name}</span></div>`;
+      sh.forEach(h=>{
+        html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr)">`;
+        for(let d=0;d<7;d++){
+          const on=h.days.includes(d);
+          html+=`<div style="padding:2px 3px">${on
+            ?`<div onclick="openHabitFromCal('${h.id}')" style="background:${f};border-left:2.5px solid ${s};border-radius:0 4px 4px 0;padding:4px 5px;font-size:11px;color:rgba(255,255,255,0.88);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">${h.name}</div>`
+            :`<div style="height:22px"></div>`}</div>`;
+        }
+        html+=`</div>`;
+      });
+    });
+    html+=`</div></div>`;
+  }
+
+  // ── GEAR ICON — toggles sectors/settings below ──
+  html+=`<div onclick="toggleFold('settings')" style="display:flex;align-items:center;justify-content:center;padding:18px 20px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:${settingsOpen?'#fff':'rgba(255,255,255,0.35)'}"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </div>`;
 
+  if(settingsOpen){
 
   // SECTORS
   html+=`<div class="s-section">`;
@@ -1559,6 +1587,8 @@ function _renderSettingsNow(){
     </button>
   </div>`;
 
+  } // end settingsOpen
+
   html+=`<div style="height:60px"></div>`;
   // Only update DOM if content changed (avoids unnecessary reflows)
   if(scroll._lastHtml !== html){
@@ -1599,7 +1629,7 @@ function renderCalPage(){
         const on=h.days.includes(d);
         html+=`<div style="padding:2px 3px">`;
         if(on){
-          html+=`<div style="background:${f};border-left:3px solid ${s};border-radius:0 6px 6px 0;padding:6px 8px;font-size:13px;color:rgba(255,255,255,0.9);line-height:1.3;word-break:break-word">${h.name}</div>`;
+          html+=`<div onclick="openHabitFromCal('${h.id}')" style="background:${f};border-left:3px solid ${s};border-radius:0 6px 6px 0;padding:6px 8px;font-size:13px;color:rgba(255,255,255,0.9);line-height:1.3;word-break:break-word;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">${h.name}</div>`;
         } else {
           html+=`<div style="height:28px"></div>`;
         }
@@ -1676,6 +1706,7 @@ function clearFocusedHabit(){
   save(); renderSettings();
 }
 function toggleFold(key){
+  if(key==='settings'){ state._settingsOpen=!state._settingsOpen; save(); renderSettings(); return; }
   if(key==='weekCal'){ state._weekCalOpen=!state._weekCalOpen; save(); renderSettings(); return; }
   if(key==='lock'){ state._lockOpen=!state._lockOpen; save(); renderSettings(); return; }
   if(key==='csv'){ state._csvOpen=!state._csvOpen; save(); renderSettings(); return; }
@@ -1842,7 +1873,13 @@ function eTouchDragEnd(e){
 function eRowClick(e,eId){ if(etDragMoved||etDragActive) return; openExtraDetail(eId); }
 
 /* ── HABIT DETAIL ── */
-let editHabitId=null, editHabitSectorId=null;
+let editHabitId=null, editHabitSectorId=null, _callerPage=null;
+function openHabitFromCal(hId){
+  _callerPage='cal';
+  closeCalPage();
+  requestAnimationFrame(()=>openHabitDetail(hId));
+}
+
 function openHabitDetail(hId,defaultSector){
   editHabitId=hId; const isNew=hId==='new';
   editHabitSectorId=defaultSector||null;
@@ -1939,7 +1976,10 @@ function openHabitDetail(hId,defaultSector){
 function hdType(t,el){ document.querySelectorAll('.hd-body .type-mini-btns .type-mini-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); }
 function htCatPick(el){ document.querySelectorAll('#hdCatRow .sector-pill').forEach(p=>p.classList.remove('active')); el.classList.add('active'); }
 function hdToggleTrackTime(el){ el.classList.toggle('on'); document.getElementById('hdCatRow').style.display=el.classList.contains('on')?'flex':'none'; }
-function closeHabitDetail(){ document.getElementById('habitDetail').classList.remove('open'); }
+function closeHabitDetail(){
+  document.getElementById('habitDetail').classList.remove('open');
+  if(_callerPage==='cal'){ _callerPage=null; requestAnimationFrame(()=>openCalPage()); }
+}
 function saveHabitDetail(){
   const name=document.getElementById('hdn')?.value.trim(); if(!name) return;
   const days=DAYS.map((_,i)=>document.getElementById(`hdd${i}`)?.classList.contains('active')?i:-1).filter(x=>x>=0);
@@ -1956,9 +1996,25 @@ function saveHabitDetail(){
   } else {
     const h=state.habits.find(x=>x.id===editHabitId); if(h) Object.assign(h,{name,type,days,url,archived,trackTime,trackCatId});
   }
-  save(); closeHabitDetail(); renderSettings(); renderHome();
+  save();
+  if(_callerPage==='cal'){
+    _callerPage=null;
+    closeHabitDetail();
+    renderSettings();
+    renderHome();
+    requestAnimationFrame(()=>openCalPage());
+  } else {
+    _callerPage=null;
+    closeHabitDetail(); renderSettings(); renderHome();
+  }
 }
-function deleteHabit(hId){ state.habits=state.habits.filter(x=>x.id!==hId); save(); closeHabitDetail(); renderSettings(); renderHome(); }
+function deleteHabit(hId){
+  state.habits=state.habits.filter(x=>x.id!==hId);
+  save();
+  const fromCal=_callerPage==='cal'; _callerPage=null;
+  closeHabitDetail(); renderSettings(); renderHome();
+  if(fromCal) requestAnimationFrame(()=>openCalPage());
+}
 
 /* ══ HABIT TIME SCREEN ══ */
 let htHabitId=null, htSelBlocks=new Set();
