@@ -52,7 +52,7 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 .habit-row.row-visible{opacity:1;transform:translateY(0);transition:opacity .32s ease,transform .32s cubic-bezier(.2,.8,.4,1);}
 .habit-row:active{opacity:.55;}
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
-.habit-row.vanishing{overflow:hidden;pointer-events:none;box-shadow:none!important;animation:none!important;will-change:opacity,max-height;transition:opacity .45s cubic-bezier(.4,0,.2,1),max-height .55s cubic-bezier(.4,0,.2,1),padding-top .55s cubic-bezier(.4,0,.2,1),padding-bottom .55s cubic-bezier(.4,0,.2,1),margin-bottom .55s cubic-bezier(.4,0,.2,1);}
+.habit-row.vanishing{overflow:hidden;pointer-events:none;box-shadow:none!important;animation:none!important;will-change:opacity,height;transition:opacity .45s cubic-bezier(.4,0,.2,1),height .5s cubic-bezier(.4,0,.2,1);}
 .habit-row.temp-row .habit-name{color:rgba(120,235,120,1);font-weight:500;}
 .habit-name{font-size:21px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
 .habit-value-input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.38);color:#ffffff;font-size:17px;font-family:inherit;outline:none;width:72px;text-align:right;padding:2px 0 4px;transition:border-color .2s;font-weight:600;}
@@ -567,16 +567,7 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 </div>
 
 <!-- CALENDAR PAGE — full screen landscape -->
-<div class="screen" id="calPage" style="background:var(--bg);overflow:hidden;display:flex;flex-direction:column;z-index:5;">
-  <!-- Cal header -->
-  <div style="flex-shrink:0;padding-top:max(env(safe-area-inset-top,44px),44px);padding-left:18px;padding-right:18px;padding-bottom:12px;display:flex;align-items:center;justify-content:space-between;background:var(--bg);">
-    <span style="font-size:17px;font-weight:600;color:#fff;letter-spacing:-.01em">Calendar</span>
-    <button onclick="closeCalPage()" style="background:rgba(255,255,255,0.1);border:none;color:rgba(255,255,255,0.7);width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;flex-shrink:0">×</button>
-  </div>
-  <div id="calPageInner" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 0 calc(env(safe-area-inset-bottom,20px) + 20px);box-sizing:border-box">
-    <!-- filled by renderCalPage() -->
-  </div>
-</div>
+
 <!-- ADD TEMP overlay (triggered by left-ghost or swipe-up) -->
 <div class="temp-overlay" id="tempOverlay">
   <div class="temp-overlay-blur" onclick="closeAddTemp()"></div>
@@ -944,27 +935,40 @@ function thingsTap(key,onConfirm){
   if(timers[key]){ clearTimeout(timers[key]); delete timers[key]; return; }
   const name=row.querySelector('.habit-name')?.textContent||'';
   const rect=row.getBoundingClientRect();
+  const isLast=!row.nextElementSibling;
   spawnConfetti(rect.right-18, rect.top+10);
   row.classList.add('done-glow');
-  // Capture live dimensions before transition
-  const h=row.offsetHeight;
-  const cs=getComputedStyle(row);
-  const pt=cs.paddingTop, pb=cs.paddingBottom, mb=cs.marginBottom;
-  row.style.maxHeight=h+'px';
-  row.style.paddingTop=pt;
-  row.style.paddingBottom=pb;
-  row.style.marginBottom=mb;
-  row.offsetHeight; // force reflow so browser registers start values
-  row.classList.add('vanishing');
-  row.style.opacity='0';
-  row.style.maxHeight='0';
-  row.style.paddingTop='0';
-  row.style.paddingBottom='0';
-  row.style.marginBottom='0';
-  onConfirm();
-  const done=()=>{ row.remove(); renderHome(); showUndoToast(name,key,onConfirm); };
-  row.addEventListener('transitionend', done, {once:true,passive:true});
-  setTimeout(done, 600); // fallback
+  // Freeze exact height so siblings don't shift during animation
+  const h=row.getBoundingClientRect().height;
+  row.style.setProperty('--row-h', h+'px');
+  row.style.height=h+'px';
+  row.style.minHeight='0';
+  row.style.overflow='hidden';
+  row.style.flexShrink='0';
+  // If last habit, animate progress bar to 100% first, then collapse
+  const pb_fill=document.getElementById('pbFill');
+  const pb_el=document.getElementById('progressBar');
+  if(isLast && pb_el && pb_fill){
+    pb_fill.style.width='100%';
+    onConfirm();
+    setTimeout(()=>{
+      pb_el.classList.remove('visible');
+      row.offsetHeight;
+      row.classList.add('vanishing');
+      row.style.opacity='0'; row.style.height='0';
+      const done=()=>{ row.remove(); renderHome(); showUndoToast(name,key,onConfirm); };
+      row.addEventListener('transitionend',done,{once:true,passive:true});
+      setTimeout(done,700);
+    },500);
+  } else {
+    row.offsetHeight;
+    row.classList.add('vanishing');
+    row.style.opacity='0'; row.style.height='0';
+    onConfirm();
+    const done=()=>{ row.remove(); renderHome(); showUndoToast(name,key,onConfirm); };
+    row.addEventListener('transitionend',done,{once:true,passive:true});
+    setTimeout(done,700);
+  }
 }
 let _undoTimer=null,_undoKey=null,_undoConfirm=null;
 function showUndoToast(name,key,onConfirm){
@@ -1483,9 +1487,9 @@ function _renderSettingsNow(){
     const _calH=state.habits.filter(h=>!h.archived);
     const _SC=[['#60a5fa','rgba(96,165,250,0.13)'],['#34d399','rgba(52,211,153,0.13)'],['#fbbf24','rgba(251,191,36,0.13)'],['#c084fc','rgba(192,132,252,0.13)'],['#f87171','rgba(248,113,113,0.13)'],['#2dd4bf','rgba(45,212,191,0.13)']];
     html+=`<div style="padding-top:max(env(safe-area-inset-top,44px),44px)">`;
-    html+=`<div style="margin:0 12px 0;border-radius:16px;overflow:hidden;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07)">`;
+    html+=`<div style="margin:0;overflow:hidden">`;
     // Day header
-    html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);background:rgba(0,0,0,0.22);padding:13px 0 11px">`;
+    html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);padding:12px 0 10px">`;
     _D.forEach(d=>html+=`<div style="text-align:center;font-size:15px;color:#fff;font-weight:700;letter-spacing:.03em">${d}</div>`);
     html+=`</div>`;
     (state.sectors||[]).forEach((sec,si)=>{
@@ -1601,59 +1605,6 @@ function _renderSettingsNow(){
 
 function getTimeWeekStats(){ return {}; }
 
-function renderCalPage(){
-  const el=document.getElementById('calPageInner');
-  if(!el) return;
-  const DAY=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];
-  const allH=state.habits.filter(h=>!h.archived);
-  const SC=[['#60a5fa','rgba(96,165,250,0.13)'],['#34d399','rgba(52,211,153,0.13)'],['#fbbf24','rgba(251,191,36,0.13)'],['#c084fc','rgba(192,132,252,0.13)'],['#f87171','rgba(248,113,113,0.13)'],['#2dd4bf','rgba(45,212,191,0.13)']];
-
-  let html='';
-  // Sticky day header
-  html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);position:sticky;top:0;z-index:5;background:rgba(6,30,12,0.97);border-bottom:1px solid rgba(255,255,255,0.1);padding:12px 0 10px">`;
-  DAY.forEach(d=>html+=`<div style="text-align:center;font-size:13px;color:#fff;font-weight:700;letter-spacing:.06em">${d}</div>`);
-  html+=`</div>`;
-
-  (state.sectors||[]).forEach((sec,si)=>{
-    const sh=allH.filter(h=>h.sectorId===sec.id).sort((a,b)=>(a.order||0)-(b.order||0));
-    if(!sh.length) return;
-    const [s,f]=SC[si%SC.length];
-    // Sector header
-    html+=`<div style="text-align:center;padding:16px 0 6px;border-top:1px solid rgba(255,255,255,0.05)">`;
-    html+=`<span style="font-size:13px;color:${s};font-weight:700;letter-spacing:.07em;text-transform:uppercase">${sec.name}</span>`;
-    html+=`</div>`;
-    // Each habit row
-    sh.forEach(h=>{
-      html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:0;padding:0 4px 5px">`;
-      for(let d=0;d<7;d++){
-        const on=h.days.includes(d);
-        html+=`<div style="padding:2px 3px">`;
-        if(on){
-          html+=`<div onclick="openHabitFromCal('${h.id}')" style="background:${f};border-left:3px solid ${s};border-radius:0 6px 6px 0;padding:9px 8px;font-size:15px;color:rgba(255,255,255,0.92);line-height:1.35;word-break:break-word;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">${h.name}</div>`;
-        } else {
-          html+=`<div style="height:38px"></div>`;
-        }
-        html+=`</div>`;
-      }
-      html+=`</div>`;
-    });
-  });
-  html+=`<div style="height:40px"></div>`;
-  el.innerHTML=html;
-}
-
-function openCalPage(){
-  const page=document.getElementById('calPage');
-  if(!page) return;
-  renderCalPage();
-  page.classList.add('active');
-}
-
-function closeCalPage(){
-  const page=document.getElementById('calPage');
-  if(!page) return;
-  page.classList.remove('active');
-}
 
 
 
@@ -1875,9 +1826,7 @@ function eRowClick(e,eId){ if(etDragMoved||etDragActive) return; openExtraDetail
 /* ── HABIT DETAIL ── */
 let editHabitId=null, editHabitSectorId=null, _callerPage=null;
 function openHabitFromCal(hId){
-  _callerPage='cal';
-  closeCalPage();
-  requestAnimationFrame(()=>openHabitDetail(hId));
+  openHabitDetail(hId);
 }
 
 function openHabitDetail(hId,defaultSector){
@@ -1971,15 +1920,12 @@ function openHabitDetail(hId,defaultSector){
   }
 
   document.getElementById('habitDetail').classList.add('open');
-  if(isNew) setTimeout(()=>nameInput.focus(),350);
+  if(isNew) setTimeout(()=>{ nameInput.focus(); try{ nameInput.click(); }catch(e){} },80);
 }
 function hdType(t,el){ document.querySelectorAll('.hd-body .type-mini-btns .type-mini-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); }
 function htCatPick(el){ document.querySelectorAll('#hdCatRow .sector-pill').forEach(p=>p.classList.remove('active')); el.classList.add('active'); }
 function hdToggleTrackTime(el){ el.classList.toggle('on'); document.getElementById('hdCatRow').style.display=el.classList.contains('on')?'flex':'none'; }
-function closeHabitDetail(){
-  document.getElementById('habitDetail').classList.remove('open');
-  if(_callerPage==='cal'){ _callerPage=null; requestAnimationFrame(()=>openCalPage()); }
-}
+function closeHabitDetail(){ document.getElementById('habitDetail').classList.remove('open'); }
 function saveHabitDetail(){
   const name=document.getElementById('hdn')?.value.trim(); if(!name) return;
   const days=DAYS.map((_,i)=>document.getElementById(`hdd${i}`)?.classList.contains('active')?i:-1).filter(x=>x>=0);
@@ -1996,25 +1942,9 @@ function saveHabitDetail(){
   } else {
     const h=state.habits.find(x=>x.id===editHabitId); if(h) Object.assign(h,{name,type,days,url,archived,trackTime,trackCatId});
   }
-  save();
-  if(_callerPage==='cal'){
-    _callerPage=null;
-    closeHabitDetail();
-    renderSettings();
-    renderHome();
-    requestAnimationFrame(()=>openCalPage());
-  } else {
-    _callerPage=null;
-    closeHabitDetail(); renderSettings(); renderHome();
-  }
+  save(); closeHabitDetail(); renderSettings(); renderHome();
 }
-function deleteHabit(hId){
-  state.habits=state.habits.filter(x=>x.id!==hId);
-  save();
-  const fromCal=_callerPage==='cal'; _callerPage=null;
-  closeHabitDetail(); renderSettings(); renderHome();
-  if(fromCal) requestAnimationFrame(()=>openCalPage());
-}
+function deleteHabit(hId){ state.habits=state.habits.filter(x=>x.id!==hId); save(); closeHabitDetail(); renderSettings(); renderHome(); }
 
 /* ══ HABIT TIME SCREEN ══ */
 let htHabitId=null, htSelBlocks=new Set();
