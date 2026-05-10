@@ -583,15 +583,8 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 </div>
 
 <!-- SETTINGS -->
-<div id="settings" class="screen" style="overflow:visible;display:flex;flex-direction:column;">
-  <!-- Fixed top bar: just the fullscreen calendar button -->
-  <div style="position:absolute;top:0;left:0;right:0;z-index:10;height:calc(var(--safe-top) + 48px);display:flex;align-items:flex-end;justify-content:flex-end;padding:0 14px 8px;pointer-events:none">
-    <button onclick="openCalPage()" style="pointer-events:auto;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:20px;padding:6px 14px;font-size:12px;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;letter-spacing:.03em">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Kalendarz
-    </button>
-  </div>
-  <div class="settings-scroll" id="settingsScroll" style="padding-top:calc(var(--safe-top)+56px)"></div>
+<div id="settings" class="screen" style="display:flex;flex-direction:column;">
+  <div class="settings-scroll" id="settingsScroll" style="padding-top:calc(var(--safe-top)+20px)"></div>
 </div>
 
 
@@ -1542,26 +1535,7 @@ function _renderSettingsNow(){
   if(state.sectors.length<5) html+=`<button class="add-sector-btn-icon" onclick="addSector()">${plusSVG}</button>`;
   html+=`</div>`;
 
-  // EXTRAS
-  const extras=(state.extraStats||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
-  html+=`<div class="s-section"><div style="display:flex;align-items:center;justify-content:center;padding:8px 0;color:rgba(255,255,255,0.9)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>`;
-  if(extras.length){
-    html+=`<div class="extras-list-box">`;
-    extras.forEach(e=>html+=`<div class="extra-setting-row" id="esr-${e.id}" data-eid="${e.id}"
-      draggable="true"
-      ondragstart="eDragStart(event,'${e.id}')"
-      ondragover="eDragOver(event,'${e.id}')"
-      ondrop="eDragDrop(event,'${e.id}')"
-      ondragend="eDragEnd()"
-      ontouchstart="eRowTouchStart(event,'${e.id}')"
-      ontouchmove="eTouchDragMove(event)"
-      ontouchend="eTouchDragEnd(event)"
-      onclick="eRowClick(event,'${e.id}')">
-      <span class="extra-s-name">${e.name}</span>
-    </div>`);
-    html+=`</div>`;
-  }
-  html+=`<button class="add-sector-btn-icon" onclick="openExtraSheet()">${plusSVG}</button></div>`;
+
 
   const _curBg=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#061E0C';
   html+=`<div style="display:flex;align-items:center;justify-content:center;gap:0;margin-top:16px;margin-bottom:8px">
