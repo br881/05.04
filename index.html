@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#061E0C">
@@ -63,29 +63,19 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 .group-sep{height:16px;flex-shrink:0;}
 
 /* DONE STATE */
-.done-state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .4s ease;}
+.done-state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .6s cubic-bezier(.16,1,.3,1);}
 .done-state.show{opacity:1;}
 @keyframes pbShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
 @keyframes pbPop{0%{transform:scaleY(1);}40%{transform:scaleY(1.6);}70%{transform:scaleY(0.85);}100%{transform:scaleY(1);}}
 .pb-fill.pop{animation:pbPop .4s cubic-bezier(.34,1.56,.64,1);}
 @keyframes toastIn{0%{opacity:0;transform:translateX(-50%) translateY(10px);}100%{opacity:1;transform:translateX(-50%) translateY(0);}}
 @keyframes toastOut{0%{opacity:1;}100%{opacity:0;transform:translateX(-50%) translateY(8px);}}
-@keyframes doneIn{
-  0%  {opacity:0;transform:scale(.5) rotate(-8deg);}
-  55% {opacity:1;transform:scale(1.12) rotate(2deg);}
-  75% {transform:scale(.95) rotate(-1deg);}
-  100%{opacity:1;transform:scale(1) rotate(0deg);}
-}
-@keyframes checkDraw{0%{stroke-dashoffset:90;}60%{stroke-dashoffset:4;}100%{stroke-dashoffset:0;}}
-@keyframes doneGlow{
-  0%  {box-shadow:0 0 0 0 rgba(74,222,128,0);}
-  40% {box-shadow:0 0 0 28px rgba(74,222,128,0.18);}
-  100%{box-shadow:0 0 0 56px rgba(74,222,128,0);}
-}
-.done-mark{display:flex;align-items:center;justify-content:center;opacity:0;border-radius:50%;}
-.done-state.show .done-mark{animation:doneIn .7s .05s cubic-bezier(.34,1.45,.64,1) forwards, doneGlow .9s .2s ease-out forwards;}
-.done-mark svg{color:#4ade80;width:88px;height:88px;stroke-dasharray:90;stroke-dashoffset:90;drop-shadow:0 0 12px rgba(74,222,128,0.6);}
-.done-state.show .done-mark svg{animation:checkDraw .65s .25s cubic-bezier(.22,1,.36,1) forwards;}
+@keyframes doneIn{0%{opacity:0;transform:translateX(-40px) scale(.88);}60%{opacity:1;transform:translateX(4px) scale(1.02);}80%{transform:translateX(-2px) scale(.99);}100%{opacity:1;transform:translateX(0) scale(1);}}
+@keyframes checkDraw{0%{stroke-dashoffset:90;}70%{stroke-dashoffset:8;}100%{stroke-dashoffset:0;}}
+.done-mark{display:flex;align-items:center;justify-content:center;opacity:0;}
+.done-state.show .done-mark{animation:doneIn 1.1s .05s cubic-bezier(.16,1,.3,1) forwards;}
+.done-mark svg{color:#4ade80;width:77px;height:77px;stroke-dasharray:90;stroke-dashoffset:90;opacity:1;}
+.done-state.show .done-mark svg{animation:checkDraw 1.1s .2s cubic-bezier(.16,1,.3,1) forwards;}
 
 /* ADD TEMP overlay */
 .temp-overlay{position:fixed;inset:0;z-index:150;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 16px 24px;opacity:0;pointer-events:none;transition:opacity .22s ease;}
@@ -1492,7 +1482,7 @@ function _renderSettingsNow(){
 
   // ── INLINE CALENDAR (always visible) ──
   {
-    const _D=['Pn','Wt','Śr','Cz','Pt','Sb','Nd'];
+    const _D=['P','W','Ś','C','P','S','N'];
     const _calH=state.habits.filter(h=>!h.archived);
     const _SC=[['#60a5fa','rgba(96,165,250,0.13)'],['#34d399','rgba(52,211,153,0.13)'],['#fbbf24','rgba(251,191,36,0.13)'],['#c084fc','rgba(192,132,252,0.13)'],['#f87171','rgba(248,113,113,0.13)'],['#2dd4bf','rgba(45,212,191,0.13)']];
     html+=`<div style="padding-top:max(env(safe-area-inset-top,44px),44px)">`;
