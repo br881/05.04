@@ -32,7 +32,7 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 /* HOME LAYOUT */
 .habits-scroll{position:absolute;top:calc(var(--safe-top) + 13px);bottom:calc(var(--safe-bottom) + 124px);left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .habits-scroll::-webkit-scrollbar{display:none;}
-.habits-inner{width:100%;max-width:500px;margin:0 auto;padding:0 28px;box-sizing:border-box;}
+.habits-inner{width:100%;max-width:500px;margin:0 auto;padding:0 28px;box-sizing:border-box;transition:padding-top .5s cubic-bezier(.4,0,.2,1),padding-bottom .5s cubic-bezier(.4,0,.2,1);}
 .habits-zone{display:flex;flex-direction:column;gap:0;}
 .habits-zone-spacer-top,.habits-zone-spacer-bottom,.temps-zone{display:none;}
 
@@ -77,9 +77,9 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 }
 @keyframes checkDraw{0%{stroke-dashoffset:90;}100%{stroke-dashoffset:0;}}
 .done-mark{ display:flex; align-items:center; justify-content:center; opacity:0; }
-.done-state.show .done-mark{ animation:doneMarkFade 2.4s .1s ease forwards; }
+.done-state.show .done-mark{ animation:doneMarkFade 0.8s .1s ease forwards; }
 .done-mark svg{ color:#4ade80; width:77px; height:77px; stroke-dasharray:90; stroke-dashoffset:90; opacity:1; }
-.done-state.show .done-mark svg{ animation:checkDraw 2.4s .1s cubic-bezier(.4,0,.1,1) forwards; }
+.done-state.show .done-mark svg{ animation:checkDraw 0.8s .15s cubic-bezier(.4,0,.2,1) forwards; }
 
 /* ADD TEMP overlay */
 .temp-overlay{position:fixed;inset:0;z-index:150;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 16px 24px;opacity:0;pointer-events:none;transition:opacity .22s ease;}
@@ -928,15 +928,17 @@ function renderHome(){
     }
     return row;
   });
-  // Center habits-inner within scroll zone — computed once, static during animations
-  const _scroll=document.getElementById('habitsScroll');
-  const _inner=document.querySelector('.habits-inner');
-  if(_scroll&&_inner){
-    const avail=_scroll.offsetHeight;
-    const used=hList.offsetHeight;
-    const pt=Math.max(16, Math.round((avail-used)/2));
-    _inner.style.paddingTop=pt+'px';
-    _inner.style.paddingBottom=pt+'px';
+  // Center habits-inner — only if not in the middle of a tap animation
+  if(!window._tapAnimating){
+    const _scroll=document.getElementById('habitsScroll');
+    const _inner=document.querySelector('.habits-inner');
+    if(_scroll&&_inner){
+      const avail=_scroll.offsetHeight;
+      const used=hList.offsetHeight;
+      const pt=Math.max(16, Math.round((avail-used)/2));
+      _inner.style.paddingTop=pt+'px';
+      _inner.style.paddingBottom=pt+'px';
+    }
   }
 }
 
@@ -949,11 +951,11 @@ function thingsTap(key,onConfirm){
   const name=row.querySelector('.habit-name')?.textContent||'';
   const rect=row.getBoundingClientRect();
   const isLast=!row.nextElementSibling;
+  window._tapAnimating=true;
   spawnConfetti(rect.right-18, rect.top+10);
   row.classList.add('done-glow');
   // Freeze exact height so siblings don't shift during animation
   const h=row.getBoundingClientRect().height;
-  row.style.setProperty('--row-h', h+'px');
   row.style.height=h+'px';
   row.style.minHeight='0';
   row.style.overflow='hidden';
@@ -969,7 +971,7 @@ function thingsTap(key,onConfirm){
       row.offsetHeight;
       row.classList.add('vanishing');
       row.style.opacity='0'; row.style.height='0'; row.style.marginBottom='0';
-      const done=()=>{ row.remove(); renderHome(); showUndoToast(name,key,onConfirm); };
+      const done=()=>{ row.remove(); window._tapAnimating=false; renderHome(); showUndoToast(name,key,onConfirm); };
       row.addEventListener('transitionend',done,{once:true,passive:true});
       setTimeout(done,700);
     },500);
@@ -978,7 +980,7 @@ function thingsTap(key,onConfirm){
     row.classList.add('vanishing');
     row.style.opacity='0'; row.style.height='0'; row.style.marginBottom='0';
     onConfirm();
-    const done=()=>{ row.remove(); renderHome(); showUndoToast(name,key,onConfirm); };
+    const done=()=>{ row.remove(); window._tapAnimating=false; renderHome(); showUndoToast(name,key,onConfirm); };
     row.addEventListener('transitionend',done,{once:true,passive:true});
     setTimeout(done,650);
   }
@@ -1839,9 +1841,17 @@ function eRowClick(e,eId){ if(etDragMoved||etDragActive) return; openExtraDetail
 /* ── HABIT DETAIL ── */
 let editHabitId=null, editHabitSectorId=null, _callerPage=null;
 function openNewHabit(sectorId){
+  // Focus BEFORE opening screen — iOS only allows keyboard in same gesture tick
+  const tmp=document.createElement('input');
+  tmp.style.cssText='position:fixed;top:50%;left:50%;opacity:0;width:1px;height:1px;font-size:16px;';
+  document.body.appendChild(tmp);
+  tmp.focus();
   openHabitDetail('new', sectorId);
-  // Delay focus until after screen slide-in animation completes
-  setTimeout(()=>{ const i=document.getElementById('hdn'); if(i) i.focus(); },580);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const i=document.getElementById('hdn');
+    if(i){ i.focus(); }
+    tmp.remove();
+  }));
 }
 function openHabitFromCal(hId){
   openHabitDetail(hId);
