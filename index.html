@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, interactive-widget=resizes-content, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#061E0C">
@@ -1841,17 +1841,8 @@ function eRowClick(e,eId){ if(etDragMoved||etDragActive) return; openExtraDetail
 /* ── HABIT DETAIL ── */
 let editHabitId=null, editHabitSectorId=null, _callerPage=null;
 function openNewHabit(sectorId){
-  // Focus BEFORE opening screen — iOS only allows keyboard in same gesture tick
-  const tmp=document.createElement('input');
-  tmp.style.cssText='position:fixed;top:50%;left:50%;opacity:0;width:1px;height:1px;font-size:16px;';
-  document.body.appendChild(tmp);
-  tmp.focus();
   openHabitDetail('new', sectorId);
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    const i=document.getElementById('hdn');
-    if(i){ i.focus(); }
-    tmp.remove();
-  }));
+  setTimeout(()=>{ const i=document.getElementById('hdn'); if(i) i.focus(); }, 400);
 }
 function openHabitFromCal(hId){
   openHabitDetail(hId);
