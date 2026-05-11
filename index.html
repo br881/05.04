@@ -927,7 +927,8 @@ function renderHome(){
   diffZone(hList, remaining.map(h=>({key:'h'+h.id,h})), item=>{
     const h=item.h, row=document.createElement('div');
     row.id='row-'+h.id; row.className='habit-row row-enter';
-    row.onclick=()=>handleHabitTap(h.id);
+    row.addEventListener('pointerup', e=>{ if(e.button===0||e.pointerType==='touch') handleHabitTap(h.id); });
+    row.style.userSelect='none'; row.style.webkitUserSelect='none';
     if(h.trackTime && (h.type==='number'||h.type==='text')){
       // trackTime + number/text: show input field, tap row → ask value then open TT
       row.innerHTML=`<span class="habit-name" style="flex:1">${h.name}</span><input class="habit-value-input" type="${h.type==='number'?'number':'text'}" inputmode="${h.type==='number'?'numeric':'text'}" placeholder="" onclick="event.stopPropagation()" onchange="completeHabitInputThenTime('${h.id}',this)">`;
@@ -941,18 +942,6 @@ function renderHome(){
     }
     return row;
   });
-  // Center habits-inner — skip during tap animation and for 700ms after
-  if(!window._tapAnimating && !window._tapCooldown){
-    const _scroll=document.getElementById('habitsScroll');
-    const _inner=document.querySelector('.habits-inner');
-    if(_scroll&&_inner){
-      const avail=_scroll.offsetHeight;
-      const used=hList.offsetHeight;
-      const pt=Math.max(16, Math.round((avail-used)/2));
-      _inner.style.paddingTop=pt+'px';
-      _inner.style.paddingBottom=pt+'px';
-    }
-  }
 }
 
 /* ── THINGS TAP ── */
@@ -1522,8 +1511,8 @@ function _renderSettingsNow(){
         for(let d=0;d<7;d++){
           const on=h.days.includes(d);
           html+=`<div style="padding:2px 2px">${on
-            ?`<div onclick="openHabitFromCal('${h.id}')" style="border-left:2.5px solid ${s};padding:6px 5px;font-size:12px;color:rgba(255,255,255,0.88);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">${h.name}</div>`
-            :`<div style="height:26px"></div>`}</div>`;
+            ?`<div onclick="openHabitFromCal('${h.id}')" style="border-left:2.5px solid ${s};padding:7px 6px;font-size:14px;color:rgba(255,255,255,0.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">${h.name}</div>`
+            :`<div style="height:30px"></div>`}</div>`;
         }
         html+=`</div>`;
       });
