@@ -65,6 +65,10 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 /* DONE STATE */
 .done-state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .8s cubic-bezier(.16,1,.3,1);}
 .done-state.show{opacity:1;}
+.done-state.show-instant .done-mark{ animation:none!important; opacity:1; }
+.done-state.show-instant .done-mark svg{ animation:none!important; stroke-dashoffset:0; }
+.done-state.show-instant .done-mark{ animation:none!important; opacity:1; }
+.done-state.show-instant .done-mark svg{ animation:none!important; stroke-dashoffset:0; }
 @keyframes pbShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
 @keyframes pbPop{0%{transform:scaleY(1);}40%{transform:scaleY(1.6);}70%{transform:scaleY(0.85);}100%{transform:scaleY(1);}}
 .pb-fill.pop{animation:pbPop .4s cubic-bezier(.34,1.56,.64,1);}
@@ -279,7 +283,7 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 .drag-lift{opacity:.45!important;background:rgba(255,255,255,0.09)!important;}
 
 /* HABIT DETAIL */
-.habit-detail-screen{position:fixed;inset:0;z-index:300;background:var(--bg);transform:translateY(100%);transition:transform .38s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;overflow:hidden;}
+.habit-detail-screen{position:fixed;top:0;left:0;right:0;height:100%;z-index:300;background:var(--bg);transform:translateY(100%);transition:transform .38s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;overflow:hidden;}
 .habit-detail-screen.open{transform:translateY(0);}
 .hd-header{padding:calc(var(--safe-top)+2px) 20px 10px;display:flex;align-items:center;border:none;flex-shrink:0;}
 .hd-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:8px 24px calc(var(--safe-bottom)+60px);scrollbar-width:none;}
@@ -880,12 +884,21 @@ function renderHome(){
 
   if(remaining.length===0){
     Array.from(hList.children).forEach(r=>{ r.style.maxHeight=r.offsetHeight+'px'; r.classList.add('vanishing'); });
-    setTimeout(()=>{ hList.innerHTML=''; ds.classList.add('show'); },400);
+    const fromTap=window._doneFromTap; window._doneFromTap=false;
+    setTimeout(()=>{
+      hList.innerHTML='';
+      if(fromTap){
+        ds.classList.add('show');
+      } else {
+        // On initial load — show checkmark instantly, no animation
+        ds.classList.add('show','show-instant');
+      }
+    },fromTap?400:0);
     const dz=document.getElementById('doneSettingsZone');
     if(dz) dz.style.display='block';
     return;
   }
-  ds.classList.remove('show');
+  ds.classList.remove('show','show-instant');
 
   const dz=document.getElementById('doneSettingsZone');
   if(dz) dz.style.display='none';
@@ -971,7 +984,7 @@ function thingsTap(key,onConfirm){
       row.offsetHeight;
       row.classList.add('vanishing');
       row.style.opacity='0'; row.style.height='0'; row.style.marginBottom='0';
-      const done=()=>{ row.remove(); window._tapAnimating=false; renderHome(); showUndoToast(name,key,onConfirm); };
+      const done=()=>{ row.remove(); window._tapAnimating=false; window._doneFromTap=true; renderHome(); showUndoToast(name,key,onConfirm); };
       row.addEventListener('transitionend',done,{once:true,passive:true});
       setTimeout(done,700);
     },500);
@@ -980,7 +993,7 @@ function thingsTap(key,onConfirm){
     row.classList.add('vanishing');
     row.style.opacity='0'; row.style.height='0'; row.style.marginBottom='0';
     onConfirm();
-    const done=()=>{ row.remove(); window._tapAnimating=false; renderHome(); showUndoToast(name,key,onConfirm); };
+    const done=()=>{ row.remove(); window._tapAnimating=false; window._doneFromTap=true; renderHome(); showUndoToast(name,key,onConfirm); };
     row.addEventListener('transitionend',done,{once:true,passive:true});
     setTimeout(done,650);
   }
@@ -1595,11 +1608,11 @@ function _renderSettingsNow(){
 
   const _curBg=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#061E0C';
   html+=`<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;margin-bottom:8px">
-    <label style="background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;position:relative">
+    <label style="background:none;border:none;color:rgba(255,255,255,0.8);cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;position:relative">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
       <input type="color" id="_nativeBgPicker" style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;cursor:pointer;" oninput="applyBgColor(this.value)" onchange="applyBgColor(this.value)">
     </label>
-    <button onclick="showExportSheet()" style="background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
+    <button onclick="showExportSheet()" style="background:none;border:none;color:rgba(255,255,255,0.8);cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     </button>
   </div>`;
@@ -1840,8 +1853,15 @@ function eRowClick(e,eId){ if(etDragMoved||etDragActive) return; openExtraDetail
 let editHabitId=null, editHabitSectorId=null, _callerPage=null;
 function openNewHabit(sectorId){
   openHabitDetail('new', sectorId);
-  // Try focus at multiple intervals to catch iOS timing
-  [100,300,550].forEach(t=>setTimeout(()=>{ const i=document.getElementById('hdn'); if(i&&document.activeElement!==i) i.focus(); },t));
+  setTimeout(()=>{
+    const i=document.getElementById('hdn');
+    if(!i) return;
+    // Scroll input into view first, then focus
+    i.scrollIntoView({behavior:'instant',block:'center'});
+    i.focus();
+    // After keyboard opens, scroll again to ensure input is visible
+    setTimeout(()=>{ i.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 350);
+  }, 420);
 }
 function openHabitFromCal(hId){
   openHabitDetail(hId);
