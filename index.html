@@ -48,8 +48,8 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 /* HABIT TILE */
 .habit-row{display:flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;margin-bottom:10px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;will-change:opacity,transform;transition:opacity .3s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
 
-.habit-row.row-enter{opacity:0;transform:translateY(6px);}
-.habit-row.row-visible{opacity:1;transform:translateY(0);transition:opacity .32s ease,transform .32s cubic-bezier(.2,.8,.4,1);}
+.habit-row.row-enter{opacity:1;transform:none;}
+.habit-row.row-visible{opacity:1;transform:none;}
 .habit-row:active{opacity:.55;}
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
 .habit-row.vanishing{overflow:hidden;pointer-events:none;box-shadow:none!important;animation:none!important;will-change:opacity,height,margin-bottom;transition:opacity .42s ease-out,height .48s cubic-bezier(.4,0,.2,1),margin-bottom .48s cubic-bezier(.4,0,.2,1);}
@@ -721,7 +721,7 @@ function defaultState(){
     ],
     habits:[],
       daily:{},streaks:{},streakSectorId:'s1',
-    _doneOpen:false,_streakOpen:false,_archiveOpen:false,_lockOpen:false,_csvOpen:false,_csvSectorId:null,_timeStatsOpen:false,_statsOpen:true,_settingsOpen:false,_timePeriod:'week',
+    _doneOpen:false,_streakOpen:false,_archiveOpen:false,_lockOpen:false,_csvOpen:false,_csvSectorId:null,_timeStatsOpen:false,_statsOpen:false,_settingsOpen:false,_timePeriod:'week',
     timeEntries:{}, // keyed by date → array of {id,label,isWork:bool,blocks:[{h,q}]}
   };
 }
@@ -916,7 +916,7 @@ function renderHome(){
       if(!row){
         row=makeRow(item); row.dataset.key=item.key;
         container.insertBefore(row,container.children[i]||null);
-        requestAnimationFrame(()=>requestAnimationFrame(()=>row.classList.replace('row-enter','row-visible')));
+
       } else {
         if(row!==container.children[i]) container.insertBefore(row,container.children[i]||null);
         row.classList.remove('dimmed');
@@ -963,40 +963,30 @@ function thingsTap(key,onConfirm){
   if(timers[key]){ clearTimeout(timers[key]); delete timers[key]; return; }
   const name=row.querySelector('.habit-name')?.textContent||'';
   const rect=row.getBoundingClientRect();
-  const isLast=!row.nextElementSibling;
   window._tapAnimating=true;
   spawnConfetti(rect.right-18, rect.top+10);
   row.classList.add('done-glow');
-  // Freeze exact height so siblings don't shift during animation
+  // Freeze height
   const h=row.getBoundingClientRect().height;
   row.style.height=h+'px';
   row.style.minHeight='0';
   row.style.overflow='hidden';
   row.style.flexShrink='0';
-  // If last habit, animate progress bar to 100% first, then collapse
-  const pb_fill=document.getElementById('pbFill');
-  const pb_el=document.getElementById('progressBar');
-  if(isLast && pb_el && pb_fill){
-    pb_fill.style.width='100%';
-    onConfirm();
-    setTimeout(()=>{
-      pb_el.classList.remove('visible');
-      row.offsetHeight;
-      row.classList.add('vanishing');
-      row.style.opacity='0'; row.style.height='0'; row.style.marginBottom='0';
-      const done=()=>{ row.remove(); window._tapAnimating=false; window._doneFromTap=true; renderHome(); showUndoToast(name,key,onConfirm); };
-      row.addEventListener('transitionend',done,{once:true,passive:true});
-      setTimeout(done,700);
-    },500);
-  } else {
-    row.offsetHeight;
-    row.classList.add('vanishing');
-    row.style.opacity='0'; row.style.height='0'; row.style.marginBottom='0';
-    onConfirm();
-    const done=()=>{ row.remove(); window._tapAnimating=false; window._doneFromTap=true; renderHome(); showUndoToast(name,key,onConfirm); };
-    row.addEventListener('transitionend',done,{once:true,passive:true});
-    setTimeout(done,650);
-  }
+  // Mark done FIRST, then update progress bar with correct state
+  onConfirm();
+  updateProgressBar();
+  row.offsetHeight;
+  row.classList.add('vanishing');
+  row.style.opacity='0'; row.style.height='0'; row.style.marginBottom='0';
+  const done=()=>{
+    row.remove();
+    window._tapAnimating=false;
+    window._doneFromTap=true;
+    renderHome();
+    showUndoToast(name,key,onConfirm);
+  };
+  row.addEventListener('transitionend',done,{once:true,passive:true});
+  setTimeout(done,650);
 }
 let _undoTimer=null,_undoKey=null,_undoConfirm=null;
 function showUndoToast(name,key,onConfirm){
@@ -1507,7 +1497,7 @@ function _renderSettingsNow(){
   let html='';
   try{
 
-  const settingsOpen=state._settingsOpen===true;
+  const settingsOpen=state._settingsOpen===true; // default: false (closed)
 
   // ── INLINE CALENDAR (always visible) ──
   {
