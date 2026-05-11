@@ -30,9 +30,9 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 #home{transform:translateX(0);}
 
 /* HOME LAYOUT */
-.habits-scroll{position:absolute;top:calc(var(--safe-top) + 18px);bottom:calc(var(--safe-bottom) + 90px);left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;flex-direction:column;justify-content:center;}
+.habits-scroll{position:absolute;top:calc(var(--safe-top) + 13px);bottom:calc(var(--safe-bottom) + 124px);left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .habits-scroll::-webkit-scrollbar{display:none;}
-.habits-inner{width:100%;max-width:500px;margin:0 auto;padding:calc(var(--safe-top) + 28px) 28px calc(var(--safe-bottom) + 155px);box-sizing:border-box;}
+.habits-inner{width:100%;max-width:500px;margin:0 auto;padding:0 28px;box-sizing:border-box;}
 .habits-zone{display:flex;flex-direction:column;gap:0;}
 .habits-zone-spacer-top,.habits-zone-spacer-bottom,.temps-zone{display:none;}
 
@@ -928,6 +928,16 @@ function renderHome(){
     }
     return row;
   });
+  // Center habits-inner within scroll zone — computed once, static during animations
+  const _scroll=document.getElementById('habitsScroll');
+  const _inner=document.querySelector('.habits-inner');
+  if(_scroll&&_inner){
+    const avail=_scroll.offsetHeight;
+    const used=hList.offsetHeight;
+    const pt=Math.max(16, Math.round((avail-used)/2));
+    _inner.style.paddingTop=pt+'px';
+    _inner.style.paddingBottom=pt+'px';
+  }
 }
 
 /* ── THINGS TAP ── */
