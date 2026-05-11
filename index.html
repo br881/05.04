@@ -1594,15 +1594,13 @@ function _renderSettingsNow(){
 
 
   const _curBg=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#061E0C';
-  html+=`<div style="display:flex;align-items:center;justify-content:center;gap:0;margin-top:16px;margin-bottom:8px">
-    <label style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-family:inherit;position:relative">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
-      Kolor
+  html+=`<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;margin-bottom:8px">
+    <label style="background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;position:relative">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
       <input type="color" id="_nativeBgPicker" style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;cursor:pointer;" oninput="applyBgColor(this.value)" onchange="applyBgColor(this.value)">
     </label>
-    <button onclick="showExportSheet()" style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-family:inherit">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Pobierz
+    <button onclick="showExportSheet()" style="background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     </button>
   </div>`;
 
@@ -1842,7 +1840,8 @@ function eRowClick(e,eId){ if(etDragMoved||etDragActive) return; openExtraDetail
 let editHabitId=null, editHabitSectorId=null, _callerPage=null;
 function openNewHabit(sectorId){
   openHabitDetail('new', sectorId);
-  setTimeout(()=>{ const i=document.getElementById('hdn'); if(i) i.focus(); }, 400);
+  // Try focus at multiple intervals to catch iOS timing
+  [100,300,550].forEach(t=>setTimeout(()=>{ const i=document.getElementById('hdn'); if(i&&document.activeElement!==i) i.focus(); },t));
 }
 function openHabitFromCal(hId){
   openHabitDetail(hId);
@@ -1867,6 +1866,7 @@ function openHabitDetail(hId,defaultSector){
   nameWrap.style.cssText='padding:32px 0 22px';
   const nameInput=document.createElement('input');
   nameInput.className='hd-name-input'; nameInput.id='hdn'; nameInput.value=h.name;
+  if(isNew) nameInput.setAttribute('autofocus','autofocus');
   nameInput.placeholder=''; nameInput.style.cssText='width:100%;text-align:center';
   nameWrap.appendChild(nameInput); body.appendChild(nameWrap);
 
