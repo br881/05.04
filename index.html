@@ -30,9 +30,9 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 #home{transform:translateX(0);}
 
 /* HOME LAYOUT */
-.habits-scroll{position:absolute;top:calc(var(--safe-top) + 13px);bottom:calc(var(--safe-bottom) + 124px);left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.habits-scroll{position:absolute;top:calc(var(--safe-top) + 13px);bottom:calc(var(--safe-bottom) + 124px);left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;flex-direction:column;}
 .habits-scroll::-webkit-scrollbar{display:none;}
-.habits-inner{width:100%;max-width:500px;margin:0 auto;padding:0 28px;box-sizing:border-box;}
+.habits-inner{width:100%;max-width:500px;margin:0 auto;padding:0 28px;box-sizing:border-box;will-change:transform;transition:transform .4s cubic-bezier(.4,0,.2,1);}
 .habits-zone{display:flex;flex-direction:column;gap:0;}
 .habits-zone-spacer-top,.habits-zone-spacer-bottom,.temps-zone{display:none;}
 
@@ -46,7 +46,7 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 .temps-tray-inner::-webkit-scrollbar{display:none;}
 
 /* HABIT TILE */
-.habit-row{display:flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;margin-bottom:10px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;will-change:opacity,transform;transition:opacity .3s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);touch-action:pan-y;}
+.habit-row{display:flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;margin-bottom:10px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;will-change:opacity,transform;transition:opacity .3s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);touch-action:auto;}
 
 .habit-row.row-enter{opacity:1;transform:none;}
 .habit-row.row-visible{opacity:1;transform:none;}
@@ -927,11 +927,11 @@ function renderHome(){
   diffZone(hList, remaining.map(h=>({key:'h'+h.id,h})), item=>{
     const h=item.h, row=document.createElement('div');
     row.id='row-'+h.id; row.className='habit-row row-enter';
-    let _ptStartY=0, _ptMoved=false;
-    row.addEventListener('pointerdown', e=>{ _ptStartY=e.clientY; _ptMoved=false; });
-    row.addEventListener('pointermove', e=>{ if(Math.abs(e.clientY-_ptStartY)>6) _ptMoved=true; });
-    row.addEventListener('pointerup', e=>{ if(!_ptMoved && (e.button===0||e.pointerType==='touch')) handleHabitTap(h.id); });
-    row.style.userSelect='none'; row.style.webkitUserSelect='none';
+    let _ts=0,_ty=0,_moved=false;
+    row.addEventListener('touchstart',e=>{_ts=Date.now();_ty=e.touches[0].clientY;_moved=false;},{passive:true});
+    row.addEventListener('touchmove',e=>{if(Math.abs(e.touches[0].clientY-_ty)>5)_moved=true;},{passive:true});
+    row.addEventListener('touchend',e=>{if(!_moved&&Date.now()-_ts<400)handleHabitTap(h.id);},{passive:true});
+    row.style.userSelect='none';row.style.webkitUserSelect='none';
     if(h.trackTime && (h.type==='number'||h.type==='text')){
       // trackTime + number/text: show input field, tap row → ask value then open TT
       row.innerHTML=`<span class="habit-name" style="flex:1">${h.name}</span><input class="habit-value-input" type="${h.type==='number'?'number':'text'}" inputmode="${h.type==='number'?'numeric':'text'}" placeholder="" onclick="event.stopPropagation()" onchange="completeHabitInputThenTime('${h.id}',this)">`;
@@ -945,15 +945,15 @@ function renderHome(){
     }
     return row;
   });
-  // Center habits vertically — only when not animating
-  if(!window._tapAnimating && !window._tapCooldown){
+  // Center habits using translateY — no reflow, no jump
+  if(!window._tapAnimating){
     requestAnimationFrame(()=>{
       const sc=document.getElementById('habitsScroll');
       const inn=document.querySelector('.habits-inner');
       const hl=document.getElementById('habitsList');
       if(sc&&inn&&hl){
-        const pt=Math.max(0,Math.floor((sc.offsetHeight-hl.offsetHeight)/2));
-        inn.style.paddingTop=pt+'px';
+        const offset=Math.max(0,Math.floor((sc.offsetHeight-hl.offsetHeight)/2));
+        inn.style.transform=`translateY(${offset}px)`;
       }
     });
   }
@@ -968,45 +968,26 @@ function thingsTap(key,onConfirm){
   const name=row.querySelector('.habit-name')?.textContent||'';
   const rect=row.getBoundingClientRect();
   window._tapAnimating=true;
-  // Freeze centering padding so remaining habits don't jump
-  const inner=document.querySelector('.habits-inner');
-  if(inner) inner.dataset.frozenPt=inner.style.paddingTop;
   spawnConfetti(rect.right-18, rect.top+10);
   row.classList.add('done-glow');
-  // Freeze height
-  const h=row.getBoundingClientRect().height;
-  row.style.height=h+'px';
+  // Lock row height so collapse is smooth
+  const rowH=row.getBoundingClientRect().height;
+  row.style.height=rowH+'px';
   row.style.minHeight='0';
   row.style.overflow='hidden';
   row.style.flexShrink='0';
-  // Mark done FIRST, then update progress bar with correct state
   onConfirm();
   updateProgressBar();
-  row.offsetHeight;
+  row.offsetHeight; // reflow
   row.classList.add('vanishing');
-  row.style.opacity='0'; row.style.height='0'; row.style.marginBottom='0';
+  row.style.opacity='0';
+  row.style.height='0';
+  row.style.marginBottom='0';
   const done=()=>{
     row.remove();
     window._tapAnimating=false;
     window._doneFromTap=true;
-    window._tapCooldown=true;
-    // Restore frozen padding BEFORE renderHome so diffZone sees correct layout
-    const inn=document.querySelector('.habits-inner');
-    if(inn && inn.dataset.frozenPt) inn.style.paddingTop=inn.dataset.frozenPt;
     renderHome();
-    // After renderHome settles, recalculate centering smoothly
-    setTimeout(()=>{
-      window._tapCooldown=false;
-      const sc=document.getElementById('habitsScroll');
-      const i2=document.querySelector('.habits-inner');
-      const hl2=document.getElementById('habitsList');
-      if(sc&&i2&&hl2){
-        const pt=Math.max(0,Math.floor((sc.offsetHeight-hl2.offsetHeight)/2));
-        i2.style.transition='padding-top .35s cubic-bezier(.4,0,.2,1)';
-        i2.style.paddingTop=pt+'px';
-        setTimeout(()=>{ if(i2) i2.style.transition=''; },400);
-      }
-    },50);
     showUndoToast(name,key,onConfirm);
   };
   row.addEventListener('transitionend',done,{once:true,passive:true});
