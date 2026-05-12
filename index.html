@@ -942,6 +942,18 @@ function renderHome(){
     }
     return row;
   });
+  // Center habits vertically — only when not animating
+  if(!window._tapAnimating && !window._tapCooldown){
+    requestAnimationFrame(()=>{
+      const sc=document.getElementById('habitsScroll');
+      const inn=document.querySelector('.habits-inner');
+      const hl=document.getElementById('habitsList');
+      if(sc&&inn&&hl){
+        const pt=Math.max(0,Math.floor((sc.offsetHeight-hl.offsetHeight)/2));
+        inn.style.paddingTop=pt+'px';
+      }
+    });
+  }
 }
 
 /* ── THINGS TAP ── */
@@ -953,6 +965,9 @@ function thingsTap(key,onConfirm){
   const name=row.querySelector('.habit-name')?.textContent||'';
   const rect=row.getBoundingClientRect();
   window._tapAnimating=true;
+  // Freeze centering padding so remaining habits don't jump
+  const inner=document.querySelector('.habits-inner');
+  if(inner) inner.dataset.frozenPt=inner.style.paddingTop;
   spawnConfetti(rect.right-18, rect.top+10);
   row.classList.add('done-glow');
   // Freeze height
@@ -971,9 +986,17 @@ function thingsTap(key,onConfirm){
     row.remove();
     window._tapAnimating=false;
     window._doneFromTap=true;
-    window._tapCooldown=true;
+    // Restore frozen padding, then recalculate cleanly after a frame
+    const inn=document.querySelector('.habits-inner');
+    if(inn && inn.dataset.frozenPt) inn.style.paddingTop=inn.dataset.frozenPt;
     renderHome();
-    setTimeout(()=>{ window._tapCooldown=false; renderHome(); }, 100);
+    requestAnimationFrame(()=>{
+      window._tapCooldown=false;
+      const s=document.getElementById('habitsScroll');
+      const i=document.querySelector('.habits-inner');
+      const hl=document.getElementById('habitsList');
+      if(s&&i&&hl){ const pt=Math.max(0,Math.floor((s.offsetHeight-hl.offsetHeight)/2)); i.style.paddingTop=pt+'px'; }
+    });
     showUndoToast(name,key,onConfirm);
   };
   row.addEventListener('transitionend',done,{once:true,passive:true});
@@ -1505,14 +1528,14 @@ function _renderSettingsNow(){
       const sh=_calH.filter(h=>h.sectorId===sec.id).sort((a,b)=>(a.order||0)-(b.order||0));
       if(!sh.length) return;
       const [s,f]=_SC[si%_SC.length];
-      html+=`<div style="padding:10px 0 3px;text-align:center"><span style="font-size:11px;color:${s};font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.8">${sec.name}</span></div>`;
+      html+=`<div style="padding:14px 0 16px;text-align:center"><span style="font-size:15px;color:rgba(255,255,255,0.4);font-weight:600;letter-spacing:.06em;text-transform:uppercase">${sec.name}</span></div>`;
       sh.forEach(h=>{
-        html+=`<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0">`;
+        html+=`<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px">`;
         for(let d=0;d<7;d++){
           const on=h.days.includes(d);
           html+=`<div style="padding:2px 2px">${on
-            ?`<div onclick="openHabitFromCal('${h.id}')" style="border-left:2.5px solid ${s};padding:7px 6px;font-size:14px;color:rgba(255,255,255,0.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">${h.name}</div>`
-            :`<div style="height:30px"></div>`}</div>`;
+            ?`<div onclick="openHabitFromCal('${h.id}')" style="background:rgba(255,255,255,0.09);border-radius:5px;padding:8px 4px;font-size:15px;color:rgba(255,255,255,0.92);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.35;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;text-align:center">${h.name}</div>`
+            :`<div style="height:33px"></div>`}</div>`;
         }
         html+=`</div>`;
       });
@@ -1590,7 +1613,7 @@ function _renderSettingsNow(){
   const _curBg=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#061E0C';
   html+=`<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;margin-bottom:8px">
     <label style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;position:relative">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
       <input type="color" id="_nativeBgPicker" style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;cursor:pointer;" oninput="applyBgColor(this.value)" onchange="applyBgColor(this.value)">
     </label>
     <button onclick="showExportSheet()" style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
