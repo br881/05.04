@@ -586,6 +586,7 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 
 <!-- SETTINGS -->
 <div id="settings" class="screen" style="display:flex;flex-direction:column;">
+  <button onclick="closeSettings()" style="position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);left:8px;width:52px;height:52px;background:none;border:none;z-index:20;cursor:pointer;opacity:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;"></button>
   <div class="settings-scroll" id="settingsScroll" style="padding-top:0"></div>
 </div>
 
@@ -983,7 +984,7 @@ function thingsTap(key,onConfirm){
   // Use Web Animations API — bypasses CSS transition conflicts entirely
   const anim=row.animate([
     { opacity:1, height:fullH+'px', marginBottom:mb+'px', paddingTop:pt+'px', paddingBottom:pb+'px', overflow:'hidden' },
-    { opacity:0, height:'0px',      marginBottom:'0px',   paddingTop:'0px',   paddingBottom:'0px',  overflow:'hidden' }
+    { opacity:1, height:'0px',      marginBottom:'0px',   paddingTop:'0px',   paddingBottom:'0px',  overflow:'hidden' }
   ],{ duration:dur, easing:'cubic-bezier(0.4,0,0.2,1)', fill:'forwards' });
 
   let _doneFired=false;
