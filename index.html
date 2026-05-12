@@ -79,11 +79,11 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
   20% { opacity:1; }
   100%{ opacity:1; }
 }
-@keyframes checkDraw{0%{stroke-dashoffset:90;}35%{stroke-dashoffset:8;}50%{stroke-dashoffset:4;}63%{stroke-dashoffset:2;}74%{stroke-dashoffset:1;}83%{stroke-dashoffset:0.4;}90%{stroke-dashoffset:0.1;}95%{stroke-dashoffset:0.02;}100%{stroke-dashoffset:0;}}
+@keyframes checkDraw{0%{stroke-dashoffset:90;}35%{stroke-dashoffset:8;}50%{stroke-dashoffset:4;}63%{stroke-dashoffset:2;}73%{stroke-dashoffset:1;}80%{stroke-dashoffset:0.4;}86%{stroke-dashoffset:0.15;}91%{stroke-dashoffset:0.05;}95%{stroke-dashoffset:0.01;}98%{stroke-dashoffset:0.002;}100%{stroke-dashoffset:0;}}
 .done-mark{ display:flex; align-items:center; justify-content:center; opacity:0; }
 .done-state.show .done-mark{ animation:doneMarkFade 0.6s .05s ease-out forwards; }
 .done-mark svg{ color:#4ade80; width:77px; height:77px; stroke-dasharray:90; stroke-dashoffset:90; opacity:1; }
-.done-state.show .done-mark svg{ animation:checkDraw 2.4s .1s linear forwards; }
+.done-state.show .done-mark svg{ animation:checkDraw 3.2s .1s linear forwards; }
 
 /* ADD TEMP overlay */
 .temp-overlay{position:fixed;inset:0;z-index:150;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 16px 24px;opacity:0;pointer-events:none;transition:opacity .22s ease;}
@@ -1732,11 +1732,12 @@ function saveSector(sId){
   const sec=state.sectors.find(s=>s.id===sId); if(!sec) return;
   const nameEl=document.getElementById(`sn-${sId}`);
   if(nameEl){const n=nameEl.value.trim(); if(n) sec.name=n;}
-  const rows=document.querySelectorAll(`#ssl-${sId} .sec-schedule-row`);
-  sec.schedules=Array.from(rows).map(row=>{
+  const ssl=document.getElementById(`ssl-${sId}`);
+  const rows=ssl?Array.from(ssl.children).filter(el=>el.id&&el.id.startsWith(`ssr-${sId}-`)):[];
+  sec.schedules=rows.map(row=>{
     const si=row.id.split('-').pop();
     const days=[];
-    row.querySelectorAll('.day-mini-btn').forEach((b,di)=>{ if(b.classList.contains('on')) days.push(di); });
+    row.querySelectorAll('.day-btn').forEach((b,di)=>{ if(b.classList.contains('active')) days.push(di); });
     return {
       startH:clamp(parseInt(document.getElementById(`sh-${sId}-${si}`)?.value)||0,0,23),
       startM:clamp(parseInt(document.getElementById(`sm-${sId}-${si}`)?.value)||0,0,59),
@@ -1746,6 +1747,27 @@ function saveSector(sId){
     };
   });
   save(); expandedSectors.delete(sId); renderSettings();
+}
+function saveSectorSilent(sId){
+  const sec=state.sectors.find(s=>s.id===sId); if(!sec) return;
+  const nameEl=document.getElementById(`sn-${sId}`);
+  if(nameEl){const n=nameEl.value.trim(); if(n) sec.name=n;}
+  const ssl=document.getElementById(`ssl-${sId}`);
+  const rows=ssl?Array.from(ssl.children).filter(el=>el.id&&el.id.startsWith(`ssr-${sId}-`)):[];
+  if(!rows.length) return;
+  sec.schedules=rows.map(row=>{
+    const si=row.id.split('-').pop();
+    const days=[];
+    row.querySelectorAll('.day-btn').forEach((b,di)=>{ if(b.classList.contains('active')) days.push(di); });
+    return {
+      startH:clamp(parseInt(document.getElementById(`sh-${sId}-${si}`)?.value)||0,0,23),
+      startM:clamp(parseInt(document.getElementById(`sm-${sId}-${si}`)?.value)||0,0,59),
+      endH:clamp(parseInt(document.getElementById(`eh-${sId}-${si}`)?.value)||0,0,23),
+      endM:clamp(parseInt(document.getElementById(`em-${sId}-${si}`)?.value)||0,0,59),
+      weekdays:days
+    };
+  });
+  save();
 }
 function clamp(v,mn,mx){ return Math.min(mx,Math.max(mn,v)); }
 function addSector(){
@@ -2833,7 +2855,20 @@ function mcReorder(fromId,toId){
 if('serviceWorker'in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 renderHome();
 setInterval(renderHome,60000);
-document.addEventListener('visibilitychange',()=>{ if(!document.hidden) renderHome(); });
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden){ renderHome(); return; }
+  // Auto-save any open sector editor when app goes to background
+  document.querySelectorAll('.sector-block.expanded').forEach(block=>{
+    const sId=block.id.replace('sb-','');
+    if(sId) saveSectorSilent(sId);
+  });
+});
+window.addEventListener('pagehide',()=>{
+  document.querySelectorAll('.sector-block.expanded').forEach(block=>{
+    const sId=block.id.replace('sb-','');
+    if(sId) saveSectorSilent(sId);
+  });
+});
 
 // Swipe from left edge to close habitDetail (slide-down screens)
 (()=>{
