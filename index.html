@@ -164,7 +164,7 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 .sector-block-header:active{opacity:.6;}
 .sbn{font-size:18px;color:#ffffff;font-weight:400;}
 .sector-habits-box{margin-top:6px;background:rgba(255,255,255,0.32);border-radius:12px;overflow:hidden;padding:2px 0;}
-.sector-habit-row{display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;cursor:grab;touch-action:none;transition:opacity .15s;user-select:none;-webkit-user-select:none;position:relative;}
+.sector-habit-row{display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;cursor:grab;touch-action:pan-y;transition:opacity .15s;user-select:none;-webkit-user-select:none;position:relative;}
 .sector-habit-row:active{opacity:.5;cursor:grabbing;}
 .shr-name{font-size:18px;color:#ffffff;font-weight:400;text-align:center;}
 .add-habit-row{display:flex;align-items:center;justify-content:center;padding:10px 4px;color:rgba(255,255,255,0.35);cursor:pointer;touch-action:auto;transition:opacity .15s;background:transparent!important;}
@@ -1767,25 +1767,29 @@ function doReorderH(fromId,toId){
   state.habits.filter(h=>h.sectorId===from.sectorId).forEach((h,i)=>h.order=i);
   save(); renderSettings();
 }
-let tDragId=null,tDragOverId=null,tDragMoved=false,tDragActive=false,tDragStartX=0,tDragStartY=0,tDragTimer=null;
-function hRowTouchStart(e,hId){
-  tDragId=hId; tDragMoved=false; tDragActive=false;
-  tDragStartX=e.touches[0].clientX; tDragStartY=e.touches[0].clientY;
-  tDragTimer=setTimeout(()=>{ tDragActive=true; document.getElementById('shr-'+hId)?.classList.add('drag-lift'); },280);
-}
-function touchDragMove(e){
+let tDragId=null,tDragOverId=null,tDragMoved=false,tDragActive=false,tDragStartX=0,tDragStartY=0,tDragTimer=null,tDragEl=null;
+function _tDragMoveHandler(e){
   if(!tDragId) return;
   const dx=Math.abs(e.touches[0].clientX-tDragStartX),dy=Math.abs(e.touches[0].clientY-tDragStartY);
   if(dx>8||dy>8){
-    if(!tDragActive){ clearTimeout(tDragTimer); tDragTimer=null; tDragId=null; return; }
+    if(!tDragActive){ clearTimeout(tDragTimer); tDragTimer=null; tDragId=null; if(tDragEl){ tDragEl.removeEventListener('touchmove',_tDragMoveHandler); tDragEl=null; } return; }
     tDragMoved=true; e.preventDefault();
     const el=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY)?.closest('[data-hid]');
     const oid=el?.dataset.hid;
     if(oid&&oid!==tDragId&&oid!==tDragOverId){ tDragOverId=oid; highlightH(oid); }
   }
 }
+function hRowTouchStart(e,hId){
+  tDragId=hId; tDragMoved=false; tDragActive=false;
+  tDragStartX=e.touches[0].clientX; tDragStartY=e.touches[0].clientY;
+  tDragEl=e.currentTarget;
+  tDragEl.addEventListener('touchmove',_tDragMoveHandler,{passive:false});
+  tDragTimer=setTimeout(()=>{ tDragActive=true; document.getElementById('shr-'+hId)?.classList.add('drag-lift'); },280);
+}
+function touchDragMove(e){ /* handled by per-element listener */ }
 function touchDragEnd(e,sId){
   clearTimeout(tDragTimer); tDragTimer=null;
+  if(tDragEl){ tDragEl.removeEventListener('touchmove',_tDragMoveHandler); tDragEl=null; }
   document.getElementById('shr-'+tDragId)?.classList.remove('drag-lift');
   if(tDragActive&&tDragMoved&&tDragOverId&&tDragOverId!==tDragId) doReorderH(tDragId,tDragOverId);
   else{ clearHighH(); if(!tDragActive&&!tDragMoved) openHabitDetail(tDragId); else renderSettings(); }
