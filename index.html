@@ -30,9 +30,9 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 #home{transform:translateX(0);}
 
 /* HOME LAYOUT */
-.habits-scroll{position:absolute;top:calc(var(--safe-top) + 13px);bottom:calc(var(--safe-bottom) + 124px);left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;flex-direction:column;}
+.habits-scroll{position:absolute;top:calc(var(--safe-top) + 13px);bottom:calc(var(--safe-bottom) + 124px);left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;flex-direction:column;align-items:stretch;}
 .habits-scroll::-webkit-scrollbar{display:none;}
-.habits-inner{width:100%;max-width:500px;margin:0 auto;padding:0 28px;box-sizing:border-box;will-change:transform;transition:transform .4s cubic-bezier(.4,0,.2,1);}
+.habits-inner{width:100%;max-width:500px;margin:auto;padding:0 28px;box-sizing:border-box;}
 .habits-zone{display:flex;flex-direction:column;gap:0;}
 .habits-zone-spacer-top,.habits-zone-spacer-bottom,.temps-zone{display:none;}
 
@@ -945,18 +945,7 @@ function renderHome(){
     }
     return row;
   });
-  // Center habits using translateY — no reflow, no jump
-  if(!window._tapAnimating){
-    requestAnimationFrame(()=>{
-      const sc=document.getElementById('habitsScroll');
-      const inn=document.querySelector('.habits-inner');
-      const hl=document.getElementById('habitsList');
-      if(sc&&inn&&hl){
-        const offset=Math.max(0,Math.floor((sc.offsetHeight-hl.offsetHeight)/2));
-        inn.style.transform=`translateY(${offset}px)`;
-      }
-    });
-  }
+
 }
 
 /* ── THINGS TAP ── */
