@@ -979,13 +979,9 @@ function thingsTap(key,onConfirm){
   const mb=parseFloat(cs.marginBottom)||0;
   const pt=parseFloat(cs.paddingTop)||0;
   const pb=parseFloat(cs.paddingBottom)||0;
-  const dur=400;
 
-  // Use Web Animations API — bypasses CSS transition conflicts entirely
-  const anim=row.animate([
-    { opacity:1, height:fullH+'px', marginBottom:mb+'px', paddingTop:pt+'px', paddingBottom:pb+'px', overflow:'hidden' },
-    { opacity:1, height:'0px',      marginBottom:'0px',   paddingTop:'0px',   paddingBottom:'0px',  overflow:'hidden' }
-  ],{ duration:dur, easing:'cubic-bezier(0.4,0,0.2,1)', fill:'forwards' });
+  const pause=180;   // zawieszenie jak w Things 3
+  const collapseDur=320; // collapse spring
 
   let _doneFired=false;
   const done=()=>{
@@ -996,8 +992,16 @@ function thingsTap(key,onConfirm){
     renderHome();
     showUndoToast(name,key,onConfirm);
   };
-  anim.onfinish=done;
-  setTimeout(done, dur+80);
+
+  // Krótkie zawieszenie, potem collapse
+  setTimeout(()=>{
+    const anim=row.animate([
+      { height:fullH+'px', marginBottom:mb+'px', paddingTop:pt+'px', paddingBottom:pb+'px', overflow:'hidden' },
+      { height:'0px',      marginBottom:'0px',   paddingTop:'0px',   paddingBottom:'0px',  overflow:'hidden' }
+    ],{ duration:collapseDur, easing:'cubic-bezier(0.4,0,0.2,1)', fill:'forwards' });
+    anim.onfinish=done;
+    setTimeout(done, collapseDur+60);
+  }, pause);
 }
 let _undoTimer=null,_undoKey=null,_undoConfirm=null;
 function showUndoToast(name,key,onConfirm){
