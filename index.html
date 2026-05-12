@@ -996,15 +996,15 @@ function thingsTap(key,onConfirm){
     { duration:120, easing:'ease-out', fill:'forwards' }
   );
 
-  // Phase 2: hold dimmed (~160ms), then collapse
+  // Phase 2: hold dimmed, then collapse
   setTimeout(()=>{
     const anim=row.animate([
       { opacity:0.35, height:fullH+'px', marginBottom:mb+'px', paddingTop:pt+'px', paddingBottom:pb+'px', overflow:'hidden' },
       { opacity:0.35, height:'0px',      marginBottom:'0px',   paddingTop:'0px',   paddingBottom:'0px',  overflow:'hidden' }
-    ],{ duration:300, easing:'cubic-bezier(0.4,0,0.2,1)', fill:'forwards' });
+    ],{ duration:400, easing:'cubic-bezier(0.4,0,0.2,1)', fill:'forwards' });
     anim.onfinish=done;
-    setTimeout(done, 380);
-  }, 280);
+    setTimeout(done, 480);
+  }, 420);
 }
 let _undoTimer=null,_undoKey=null,_undoConfirm=null;
 function showUndoToast(name,key,onConfirm){
