@@ -927,7 +927,10 @@ function renderHome(){
   diffZone(hList, remaining.map(h=>({key:'h'+h.id,h})), item=>{
     const h=item.h, row=document.createElement('div');
     row.id='row-'+h.id; row.className='habit-row row-enter';
-    row.addEventListener('pointerup', e=>{ if(e.button===0||e.pointerType==='touch') handleHabitTap(h.id); });
+    let _ptStartY=0, _ptMoved=false;
+    row.addEventListener('pointerdown', e=>{ _ptStartY=e.clientY; _ptMoved=false; });
+    row.addEventListener('pointermove', e=>{ if(Math.abs(e.clientY-_ptStartY)>6) _ptMoved=true; });
+    row.addEventListener('pointerup', e=>{ if(!_ptMoved && (e.button===0||e.pointerType==='touch')) handleHabitTap(h.id); });
     row.style.userSelect='none'; row.style.webkitUserSelect='none';
     if(h.trackTime && (h.type==='number'||h.type==='text')){
       // trackTime + number/text: show input field, tap row → ask value then open TT
@@ -986,17 +989,24 @@ function thingsTap(key,onConfirm){
     row.remove();
     window._tapAnimating=false;
     window._doneFromTap=true;
-    // Restore frozen padding, then recalculate cleanly after a frame
+    window._tapCooldown=true;
+    // Restore frozen padding BEFORE renderHome so diffZone sees correct layout
     const inn=document.querySelector('.habits-inner');
     if(inn && inn.dataset.frozenPt) inn.style.paddingTop=inn.dataset.frozenPt;
     renderHome();
-    requestAnimationFrame(()=>{
+    // After renderHome settles, recalculate centering smoothly
+    setTimeout(()=>{
       window._tapCooldown=false;
-      const s=document.getElementById('habitsScroll');
-      const i=document.querySelector('.habits-inner');
-      const hl=document.getElementById('habitsList');
-      if(s&&i&&hl){ const pt=Math.max(0,Math.floor((s.offsetHeight-hl.offsetHeight)/2)); i.style.paddingTop=pt+'px'; }
-    });
+      const sc=document.getElementById('habitsScroll');
+      const i2=document.querySelector('.habits-inner');
+      const hl2=document.getElementById('habitsList');
+      if(sc&&i2&&hl2){
+        const pt=Math.max(0,Math.floor((sc.offsetHeight-hl2.offsetHeight)/2));
+        i2.style.transition='padding-top .35s cubic-bezier(.4,0,.2,1)';
+        i2.style.paddingTop=pt+'px';
+        setTimeout(()=>{ if(i2) i2.style.transition=''; },400);
+      }
+    },50);
     showUndoToast(name,key,onConfirm);
   };
   row.addEventListener('transitionend',done,{once:true,passive:true});
@@ -1530,12 +1540,12 @@ function _renderSettingsNow(){
       const [s,f]=_SC[si%_SC.length];
       html+=`<div style="padding:14px 0 16px;text-align:center"><span style="font-size:15px;color:rgba(255,255,255,0.4);font-weight:600;letter-spacing:.06em;text-transform:uppercase">${sec.name}</span></div>`;
       sh.forEach(h=>{
-        html+=`<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px">`;
+        html+=`<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px">`;
         for(let d=0;d<7;d++){
           const on=h.days.includes(d);
           html+=`<div style="padding:2px 2px">${on
-            ?`<div onclick="openHabitFromCal('${h.id}')" style="background:rgba(255,255,255,0.09);border-radius:5px;padding:8px 4px;font-size:15px;color:rgba(255,255,255,0.92);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.35;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;text-align:center">${h.name}</div>`
-            :`<div style="height:33px"></div>`}</div>`;
+            ?`<div onclick="openHabitFromCal('${h.id}')" style="background:rgba(255,255,255,0.13);border-radius:5px;padding:10px 4px;font-size:15px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.35;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;text-align:center">${h.name}</div>`
+            :`<div style="height:37px"></div>`}</div>`;
         }
         html+=`</div>`;
       });
