@@ -52,7 +52,8 @@ html,html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF 
 .habit-row.row-visible{opacity:1;transform:none;}
 .habit-row:active{opacity:.55;}
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
-.habit-row.vanishing{overflow:hidden;pointer-events:none;box-shadow:none!important;animation:none!important;will-change:opacity,height,margin-bottom;transition:opacity .42s ease-out,height .48s cubic-bezier(.4,0,.2,1),margin-bottom .48s cubic-bezier(.4,0,.2,1);}
+.habit-row.vanishing{overflow:hidden;pointer-events:none;box-shadow:none!important;animation:none!important;will-change:opacity,height,margin-bottom,padding-top,padding-bottom;transition:opacity .38s ease-out,height .44s cubic-bezier(.4,0,.2,1),margin-bottom .44s cubic-bezier(.4,0,.2,1),padding-top .44s cubic-bezier(.4,0,.2,1),padding-bottom .44s cubic-bezier(.4,0,.2,1);}
+.habit-row.flip-moving{transition:transform .44s cubic-bezier(.4,0,.2,1);will-change:transform;}
 .habit-row.temp-row .habit-name{color:rgba(120,235,120,1);font-weight:500;}
 .habit-name{font-size:21px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
 .habit-value-input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.38);color:#ffffff;font-size:17px;font-family:inherit;outline:none;width:72px;text-align:right;padding:2px 0 4px;transition:border-color .2s;font-weight:600;}
@@ -958,29 +959,69 @@ function thingsTap(key,onConfirm){
   const rect=row.getBoundingClientRect();
   window._tapAnimating=true;
   spawnConfetti(rect.right-18, rect.top+10);
-  row.classList.add('done-glow');
-  // Lock row height so collapse is smooth
+
+  // ── FLIP: snapshot positions of all sibling rows BEFORE collapse ──
+  const hList=row.parentElement;
+  const siblings=Array.from(hList.children).filter(el=>el!==row&&!el.classList.contains('vanishing'));
+  const beforeRects=new Map(siblings.map(el=>[el,el.getBoundingClientRect().top]));
+
+  // Measure row that will collapse
   const rowH=row.getBoundingClientRect().height;
+  const rowMB=parseFloat(getComputedStyle(row).marginBottom)||10;
+  const totalCollapse=rowH+rowMB;
+
+  // Freeze the row dimensions and start fading/collapsing it
   row.style.height=rowH+'px';
   row.style.minHeight='0';
   row.style.overflow='hidden';
   row.style.flexShrink='0';
+
   onConfirm();
   updateProgressBar();
-  row.offsetHeight; // reflow
-  row.classList.add('vanishing');
+
+  const dur=420;
+  const ease='cubic-bezier(.4,0,.2,1)';
+
+  // Force reflow before starting transitions
+  row.offsetHeight;
+
+  // Animate the tapped row collapsing
+  row.style.transition=`opacity ${dur}ms ease-out, height ${dur}ms ${ease}, margin-bottom ${dur}ms ${ease}, padding-top ${dur}ms ${ease}, padding-bottom ${dur}ms ${ease}`;
   row.style.opacity='0';
   row.style.height='0';
   row.style.marginBottom='0';
+  row.style.paddingTop='0';
+  row.style.paddingBottom='0';
+
+  // ── FLIP: slide siblings to their natural new position smoothly ──
+  // First, disable their transitions and place them at old position
+  siblings.forEach(el=>{
+    const oldTop=beforeRects.get(el);
+    if(oldTop===undefined) return;
+    el.style.transition='none';
+    el.style.transform=`translateY(${totalCollapse}px)`;
+  });
+  // Reflow to commit the displaced positions
+  hList.offsetHeight;
+  // Now animate each sibling back to translateY(0) — natural layout
+  siblings.forEach(el=>{
+    el.style.transition=`transform ${dur}ms ${ease}`;
+    el.style.transform='translateY(0)';
+  });
+
+  // Cleanup after animation completes — guard against double-fire
+  let _doneFired=false;
   const done=()=>{
+    if(_doneFired) return; _doneFired=true;
     row.remove();
+    siblings.forEach(el=>{ el.style.transition=''; el.style.transform=''; });
     window._tapAnimating=false;
     window._doneFromTap=true;
     renderHome();
     showUndoToast(name,key,onConfirm);
   };
-  row.addEventListener('transitionend',done,{once:true,passive:true});
-  setTimeout(done,650);
+  row.addEventListener('transitionend',e=>{ if(e.propertyName==='height') done(); },{passive:true});
+  setTimeout(done, dur+60);
 }
 let _undoTimer=null,_undoKey=null,_undoConfirm=null;
 function showUndoToast(name,key,onConfirm){
