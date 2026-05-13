@@ -114,9 +114,6 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 
 
 /* ── SOLO LEVELING EFFECT ── */
-@keyframes slGateOpen{0%{transform:scale(0.2) rotate(-15deg);opacity:0;filter:brightness(3);}30%{opacity:1;filter:brightness(2);}70%{transform:scale(1.15) rotate(3deg);opacity:0.9;}100%{transform:scale(1) rotate(0deg);opacity:0;}}
-@keyframes slRune{0%{opacity:0;transform:translate(-50%,-50%) scale(0) rotate(0deg);}25%{opacity:1;filter:drop-shadow(0 0 8px #60a5fa);}60%{transform:translate(-50%,-50%) scale(1.2) rotate(180deg);opacity:0.8;}100%{transform:translate(-50%,-50%) scale(0.3) rotate(360deg);opacity:0;}}
-@keyframes slPortal{0%{transform:translate(-50%,-50%) scale(0);opacity:0;}20%{opacity:1;}70%{transform:translate(-50%,-50%) scale(1);opacity:0.7;}100%{transform:translate(-50%,-50%) scale(1.4);opacity:0;}}
 /* OVERLAY */
 .overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0);pointer-events:none;transition:background .3s;}
 .overlay.open{background:rgba(0,0,0,.8);pointer-events:all;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
@@ -738,21 +735,27 @@ function migrateState(s){
 let state;
 try{ const r=localStorage.getItem('hs9'); state=r?migrateState(JSON.parse(r)):defaultState(); }catch{ state=defaultState(); }
 let _saveTimer=null;
+// UI-only state — not persisted to localStorage
+const ui={ timeCardOpen:false, habitsCardOpen:false, weekCalOpen:false, habitsTimeOpen:false };
+function saveNow(){
+  if(_saveTimer){ clearTimeout(_saveTimer); _saveTimer=null; }
+  // Archive timeEntries older than 90 days
+  const now=new Date();
+  if(state.timeEntries){
+    for(const dk of Object.keys(state.timeEntries)){
+      const d=new Date(dk+'T00:00:00');
+      if((now-d)/(864e5)>90) delete state.timeEntries[dk];
+    }
+  }
+  try{ localStorage.setItem('hs9',JSON.stringify(state)); }catch{}
+}
 function save(){
   // Debounce rapid saves (e.g. during animations)
   if(_saveTimer) clearTimeout(_saveTimer);
   _saveTimer=setTimeout(()=>{
     _saveTimer=null;
-    // Archive timeEntries older than 60 days
-    const now=new Date();
-    if(state.timeEntries){
-      for(const dk of Object.keys(state.timeEntries)){
-        const d=new Date(dk+'T00:00:00');
-        if((now-d)/(864e5)>90){ delete state.timeEntries[dk]; }
-      }
-    }
-    try{ localStorage.setItem('hs9',JSON.stringify(state)); }catch{}
-  },60);
+    saveNow();
+  },300);
 }
 function saveNow(){
   if(_saveTimer){ clearTimeout(_saveTimer); _saveTimer=null; }
@@ -760,10 +763,23 @@ function saveNow(){
   try{ localStorage.setItem('hs9',JSON.stringify(state)); }catch{}
 }
 
-function today(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+let _todayCache=null,_todayTick=-1;
+function today(){
+  const now=Date.now();
+  if(_todayTick<0||now-_todayTick>1000){ const d=new Date(); _todayCache=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; _todayTick=now; }
+  return _todayCache;
+}
 function jsDay(){ const d=new Date().getDay(); return d===0?6:d-1; }
 function fmtDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function getDayData(){ const k=today(); if(!state.daily[k]) state.daily[k]={habits:{},extras:{},temps:{}}; return state.daily[k]; }
+
+let _sectorCache=null,_sectorTick=-1;
+function getActiveSectorCached(){
+  const now=Date.now();
+  if(_sectorTick<0||now-_sectorTick>5000){ _sectorCache=getActiveSector(); _sectorTick=now; }
+  return _sectorCache;
+}
+function invalidateSectorCache(){ _sectorTick=-1; }
 function isDone(v){ return v!==undefined&&v!==null&&v!==false&&v!==''; }
 
 function getActiveSector(){
@@ -776,33 +792,33 @@ function getActiveSector(){
 
 
 /* ── RENDER HOME ── */
-function spawnConfetti(cx,cy){ rewardEffect(cx,cy); }
-function rewardEffect(cx,cy){
-  const ox=cx, oy=cy;
-  // Gate portal
-  const portal=document.createElement('div');
-  portal.style.cssText=`position:fixed;left:${ox}px;top:${oy}px;width:44px;height:44px;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)`;
-  const psvg=document.createElementNS('http://www.w3.org/2000/svg','svg');
-  psvg.setAttribute('viewBox','0 0 44 44');
-  psvg.setAttribute('width','44');psvg.setAttribute('height','44');
-  psvg.style.cssText='animation:slPortal .5s ease-out forwards;filter:drop-shadow(0 0 6px #3b82f6)';
-  psvg.innerHTML=`<polygon points="22,2 38,11 38,33 22,42 6,33 6,11" fill="none" stroke="#60a5fa" stroke-width="2" opacity="0.9"/><polygon points="22,8 33,14 33,30 22,36 11,30 11,14" fill="rgba(59,130,246,0.18)" stroke="#93c5fd" stroke-width="1"/>`;
-  portal.appendChild(psvg);
-  document.body.appendChild(portal);
-  portal.addEventListener('animationend',()=>portal.remove(),{once:true});
-  // Runes
-  const runeChars=['ᚱ','ᚢ','ᚾ','ᛖ','ᛗ'];
-  const colors=['#60a5fa','#93c5fd','#3b82f6','#bfdbfe','#dbeafe'];
-  for(let i=0;i<5;i++){
-    const ang=(i/5)*Math.PI*2-(Math.PI/2);
-    const r=28+Math.random()*14;
-    const rx=ox+Math.cos(ang)*r, ry=oy+Math.sin(ang)*r;
-    const rune=document.createElement('div');
-    rune.textContent=runeChars[i];
-    rune.style.cssText=`position:fixed;left:${rx}px;top:${ry}px;font-size:${10+Math.random()*6}px;color:${colors[i]};pointer-events:none;z-index:9999;transform:translate(-50%,-50%) scale(0) rotate(0deg);animation:slRune ${0.4+Math.random()*0.25}s ${i*0.04}s ease-out forwards;text-shadow:0 0 8px ${colors[i]};font-weight:700;`;
-    document.body.appendChild(rune);
-    rune.addEventListener('animationend',()=>rune.remove(),{once:true});
-  }
+function diffZone(container, items, makeRow){
+  Array.from(container.children).forEach(row=>{
+    if(!items.find(it=>it.key===row.dataset.key)){
+      const h=row.offsetHeight;
+      const cs=getComputedStyle(row);
+      const mb=parseFloat(cs.marginBottom)||0;
+      const pt=parseFloat(cs.paddingTop)||0;
+      const pb=parseFloat(cs.paddingBottom)||0;
+      row.classList.add('vanishing');
+      const a=row.animate([
+        {opacity:1,height:h+'px',marginBottom:mb+'px',paddingTop:pt+'px',paddingBottom:pb+'px',overflow:'hidden'},
+        {opacity:0,height:'0px',marginBottom:'0px',paddingTop:'0px',paddingBottom:'0px',overflow:'hidden'}
+      ],{duration:320,easing:'cubic-bezier(0.4,0,0.2,1)',fill:'forwards'});
+      a.onfinish=()=>row.remove();
+      setTimeout(()=>row.remove(),400);
+    }
+  });
+  items.forEach((item,i)=>{
+    let row=container.querySelector(`[data-key="${item.key}"]`);
+    if(!row){
+      row=makeRow(item); row.dataset.key=item.key;
+      container.insertBefore(row,container.children[i]||null);
+    } else {
+      if(row!==container.children[i]) container.insertBefore(row,container.children[i]||null);
+      row.classList.remove('dimmed');
+    }
+  });
 }
 
 function updateProgressBar(){
@@ -812,7 +828,7 @@ function updateProgressBar(){
   const today_=today();
   const d=new Date(today_+'T00:00:00');
   const jsd=d.getDay()===0?6:d.getDay()-1;
-  const sector=getActiveSector();
+  const sector=getActiveSectorCached();
   const habits=(state.habits||[]).filter(h=>!h.archived&&h.sectorId===sector?.id&&(h.days||[]).includes(jsd));
   const dd=state.daily?.[today_]?.habits||{};
   const _done=habits.filter(h=>isDone(dd[h.id])).length;
@@ -824,7 +840,7 @@ function updateProgressBar(){
 
 
 function renderHome(){
-  const sector=getActiveSector();
+  const sector=getActiveSectorCached();
   const hList=document.getElementById('habitsList');
   setTimeout(updateProgressBar,0);
   const ds=document.getElementById('doneState');
@@ -868,36 +884,6 @@ function renderHome(){
   const dz=document.getElementById('doneSettingsZone');
   if(dz) dz.style.display='none';
 
-  function diffZone(container, items, makeRow){
-    Array.from(container.children).forEach(row=>{
-      if(!items.find(it=>it.key===row.dataset.key)){
-        // animate out rows that are no longer in the list
-        const h=row.offsetHeight;
-        const cs=getComputedStyle(row);
-        const mb=parseFloat(cs.marginBottom)||0;
-        const pt=parseFloat(cs.paddingTop)||0;
-        const pb=parseFloat(cs.paddingBottom)||0;
-        row.classList.add('vanishing');
-        const a=row.animate([
-          {opacity:1,height:h+'px',marginBottom:mb+'px',paddingTop:pt+'px',paddingBottom:pb+'px',overflow:'hidden'},
-          {opacity:0,height:'0px',marginBottom:'0px',paddingTop:'0px',paddingBottom:'0px',overflow:'hidden'}
-        ],{duration:320,easing:'cubic-bezier(0.4,0,0.2,1)',fill:'forwards'});
-        a.onfinish=()=>row.remove();
-        setTimeout(()=>row.remove(),400);
-      }
-    });
-    items.forEach((item,i)=>{
-      let row=container.querySelector(`[data-key="${item.key}"]`);
-      if(!row){
-        row=makeRow(item); row.dataset.key=item.key;
-        container.insertBefore(row,container.children[i]||null);
-
-      } else {
-        if(row!==container.children[i]) container.insertBefore(row,container.children[i]||null);
-        row.classList.remove('dimmed');
-      }
-    });
-  }
 
   diffZone(hList, remaining.map(h=>({key:'h'+h.id,h})), item=>{
     const h=item.h, row=document.createElement('div');
@@ -930,8 +916,6 @@ function thingsTap(key,onConfirm){
   if(!row) return;
   if(timers[key]){ clearTimeout(timers[key]); delete timers[key]; return; }
   const name=row.querySelector('.habit-name')?.textContent||'';
-  const rect=row.getBoundingClientRect();
-  spawnConfetti(rect.right-18, rect.top+10);
 
   onConfirm();
   updateProgressBar();
@@ -1605,15 +1589,10 @@ function _renderSettingsNow(){
   }catch(err){ console.error('_renderSettingsNow error:',err,err.stack); scroll.innerHTML=`<div style="padding:40px 20px;color:rgba(255,100,100,.7);font-size:13px">Błąd: ${err.message}<br><pre style="font-size:10px;opacity:.6;white-space:pre-wrap">${err.stack?.split('\n').slice(0,4).join('\n')}</pre></div>`; }
 }
 
-function getTimeWeekStats(){ return {}; }
 
 
 
 
-function toggleHabitsArchive(){
-  state._habitsArchiveOpen=!state._habitsArchiveOpen;
-  save(); renderSettings();
-}
 
 
 function toggleArchiveHabit(hId){
@@ -1621,8 +1600,7 @@ function toggleArchiveHabit(hId){
   h.archived=true; save(); renderSettings();
 }
 function toggleHabitsTimeView(){
-  state._habitsTimeOpen=!state._habitsTimeOpen;
-  save(); renderSettings();
+  ui.habitsTimeOpen=!ui.habitsTimeOpen; renderSettings();
 }
 function toggleHabitTrackTime(hId){
   const h=state.habits.find(x=>x.id===hId); if(!h) return;
@@ -1632,35 +1610,18 @@ function toggleHabitTrackTime(hId){
 }
 // setHabitTrackCat removed
 function saveHabitTimePicks(){
-  state._habitsTimeOpen=false; save(); renderSettings();
-}
-let _swipeStatX=0;
-function swipeStatStart(e){ _swipeStatX=e.touches[0].clientX; }
-function swipeStatEnd(e){ /* locked to 7 days */ }
-function toggleHabitsExpanded(){
-  state._habitsExpanded=!state._habitsExpanded;
-  if(!state._habitsExpanded) state._habitsPicking=false;
-  save(); renderSettings();
+  ui.habitsTimeOpen=false; renderSettings();
 }
 
 
 
 function toggleStatCard(type){
-  if(type==='time'){ state._timeCardOpen=!state._timeCardOpen; save(); renderSettings(); return; }
-  if(type==='habits'){ state._habitsCardOpen=!state._habitsCardOpen; save(); renderSettings(); return; }
-}
-function focusHabitStats(hId){
-  state._focusedHabitId=hId;
-  save();
-}
-function clearFocusedHabit(){
-  state._focusedHabitId=null;
-  save(); renderSettings();
+  if(type==='time'){ ui.timeCardOpen=!ui.timeCardOpen; renderSettings(); return; }
+  if(type==='habits'){ ui.habitsCardOpen=!ui.habitsCardOpen; renderSettings(); return; }
 }
 function toggleFold(key){
   if(key==='settings'){ state._settingsOpen=!state._settingsOpen; save(); renderSettings(); return; }
-  if(key==='weekCal'){ state._weekCalOpen=!state._weekCalOpen; save(); renderSettings(); return; }
-  save(); renderSettings();
+  if(key==='weekCal'){ ui.weekCalOpen=!ui.weekCalOpen; renderSettings(); return; }
 }
 const expandedSectors=new Set();
 function toggleSB(sId){
@@ -1678,16 +1639,16 @@ function toggleSectorArchive(sId){
 function addSchedule(sId){
   const sec=state.sectors.find(s=>s.id===sId); if(!sec) return;
   const l=sec.schedules[sec.schedules.length-1]||{startH:9,startM:0,endH:17,endM:0,weekdays:[0,1,2,3,4]};
-  sec.schedules.push({...l,weekdays:[...l.weekdays]}); save(); renderSettings();
+  sec.schedules.push({...l,weekdays:[...l.weekdays]}); invalidateSectorCache(); save(); renderSettings();
   setTimeout(()=>{ const el=document.getElementById(`sb-${sId}`); if(el&&!el.classList.contains('expanded')) el.classList.add('expanded'); },30);
 }
-function removeSchedule(sId,si){ const sec=state.sectors.find(s=>s.id===sId); if(!sec||sec.schedules.length<=1) return; sec.schedules.splice(si,1); save(); renderSettings(); }
-function saveSector(sId){
-  const sec=state.sectors.find(s=>s.id===sId); if(!sec) return;
+function removeSchedule(sId,si){ const sec=state.sectors.find(s=>s.id===sId); if(!sec||sec.schedules.length<=1) return; sec.schedules.splice(si,1); invalidateSectorCache(); save(); renderSettings(); }
+function _readSectorFromDOM(sId,sec){
   const nameEl=document.getElementById(`sn-${sId}`);
   if(nameEl){const n=nameEl.value.trim(); if(n) sec.name=n;}
   const ssl=document.getElementById(`ssl-${sId}`);
   const rows=ssl?Array.from(ssl.children).filter(el=>el.id&&el.id.startsWith(`ssr-${sId}-`)):[];
+  if(!rows.length) return false;
   sec.schedules=rows.map(row=>{
     const si=row.id.split('-').pop();
     const days=[];
@@ -1700,28 +1661,16 @@ function saveSector(sId){
       weekdays:days
     };
   });
-  save(); expandedSectors.delete(sId); renderSettings();
+  return true;
+}
+function saveSector(sId){
+  const sec=state.sectors.find(s=>s.id===sId); if(!sec) return;
+  _readSectorFromDOM(sId,sec);
+  invalidateSectorCache(); save(); expandedSectors.delete(sId); renderSettings();
 }
 function saveSectorSilent(sId){
   const sec=state.sectors.find(s=>s.id===sId); if(!sec) return;
-  const nameEl=document.getElementById(`sn-${sId}`);
-  if(nameEl){const n=nameEl.value.trim(); if(n) sec.name=n;}
-  const ssl=document.getElementById(`ssl-${sId}`);
-  const rows=ssl?Array.from(ssl.children).filter(el=>el.id&&el.id.startsWith(`ssr-${sId}-`)):[];
-  if(!rows.length) return;
-  sec.schedules=rows.map(row=>{
-    const si=row.id.split('-').pop();
-    const days=[];
-    row.querySelectorAll('.day-btn').forEach((b,di)=>{ if(b.classList.contains('active')) days.push(di); });
-    return {
-      startH:clamp(parseInt(document.getElementById(`sh-${sId}-${si}`)?.value)||0,0,23),
-      startM:clamp(parseInt(document.getElementById(`sm-${sId}-${si}`)?.value)||0,0,59),
-      endH:clamp(parseInt(document.getElementById(`eh-${sId}-${si}`)?.value)||0,0,23),
-      endM:clamp(parseInt(document.getElementById(`em-${sId}-${si}`)?.value)||0,0,59),
-      weekdays:days
-    };
-  });
-  save();
+  if(_readSectorFromDOM(sId,sec)) save();
 }
 function clamp(v,mn,mx){ return Math.min(mx,Math.max(mn,v)); }
 function addSector(){
@@ -2787,17 +2736,18 @@ renderHome();
 setInterval(renderHome,60000);
 document.addEventListener('visibilitychange',()=>{
   if(!document.hidden){ renderHome(); return; }
-  // Auto-save any open sector editor when app goes to background
   document.querySelectorAll('.sector-block.expanded').forEach(block=>{
     const sId=block.id.replace('sb-','');
     if(sId) saveSectorSilent(sId);
   });
+  saveNow();
 });
 window.addEventListener('pagehide',()=>{
   document.querySelectorAll('.sector-block.expanded').forEach(block=>{
     const sId=block.id.replace('sb-','');
     if(sId) saveSectorSilent(sId);
   });
+  saveNow();
 });
 
 // Swipe from left edge to close habitDetail (slide-down screens)
