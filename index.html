@@ -8,8 +8,8 @@
 <meta name="theme-color" content="#061E0C">
 <title>·</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='#061E0C'/><circle cx='50' cy='50' r='32' stroke='white' stroke-width='6' fill='none'/></svg>">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='#061E0C'/><circle cx='50' cy='50' r='32' stroke='white' stroke-width='6' fill='none'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23000000'/><circle cx='50' cy='50' r='32' stroke='white' stroke-width='5' fill='none'/><polyline points='34,50 44,62 66,38' stroke='white' stroke-width='5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23000000'/><circle cx='50' cy='50' r='32' stroke='white' stroke-width='5' fill='none'/><polyline points='34,50 44,62 66,38' stroke='white' stroke-width='5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 <style>
 :root{
   --bg:#061E0C;--bg2:#0d0d0d;--tile:#181818;--tile2:#141414;--tile-border:rgba(255,255,255,0.07);
@@ -680,6 +680,7 @@ const chevR=`<svg width="6" height="10" viewBox="0 0 6 10" fill="none" stroke="c
 const plusSVG=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
 const trashSVG=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>`;
 const checkSVG=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+const starSVG=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
 const lockSVG=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
 const clockSVG=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 15 14"/></svg>`;
 
@@ -702,6 +703,7 @@ function migrateState(s){
   for(const sec of s.sectors){
     if(nm[sec.name]) sec.name=nm[sec.name];
     if(!sec.schedules) sec.schedules=[{startH:sec.startH||8,startM:sec.startM||0,endH:sec.endH||17,endM:sec.endM||0,weekdays:sec.weekdays||[0,1,2,3,4]}];
+    if(sec.isDefault===undefined) sec.isDefault=false;
   }
   for(const h of s.habits){
     if(h.paused!==undefined&&h.archived===undefined){ h.archived=h.paused; delete h.paused; }
@@ -773,7 +775,8 @@ function getActiveSector(){
   for(const s of state.sectors)
     for(const sc of (s.schedules||[]))
       if(sc.weekdays.includes(jsd)&&cur>=sc.startH*60+sc.startM&&cur<sc.endH*60+sc.endM) return s;
-  return null;
+  // fallback: sektor domyślny (brak harmonogramu) lub pierwszy sektor
+  return state.sectors.find(s=>s.isDefault) || state.sectors[0] || null;
 }
 
 
@@ -1500,6 +1503,7 @@ function _renderSettingsNow(){
           <div style="display:flex;gap:8px;margin-top:22px">
             <button class="sec-act-btn danger" id="del-sec-${sec.id}" onclick="askDelete(this,'${sec.name.replace(/'/g,"\'")}',()=>deleteSector('${sec.id}'))" style="flex:0;padding:12px 18px">${trashSVG}</button>
             <button class="sec-act-btn${sec.archived?' open-state':''}" onclick="toggleSectorArchive('${sec.id}')" style="flex:0;padding:12px 18px">${lockSVG}</button>
+            <button class="sec-act-btn${sec.isDefault?' open-state':''}" onclick="toggleSectorDefault('${sec.id}')" style="flex:0;padding:12px 18px" title="Domyślny sektor">${starSVG}</button>
             <button class="save-btn" onclick="saveSector('${sec.id}')" style="flex:1;padding:13px">Zapisz</button>
           </div>
         </div>
@@ -1595,6 +1599,13 @@ function toggleSectorArchive(sId){
   const sec=state.sectors.find(s=>s.id===sId); if(!sec) return;
   sec.archived=!sec.archived; save(); renderSettings();
 }
+function toggleSectorDefault(sId){
+  // Only one sector can be default — toggle off if already default, else set new one
+  state.sectors.forEach(s=>{ s.isDefault = (s.id===sId) ? !s.isDefault : false; });
+  invalidateSectorCache(); save(); renderSettings();
+}
+
+
 
 /* ── SECTOR CRUD ── */
 function addSchedule(sId){
@@ -2027,14 +2038,9 @@ function showExportSheet(){
   ov.id='exportSheet';
   ov.style.cssText='position:fixed;inset:0;z-index:700;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)';
   ov.innerHTML=`<div style="width:100%;max-width:480px;background:#111;border-radius:24px 24px 0 0;padding:20px 24px calc(env(safe-area-inset-bottom,20px)+24px);box-sizing:border-box">
-    <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 20px"></div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:.08em;text-transform:uppercase;text-align:center;margin-bottom:14px">Separator</div>
-    <div style="display:flex;gap:8px;margin-bottom:18px;justify-content:center">
-      <button id="sepComma" onclick="document.getElementById('sepComma').style.background='rgba(61,221,101,0.45)';document.getElementById('sepSemi').style.background='rgba(255,255,255,0.06)';window._csvSep=','" style="flex:1;padding:11px;border-radius:10px;background:rgba(61,221,101,0.45);border:none;color:#fff;font-size:15px;font-family:inherit;cursor:pointer">, przecinek</button>
-      <button id="sepSemi" onclick="document.getElementById('sepSemi').style.background='rgba(61,221,101,0.45)';document.getElementById('sepComma').style.background='rgba(255,255,255,0.06)';window._csvSep=';'" style="flex:1;padding:11px;border-radius:10px;background:rgba(255,255,255,0.06);border:none;color:#fff;font-size:15px;font-family:inherit;cursor:pointer">; średnik</button>
-    </div>
-    <button onclick="exportCSV(window._csvSep||',');document.getElementById('exportSheet').remove()" style="width:100%;background:rgba(61,221,101,0.55);color:#fff;font-size:16px;font-weight:600;border:none;border-radius:14px;padding:16px;cursor:pointer;font-family:inherit;margin-bottom:10px">Pobierz CSV</button>
-    <button onclick="document.getElementById('exportSheet').remove()" style="width:100%;background:none;border:none;color:rgba(255,255,255,0.35);font-size:14px;cursor:pointer;font-family:inherit;padding:10px">Anuluj</button>
+    <div style="width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.12);margin:0 auto 22px"></div>
+    <button class="save-btn" onclick="exportCSV(',');document.getElementById('exportSheet').remove()" style="margin-bottom:10px">Pobierz CSV</button>
+    <button onclick="document.getElementById('exportSheet').remove()" style="width:100%;background:none;border:none;color:rgba(255,255,255,0.3);font-size:14px;cursor:pointer;font-family:inherit;padding:10px">Anuluj</button>
   </div>`;
   ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
   document.body.appendChild(ov);
