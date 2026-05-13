@@ -74,11 +74,11 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
   20% { opacity:1; }
   100%{ opacity:1; }
 }
-@keyframes checkDraw{0%{stroke-dashoffset:90;}35%{stroke-dashoffset:8;}50%{stroke-dashoffset:4;}63%{stroke-dashoffset:2;}73%{stroke-dashoffset:1;}80%{stroke-dashoffset:0.4;}86%{stroke-dashoffset:0.15;}91%{stroke-dashoffset:0.05;}95%{stroke-dashoffset:0.01;}98%{stroke-dashoffset:0.002;}100%{stroke-dashoffset:0;}}
+@keyframes checkDraw{0%{stroke-dashoffset:90;}28%{stroke-dashoffset:8;}40%{stroke-dashoffset:4;}52%{stroke-dashoffset:2;}63%{stroke-dashoffset:1;}72%{stroke-dashoffset:0.4;}80%{stroke-dashoffset:0.12;}87%{stroke-dashoffset:0.03;}93%{stroke-dashoffset:0.006;}97%{stroke-dashoffset:0.001;}100%{stroke-dashoffset:0;}}
 .done-mark{ display:flex; align-items:center; justify-content:center; opacity:0; }
 .done-state.show .done-mark{ animation:doneMarkFade 0.6s .05s ease-out forwards; }
 .done-mark svg{ color:#4ade80; width:77px; height:77px; stroke-dasharray:90; stroke-dashoffset:90; opacity:1; }
-.done-state.show .done-mark svg{ animation:checkDraw 3.2s .1s linear forwards; }
+.done-state.show .done-mark svg{ animation:checkDraw 2.6s .1s linear forwards; }
 
 /* ADD TEMP overlay */
 .temp-overlay{position:fixed;inset:0;z-index:150;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 16px 24px;opacity:0;pointer-events:none;transition:opacity .22s ease;}
