@@ -32,7 +32,7 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 /* HOME LAYOUT */
 .habits-scroll{position:absolute;top:calc(var(--safe-top) + 13px);bottom:calc(var(--safe-bottom) + 124px);left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;flex-direction:column;align-items:stretch;}
 .habits-scroll::-webkit-scrollbar{display:none;}
-.habits-inner{width:100%;max-width:500px;margin:auto;padding:0 28px;box-sizing:border-box;}
+.habits-inner{width:100%;max-width:500px;margin:auto;padding:32px 28px 0;box-sizing:border-box;}
 .habits-zone{display:flex;flex-direction:column;gap:0;}
 
 /* TEMPS TRAY */
@@ -233,21 +233,7 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 .done-clear-btn:active{opacity:1;background:rgba(224,85,85,0.07);color:var(--red);}
 
 /* STREAK panel — last 7 days, day-number only */
-.streak-sector-pills{display:flex;}
-.streak-pill{flex:1;padding:9px 8px;border:none;background:none;color:var(--ui);font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s;text-align:center;}
-.streak-pill:last-child{border-right:none;}
-.streak-pill.active{background:var(--accent-dim);color:var(--accent-bright);}
-.streak-list{display:flex;flex-direction:column;gap:10px;padding:12px 14px;}
-.streak-row{display:flex;align-items:center;gap:10px;}
 .srn{font-size:12px;color:var(--ui);width:70px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.streak-bar-wrap{flex:1;position:relative;height:20px;display:flex;align-items:center;gap:2px;}
-.streak-day-dot{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,0.07);position:relative;}
-.streak-day-dot.done{background:rgba(52,199,89,0.5);}
-.streak-day-dot.done.today{background:rgba(52,199,89,0.9);}
-.streak-day-num{position:absolute;bottom:-11px;left:50%;transform:translateX(-50%);font-size:8px;color:rgba(255,255,255,0.2);white-space:nowrap;}
-.streak-count{font-size:11px;color:var(--accent);font-weight:600;min-width:20px;text-align:right;opacity:.7;}
-.streak-dots-header{display:flex;gap:2px;padding:0 14px 4px;margin-top:6px;}
-.streak-dot-label{flex:1;text-align:center;font-size:9px;color:rgba(255,255,255,0.2);}
 
 .empty{display:flex;align-items:center;justify-content:center;padding:16px;}
 .empty-text{font-size:12px;color:var(--ui);opacity:.4;}
@@ -705,7 +691,7 @@ function defaultState(){
       {id:'sw',name:'☀️',schedules:[{startH:8,startM:0,endH:22,endM:0,weekdays:[5,6]}]},
     ],
     habits:[],
-      daily:{},streaks:{},streakSectorId:'s1',
+      daily:{},
     _settingsOpen:false,
     timeEntries:{}, // keyed by date → array of {id,label,isWork:bool,blocks:[{h,q}]}
   };
@@ -975,7 +961,7 @@ function undoLastComplete(){
   dismissUndoToast();
   if(!_undoKey) return;
   const hId=_undoKey;
-  const dd=getDayData(); delete dd.habits[hId]; updateStreak(hId,false); save(); renderHome();
+  const dd=getDayData(); delete dd.habits[hId]; save(); renderHome();
 }
 function handleHabitTap(hId){
   const h=state.habits.find(x=>x.id===hId); if(!h) return;
@@ -1026,7 +1012,7 @@ function handleTempTap(tId){
     {opacity:0,height:'0px',marginBottom:'0px',paddingTop:'0px',paddingBottom:'0px',overflow:'hidden'}
   ],{duration:300,easing:'cubic-bezier(0.4,0,0.2,1)',fill:'forwards'}).onfinish=()=>{ row.remove(); renderHome(); showUndoToast(name,key,()=>save()); };
 }
-function completeHabit(hId,val){ const dd=getDayData(); dd.habits[hId]=val; updateStreak(hId,true); save(); }
+function completeHabit(hId,val){ const dd=getDayData(); dd.habits[hId]=val; save(); }
 function completeHabitInput(hId,input){
   const val=input.value.trim(); if(!val) return;
   input.blur();
@@ -1401,31 +1387,6 @@ function saveExtraDetail(){
 function deleteExtraD(eId){ deleteExtra(eId); closeExtraDetail(); }
 
 /* ── STREAKS — last 7 days, day-number only ── */
-function updateStreak(hId,done){
-  if(!state.streaks[hId]) state.streaks[hId]=[];
-  const t=today();
-  const i=state.streaks[hId].findIndex(x=>x.date===t);
-  if(i>=0) state.streaks[hId][i].done=done;
-  else state.streaks[hId].push({date:t,done});
-  state.streaks[hId]=state.streaks[hId].slice(-90);
-}
-function getLast7(hId){
-  const out=[]; const d=new Date(); const t=today();
-  for(let i=6;i>=0;i--){
-    const d2=new Date(d); d2.setDate(d.getDate()-i);
-    const k=fmtDate(d2);
-    const e=(state.streaks[hId]||[]).find(x=>x.date===k);
-    out.push({done:e?.done||false,isToday:k===t,dayNum:d2.getDate()});
-  }
-  return out;
-}
-function getStreakCount(hId){
-  const arr=(state.streaks[hId]||[]).slice().sort((a,b)=>b.date.localeCompare(a.date));
-  let cnt=0;
-  for(const e of arr){ if(!e.done) break; cnt++; }
-  return cnt;
-}
-function setStreakSector(id){ state.streakSectorId=id; save(); renderSettings(); }
 
 /* ── SETTINGS ── */
 function openSettings(){
