@@ -392,6 +392,19 @@ function openSheet(){
   }
   let html='<div style="display:flex;flex-direction:column;gap:10px;padding:8px 0">';
   for(const e of pending){
+    if(e.type==='checkbox'){
+      html+=`<div id="xrow-${e.id}" style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.06);border-radius:14px;padding:14px 16px;gap:12px">
+        <span style="font-size:16px;color:#fff">${e.name.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>
+        <button onclick="completeExtraCheck('${e.id}')" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✓</button>
+      </div>`;
+    } else {
+      html+=`<div id="xrow-${e.id}" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.06);border-radius:14px;padding:14px 16px">
+        <span style="font-size:16px;color:#fff;flex:1">${e.name.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>
+        <input type="${e.type==='number'?'number':'text'}" inputmode="${e.type==='number'?'numeric':'text'}"
+          style="width:90px;background:rgba(255,255,255,0.1);border:none;border-radius:10px;padding:8px 10px;color:#fff;font-size:15px;font-family:inherit;text-align:center;outline:none"
+          placeholder="" onchange="completeExtraInput('${e.id}',this)">
+      </div>`;
+    }
   }
   html+='</div>';
   body.innerHTML=html; showSheet('mainSheet');
@@ -813,6 +826,17 @@ function _renderSettingsNow(){
       <input type="color" id="_nativeBgPicker" style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;cursor:pointer;" oninput="applyBgColor(this.value)" onchange="applyBgColor(this.value)">
     </label>
   </div>`;
+
+  // Export — hidden under color picker tap
+  html+=`<div style="display:flex;align-items:center;justify-content:center;margin-bottom:24px">`;
+  if(_exportRevealed){
+    html+=`<button onclick="exportJSON()" style="background:rgba(255,255,255,0.07);border:none;border-radius:14px;padding:13px 28px;color:rgba(255,255,255,0.55);font-size:14px;font-family:inherit;cursor:pointer;letter-spacing:.02em;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
+      Pobierz backup JSON
+    </button>`;
+  } else {
+    html+=`<button onclick="toggleExportReveal()" style="background:none;border:none;width:44px;height:24px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;opacity:0.01" aria-label="export"></button>`;
+  }
+  html+=`</div>`;
 
   } // end settingsOpen
 
@@ -1327,6 +1351,24 @@ function updateHtDuration(){
 }
 
 /* ── EXPORT CSV ── */
+function exportJSON(){
+  try{
+    const data=JSON.stringify(state,null,2);
+    const blob=new Blob([data],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const d=new Date();
+    a.href=url;
+    a.download=`habits-backup-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}.json`;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },200);
+  }catch(e){ alert('Błąd eksportu: '+e.message); }
+}
+let _exportRevealed=false;
+function toggleExportReveal(){
+  _exportRevealed=!_exportRevealed;
+  renderSettings();
+}
 function buildCSVRows(){
   const rows=[];
   // ── NAWYKI ──
