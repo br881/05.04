@@ -30,7 +30,7 @@
   </div>
   <!-- Week calendar view -->
   <!-- Bottom bar -->
-  <div id="progressBar"><div id="pbPill"><div id="pbFill"></div></div></div>
+  <div id="progressBar" onclick="openSettings()" style="cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;"><div id="pbPill"><div id="pbFill"></div></div></div>
   <div class="bottom-bar">
     <!-- Left: time tracker — clock face as ring/outline -->
     <button class="btn-ghost-zone" id="btnTime" onclick="openTimeTracker()">
@@ -45,7 +45,6 @@
   <!-- Left half top → extras/habits sheet -->
   <!-- Bottom zone → settings (invisible, behind progress bar) -->
   <!-- All-done invisible settings button — full screen tap when doneState shown -->
-  <div id="pbSettingsZone" onclick="openSettings()" style="position:fixed;bottom:0;left:0;right:0;height:calc(var(--safe-bottom) + 140px);z-index:9;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;"></div>
   <div id="doneSettingsZone" onclick="openSettings()" style="position:fixed;inset:0;z-index:7;display:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;"></div>
 </div>
 
