@@ -1408,8 +1408,7 @@ function exportCSV(){
         rows.push([dk, h.name, sectorName(h.sectorId), done, val, mins||'']);
       });
     });
-    const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('
-');
+    const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+ '"').join(',')).join('\r\n');
     const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
