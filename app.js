@@ -106,13 +106,20 @@ function getActiveSector(){
 
 /* ── RENDER HOME ── */
 function diffZone(container, items, makeRow){
+  // Batch all reads before any writes to avoid layout thrashing
+  const toRemove=[];
   Array.from(container.children).forEach(row=>{
-    if(!items.find(it=>it.key===row.dataset.key)){
-      const h=row.offsetHeight;
+    if(!items.find(it=>it.key===row.dataset.key)) toRemove.push(row);
+  });
+  if(toRemove.length){
+    // Read phase: measure all at once
+    const measures=toRemove.map(row=>{
+      const h=row._cachedH||row.offsetHeight;
       const cs=getComputedStyle(row);
-      const mb=parseFloat(cs.marginBottom)||0;
-      const pt=parseFloat(cs.paddingTop)||0;
-      const pb=parseFloat(cs.paddingBottom)||0;
+      return{row,h,mb:parseFloat(cs.marginBottom)||0,pt:parseFloat(cs.paddingTop)||0,pb:parseFloat(cs.paddingBottom)||0};
+    });
+    // Write phase: animate all at once
+    measures.forEach(({row,h,mb,pt,pb})=>{
       row.classList.add('vanishing');
       const a=row.animate([
         {opacity:1,height:h+'px',marginBottom:mb+'px',paddingTop:pt+'px',paddingBottom:pb+'px',overflow:'hidden'},
@@ -120,8 +127,8 @@ function diffZone(container, items, makeRow){
       ],{duration:320,easing:'cubic-bezier(0.4,0,0.2,1)',fill:'forwards'});
       a.onfinish=()=>row.remove();
       setTimeout(()=>row.remove(),400);
-    }
-  });
+    });
+  }
   items.forEach((item,i)=>{
     let row=container.querySelector(`[data-key="${item.key}"]`);
     if(!row){
@@ -155,7 +162,6 @@ function updateProgressBar(){
 function renderHome(){
   const sector=getActiveSectorCached();
   const hList=document.getElementById('habitsList');
-  setTimeout(updateProgressBar,0);
   const ds=document.getElementById('doneState');
   if(!hList) return;
 
@@ -198,9 +204,10 @@ function renderHome(){
   if(dz) dz.style.display='none';
 
 
+  requestAnimationFrame(updateProgressBar);
   diffZone(hList, remaining.map(h=>({key:'h'+h.id,h})), item=>{
     const h=item.h, row=document.createElement('div');
-    row.id='row-'+h.id; row.className='habit-row row-enter';
+    row.id='row-'+h.id; row.className='habit-row row-enter'; requestAnimationFrame(()=>{ const _cs=getComputedStyle(row); row._cachedH=row.offsetHeight; row._cachedMb=parseFloat(_cs.marginBottom)||0; row._cachedPt=parseFloat(_cs.paddingTop)||0; row._cachedPb=parseFloat(_cs.paddingBottom)||0; });
     let _ts=0,_ty=0,_moved=false;
     row.addEventListener('touchstart',e=>{_ts=Date.now();_ty=e.touches[0].clientY;_moved=false;},{passive:true});
     row.addEventListener('touchmove',e=>{if(Math.abs(e.touches[0].clientY-_ty)>5)_moved=true;},{passive:true});
@@ -251,12 +258,12 @@ function thingsTap(key,onConfirm){
   onConfirm();
   updateProgressBar();
 
-  // Measure exact rendered size before any animation
-  const cs=getComputedStyle(row);
-  const fullH=row.offsetHeight;
-  const mb=parseFloat(cs.marginBottom)||0;
-  const pt=parseFloat(cs.paddingTop)||0;
-  const pb=parseFloat(cs.paddingBottom)||0;
+  // Use cached size to avoid forced reflow on tap (set in diffZone after first paint)
+  const fullH=row._cachedH||row.offsetHeight;
+  const cs=row._cachedH?null:getComputedStyle(row);
+  const mb=row._cachedMb||(cs?parseFloat(cs.marginBottom)||0:0);
+  const pt=row._cachedPt||(cs?parseFloat(cs.paddingTop)||0:0);
+  const pb=row._cachedPb||(cs?parseFloat(cs.paddingBottom)||0:0);
 
   let _doneFired=false;
   const done=()=>{
@@ -837,8 +844,8 @@ function _renderSettingsNow(){
 
   // Export CSV
   html+=`<div style="display:flex;align-items:center;justify-content:center;margin-bottom:24px">
-    <button onclick="exportCSV()" style="background:rgba(255,255,255,0.07);border:none;border-radius:14px;padding:13px 28px;color:rgba(255,255,255,0.55);font-size:14px;font-family:inherit;cursor:pointer;letter-spacing:.02em;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
-      Pobierz CSV
+    <button onclick="exportCSV()" aria-label="Pobierz CSV" style="background:rgba(255,255,255,0.07);border:none;border-radius:14px;padding:13px 16px;color:rgba(255,255,255,0.55);font-size:14px;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>
     </button>
   </div>`;
 
