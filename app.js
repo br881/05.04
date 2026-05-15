@@ -842,10 +842,10 @@ function _renderSettingsNow(){
     </label>
   </div>`;
 
-  // Export CSV
+  // Export CSV — styled identical to color picker label
   html+=`<div style="display:flex;align-items:center;justify-content:center;margin-bottom:24px">
-    <button onclick="exportCSV()" aria-label="Pobierz CSV" style="background:rgba(255,255,255,0.07);border:none;border-radius:14px;padding:13px 16px;color:rgba(255,255,255,0.55);font-size:14px;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>
+    <button onclick="exportCSV()" aria-label="Pobierz CSV" style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>
     </button>
   </div>`;
 
