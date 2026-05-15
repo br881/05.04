@@ -159,6 +159,41 @@ function updateProgressBar(){
 }
 
 
+// Build 7-day streak strip for a habit row
+function buildStreakDots(h){
+  const strip=document.createElement('div');
+  strip.style.cssText='display:flex;gap:0;margin-top:8px;align-items:center;justify-content:center;';
+  const now=new Date();
+  // Start from Monday of current week
+  const dow=now.getDay(); // 0=Sun
+  const mon=new Date(now); mon.setDate(now.getDate()-(dow===0?6:dow-1));
+  // Polish day index: 0=P(Mon)..6=N(Sun)
+  for(let i=0;i<7;i++){
+    const d=new Date(mon); d.setDate(mon.getDate()+i);
+    const dk=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const active=h.days.includes(i);
+    const done=active&&h.completions&&h.completions[dk];
+    // Check prev/next for pill merging
+    const prevDone=i>0&&h.days.includes(i-1)&&h.completions&&h.completions[fmtDate(new Date(mon.getTime()+(i-1)*864e5))];
+    const nextDone=i<6&&h.days.includes(i+1)&&h.completions&&h.completions[fmtDate(new Date(mon.getTime()+(i+1)*864e5))];
+    const el=document.createElement('div');
+    const isFirst=done&&!prevDone; const isLast=done&&!nextDone;
+    if(done){
+      let br='';
+      if(isFirst&&isLast) br='border-radius:6px';
+      else if(isFirst) br='border-radius:6px 0 0 6px';
+      else if(isLast) br='border-radius:0 6px 6px 0';
+      else br='border-radius:0';
+      el.style.cssText=`width:${100/7}%;height:4px;background:var(--accent);${br};`;
+    } else if(active){
+      el.style.cssText=`width:${100/7}%;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;`;
+    } else {
+      el.style.cssText=`width:${100/7}%;height:4px;background:transparent;`;
+    }
+    strip.appendChild(el);
+  }
+  return strip;
+}
 function renderHome(){
   const sector=getActiveSectorCached();
   const hList=document.getElementById('habitsList');
@@ -217,8 +252,12 @@ function renderHome(){
     const nameSpan=document.createElement('span');
     nameSpan.className='habit-name';
     nameSpan.textContent=h.name; // textContent is always safe
+    // Wrap name + streak dots in a column
+    const nameCol=document.createElement('div');
+    nameCol.style.cssText='flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;';
+    nameCol.appendChild(nameSpan);
+    nameCol.appendChild(buildStreakDots(h));
     if(h.trackTime && (h.type==='number'||h.type==='text')){
-      nameSpan.style.flex='1';
       const inp=document.createElement('input');
       inp.className='habit-value-input';
       inp.type=h.type==='number'?'number':'text';
@@ -226,11 +265,10 @@ function renderHome(){
       inp.placeholder='';
       inp.onclick=e=>e.stopPropagation();
       inp.onchange=()=>completeHabitInputThenTime(h.id,inp);
-      row.appendChild(nameSpan); row.appendChild(inp);
+      row.appendChild(nameCol); row.appendChild(inp);
     } else if(h.trackTime){
-      row.appendChild(nameSpan);
+      row.appendChild(nameCol);
     } else if(h.type==='number'||h.type==='text'){
-      nameSpan.style.flex='1';
       const inp=document.createElement('input');
       inp.className='habit-value-input';
       inp.type=h.type==='number'?'number':'text';
@@ -238,9 +276,9 @@ function renderHome(){
       inp.placeholder='';
       inp.onclick=e=>e.stopPropagation();
       inp.onchange=()=>completeHabitInput(h.id,inp);
-      row.appendChild(nameSpan); row.appendChild(inp);
+      row.appendChild(nameCol); row.appendChild(inp);
     } else {
-      row.appendChild(nameSpan);
+      row.appendChild(nameCol);
     }
     return row;
   });
@@ -734,7 +772,7 @@ function _renderSettingsNow(){
     const _calH=state.habits;
     const _SC=[['#60a5fa','rgba(96,165,250,0.13)'],['#34d399','rgba(52,211,153,0.13)'],['#fbbf24','rgba(251,191,36,0.13)'],['#c084fc','rgba(192,132,252,0.13)'],['#f87171','rgba(248,113,113,0.13)'],['#2dd4bf','rgba(45,212,191,0.13)']];
     html+=`<div style="padding-top:max(env(safe-area-inset-top,44px),44px)">`;
-    html+=`<div style="margin:0;overflow:hidden;width:100%;box-sizing:border-box">`;
+    html+=`<div style="margin:0;overflow:hidden;width:100%;box-sizing:border-box;background:rgba(255,255,255,0.32);border-radius:16px;padding:0 8px 8px;">`;
     // Day header
     html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);padding:12px 0 10px">`;
     _D.forEach(d=>html+=`<div style="text-align:center;font-size:15px;color:#fff;font-weight:700;letter-spacing:.03em">${d}</div>`);
@@ -745,13 +783,29 @@ function _renderSettingsNow(){
       const [s,f]=_SC[si%_SC.length];
       html+=`<div style="padding:14px 0 16px;text-align:center"><span style="font-size:15px;color:rgba(255,255,255,0.4);font-weight:600;letter-spacing:.06em;text-transform:uppercase">${sec.name}</span></div>`;
       sh.forEach(h=>{
-        html+=`<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px">`;
+        // Build streak-connected row: consecutive active days merge into a pill
+        const cells=[];
         for(let d=0;d<7;d++){
           const on=h.days.includes(d);
-          html+=`<div style="padding:2px 2px">${on
-            ?`<div onclick="openHabitFromCal('${h.id}')" style="background:rgba(255,255,255,0.13);border-radius:5px;padding:10px 4px;font-size:15px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.35;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;text-align:center">${h.name}</div>`
-            :`<div style="height:37px"></div>`}</div>`;
+          const prevOn=d>0&&h.days.includes(d-1);
+          const nextOn=d<6&&h.days.includes(d+1);
+          if(!on){ cells.push(`<div style="height:38px"></div>`); continue; }
+          // Determine pill shape
+          const isFirst=!prevOn; const isLast=!nextOn;
+          let br='';
+          if(isFirst&&isLast) br='border-radius:10px';
+          else if(isFirst) br='border-radius:10px 0 0 10px';
+          else if(isLast) br='border-radius:0 10px 10px 0';
+          else br='border-radius:0';
+          // Gap: merge by removing margin between consecutive days
+          const marginR=nextOn?'margin-right:-1px':'';
+          const marginL=prevOn?'margin-left:-1px':'';
+          // Show name only in first cell of streak
+          const showName=isFirst;
+          cells.push(`<div onclick="openHabitFromCal('${h.id}')" style="background:${s};${br};padding:10px 0;font-size:13px;color:rgba(255,255,255,0.9);cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;text-align:center;${marginR};${marginL};position:relative;height:38px;display:flex;align-items:center;justify-content:flex-start;padding-left:${isFirst?'8px':'0px'};overflow:hidden">${showName?`<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px">${h.name}</span>`:''}</div>`);
         }
+        html+=`<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0;margin-bottom:3px">`;
+        cells.forEach(c=>html+=`<div>${c}</div>`);
         html+=`</div>`;
       });
     });
@@ -842,20 +896,12 @@ function _renderSettingsNow(){
     </label>
   </div>`;
 
-  // Export CSV — two-step: icon → confirm button
-  const _csvReady=typeof _csvConfirm!=='undefined'&&_csvConfirm;
-  html+=`<div style="display:flex;align-items:center;justify-content:center;margin-bottom:24px">`;
-  if(_csvReady){
-    html+=`<div style="width:100%;max-width:320px;padding:0 22px;box-sizing:border-box">
-      <button onclick="exportCSV()" class="is-confirm" style="margin-bottom:8px">Pobierz</button>
-      <button onclick="cancelCSVConfirm()" style="width:100%;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;padding:10px;font-size:15px;font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation">Anuluj</button>
-    </div>`;
-  } else {
-    html+=`<button onclick="showCSVConfirm()" aria-label="Pobierz CSV" style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
+  // Export CSV — icon opens slide-up sheet
+  html+=`<div style="display:flex;align-items:center;justify-content:center;margin-bottom:24px">
+    <button onclick="openCSVSheet()" aria-label="Pobierz CSV" style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>
-    </button>`;
-  }
-  html+=`</div>`;
+    </button>
+  </div>`;
 
   } // end settingsOpen
 
@@ -1184,18 +1230,7 @@ function openHabitDetail(hId,defaultSector){
   nameInput.placeholder=''; nameInput.style.cssText='width:100%;text-align:center';
   nameWrap.appendChild(nameInput); body.appendChild(nameWrap);
 
-  // Type buttons
-  const typeBtnsDiv=document.createElement('div');
-  typeBtnsDiv.className='type-mini-btns';
-  typeBtnsDiv.style.cssText='justify-content:center;display:flex;gap:8px;margin-bottom:28px';
-  [{k:'checkbox',lbl:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><polyline points="7 13 10 16 17 9"/></svg>'},{k:'number',lbl:'<span style="font-size:18px">#</span>'},{k:'text',lbl:'<span style="font-size:18px">t</span>'}].forEach(t=>{
-    const btn=document.createElement('button');
-    btn.className='type-mini-btn'+(h.type===t.k?' active':'');
-    btn.innerHTML=t.lbl;
-    btn.onclick=()=>hdType(t.k,btn);
-    typeBtnsDiv.appendChild(btn);
-  });
-  body.appendChild(typeBtnsDiv);
+
 
   // Days — only show sector days, hidden others
   const daysRow=document.createElement('div');
@@ -1386,11 +1421,18 @@ function exportJSON(){
     setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },200);
   }catch(e){ alert('Błąd eksportu: '+e.message); }
 }
-let _csvConfirm=false;
-function showCSVConfirm(){ _csvConfirm=true; renderSettings(); }
-function cancelCSVConfirm(){ _csvConfirm=false; renderSettings(); }
+function openCSVSheet(){
+  document.getElementById('csvSheet').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('overlay').onclick=closeCSVSheet;
+}
+function closeCSVSheet(){
+  document.getElementById('csvSheet').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('overlay').onclick=closeAllSheets;
+}
 function exportCSV(){
-  _csvConfirm=false; renderSettings();
+  closeCSVSheet();
   try{
     const d=new Date();
     const ds=`${String(d.getFullYear()).slice(2)}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;

@@ -17,9 +17,9 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 #home{transform:translateX(0);}
 
 /* HOME LAYOUT */
-.habits-scroll{position:absolute;top:calc(var(--safe-top) + 13px);bottom:calc(var(--safe-bottom) + 124px);left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;flex-direction:column;align-items:stretch;z-index:10;}
+.habits-scroll{position:absolute;top:calc(var(--safe-top) + 13px);bottom:calc(var(--safe-bottom) + 124px);left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;flex-direction:column;align-items:stretch;z-index:10;justify-content:center;}
 .habits-scroll::-webkit-scrollbar{display:none;}
-.habits-inner{width:100%;max-width:500px;margin:auto;padding:32px 28px 0;box-sizing:border-box;}
+.habits-inner{width:100%;max-width:500px;margin:auto;padding:0 28px;box-sizing:border-box;}
 .habits-zone{display:flex;flex-direction:column;gap:0;}
 
 
@@ -364,7 +364,7 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 .tt-entry-panel.open{transform:translateY(0);}
 .tt-entry-handle{width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);margin:0 auto 14px;cursor:pointer;}
 .tt-entry-duration{
-  font-size:18px;color:#ffffff;font-weight:500;
+  font-size:21px;color:#ffffff;font-weight:500;
   text-align:center;margin-bottom:12px;
   letter-spacing:-.02em;min-height:24px;
 }
@@ -387,7 +387,7 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
   padding:7px 14px;border-radius:20px;
   border:none;
   background:rgba(255,255,255,0.05);
-  color:var(--ui);font-size:13px;
+  color:var(--ui);font-size:15px;
   cursor:pointer;font-family:inherit;transition:all .15s;
 }
 .tt-cat-pill.active{background:var(--accent-dim);color:var(--accent-bright);}
@@ -467,3 +467,7 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
   transition:width .55s cubic-bezier(.34,1.2,.64,1);
   width:0%;
 }
+
+/* CSV CONFIRM SHEET */
+#csvSheet{position:fixed;bottom:0;left:0;right:0;z-index:210;background:#111;border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform .36s cubic-bezier(.32,.72,0,1);padding:14px 22px calc(var(--safe-bottom)+20px);}
+#csvSheet.open{transform:translateY(0);}
