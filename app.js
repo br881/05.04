@@ -52,7 +52,7 @@ function setState(patch){
   save();
 }
 // UI-only state — not persisted to localStorage
-const ui={ timeCardOpen:false, habitsCardOpen:false, weekCalOpen:false, habitsTimeOpen:false, settingsOpen:false, doneFromTap:false };
+const ui={ weekCalOpen:false, settingsOpen:false, doneFromTap:false };
 function save(){
   // Debounce rapid saves (e.g. during animations)
   if(_saveTimer) clearTimeout(_saveTimer);
@@ -846,8 +846,10 @@ function _renderSettingsNow(){
   const _csvReady=typeof _csvConfirm!=='undefined'&&_csvConfirm;
   html+=`<div style="display:flex;align-items:center;justify-content:center;margin-bottom:24px">`;
   if(_csvReady){
-    html+=`<button onclick="exportCSV()" style="background:none;border:none;color:var(--accent);cursor:pointer;padding:10px 20px;font-size:15px;font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation;letter-spacing:.01em">Zapisz</button>
-    <button onclick="cancelCSVConfirm()" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;padding:10px 12px;font-size:15px;font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation">✕</button>`;
+    html+=`<div style="width:100%;max-width:320px;padding:0 22px;box-sizing:border-box">
+      <button onclick="exportCSV()" class="is-confirm" style="margin-bottom:8px">Pobierz</button>
+      <button onclick="cancelCSVConfirm()" style="width:100%;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;padding:10px;font-size:15px;font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation">Anuluj</button>
+    </div>`;
   } else {
     html+=`<button onclick="showCSVConfirm()" aria-label="Pobierz CSV" style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>
@@ -873,26 +875,18 @@ function _renderSettingsNow(){
 
 
 
-function toggleHabitsTimeView(){
-  ui.habitsTimeOpen=!ui.habitsTimeOpen; renderSettings();
-}
+
 function toggleHabitTrackTime(hId){
   const h=state.habits.find(x=>x.id===hId); if(!h) return;
   h.trackTime=!h.trackTime;
   // trackTime toggled
   save(); renderSettings();
 }
-// setHabitTrackCat removed
-function saveHabitTimePicks(){
-  ui.habitsTimeOpen=false; renderSettings();
-}
 
 
 
-function toggleStatCard(type){
-  if(type==='time'){ ui.timeCardOpen=!ui.timeCardOpen; renderSettings(); return; }
-  if(type==='habits'){ ui.habitsCardOpen=!ui.habitsCardOpen; renderSettings(); return; }
-}
+
+
 function toggleFold(key){
   if(key==='settings'){ ui.settingsOpen=!ui.settingsOpen; save(); renderSettings(); return; }
   if(key==='weekCal'){ ui.weekCalOpen=!ui.weekCalOpen; renderSettings(); return; }
@@ -1822,9 +1816,9 @@ function getTTSuggestions(query){
     const q=query.toLowerCase();
     items=items.filter(x=>x.label.toLowerCase().startsWith(q));
     if(!items.length) items=Object.values(freq).sort((a,b)=>b.count-a.count).filter(x=>x.label.toLowerCase().includes(q));
-    return items.slice(0,5);
+    return items.slice(0,1);
   }
-  return items.slice(0,3);
+  return items.slice(0,1);
 }
 
 function renderTTSuggestions(query){
@@ -2137,9 +2131,7 @@ function saveTTEntry(){
 
 
 
-function setHabitStatPeriod(d){ state._habitStatPeriod=d; save(); renderSettings(); }
-function setStatPeriod(d){ state._statPeriod=d; save(); renderSettings(); }
-function setTimeStatPeriod(p){ setStatPeriod(p==='month'?30:p); }
+
 
 
 
