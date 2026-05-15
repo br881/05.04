@@ -52,7 +52,7 @@ function setState(patch){
   save();
 }
 // UI-only state — not persisted to localStorage
-const ui={ timeCardOpen:false, habitsCardOpen:false, weekCalOpen:false, habitsTimeOpen:false, settingsOpen:false };
+const ui={ timeCardOpen:false, habitsCardOpen:false, weekCalOpen:false, habitsTimeOpen:false, settingsOpen:false, doneFromTap:false };
 function save(){
   // Debounce rapid saves (e.g. during animations)
   if(_saveTimer) clearTimeout(_saveTimer);
@@ -178,7 +178,7 @@ function renderHome(){
       const cs=getComputedStyle(r),h=r.offsetHeight,mb=parseFloat(cs.marginBottom)||0,pt=parseFloat(cs.paddingTop)||0,pb=parseFloat(cs.paddingBottom)||0;
       r.animate([{height:h+'px',marginBottom:mb+'px',paddingTop:pt+'px',paddingBottom:pb+'px',overflow:'hidden'},{height:'0px',marginBottom:'0px',paddingTop:'0px',paddingBottom:'0px',overflow:'hidden'}],{duration:380,easing:'cubic-bezier(0.4,0,0.2,1)',fill:'forwards'});
     });
-    const fromTap=window._doneFromTap; window._doneFromTap=false;
+    const fromTap=ui.doneFromTap; ui.doneFromTap=false;
     setTimeout(()=>{
       hList.innerHTML='';
       if(fromTap){
@@ -262,7 +262,7 @@ function thingsTap(key,onConfirm){
   const done=()=>{
     if(_doneFired) return; _doneFired=true;
     row.remove();
-    window._doneFromTap=true;
+    ui.doneFromTap=true;
     renderHome();
     showUndoToast(name,key,onConfirm);
   };
@@ -291,7 +291,15 @@ function showUndoToast(name,key,onConfirm){
   const t=document.createElement('div');
   t.id='undoToast';
   t.style.cssText='position:fixed;bottom:calc(var(--safe-bottom)+110px);left:50%;transform:translateX(-50%);z-index:300;background:rgba(28,28,30,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:22px;padding:11px 20px 11px 16px;display:flex;align-items:center;gap:14px;font-size:14px;color:rgba(255,255,255,0.75);white-space:nowrap;animation:toastIn .25s cubic-bezier(.34,1.56,.64,1) forwards;box-shadow:0 4px 24px rgba(0,0,0,0.4);';
-  t.innerHTML=`<span style="opacity:.55;max-width:170px;overflow:hidden;text-overflow:ellipsis">${name||'Gotowe'}</span><button onclick="undoLastComplete()" style="background:none;border:none;color:var(--accent);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;padding:0;touch-action:manipulation">Cofnij</button>`;
+  // #XSS-fix: build toast via DOM — name is user-controlled, never inject via innerHTML
+  const nameEl=document.createElement('span');
+  nameEl.style.cssText='opacity:.55;max-width:170px;overflow:hidden;text-overflow:ellipsis';
+  nameEl.textContent=name||'Gotowe';
+  const undoBtn=document.createElement('button');
+  undoBtn.style.cssText='background:none;border:none;color:var(--accent);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;padding:0;touch-action:manipulation';
+  undoBtn.textContent='Cofnij';
+  undoBtn.onclick=undoLastComplete;
+  t.appendChild(nameEl); t.appendChild(undoBtn);
   document.body.appendChild(t);
   _undoTimer=setTimeout(dismissUndoToast,3200);
 }
@@ -329,17 +337,17 @@ function openInputSheetThenTime(h){
   f.value=''; f.type=h.type==='number'?'number':'text';
   f.inputMode=h.type==='number'?'numeric':'text';
   f.placeholder=h.type==='number'?'0':'';
-  // Replace confirm button behavior
+  // #fix: use one-shot AbortController instead of patching onclick — no risk of double-wrap
+  const ac=new AbortController();
   const confirmBtn=document.querySelector('#inputSheet .is-confirm');
   if(confirmBtn){
-    confirmBtn._origOnclick=confirmBtn.onclick;
-    confirmBtn.onclick=()=>{
+    confirmBtn.addEventListener('click',()=>{
+      ac.abort(); // remove this listener immediately
       const v=f.value.trim();
       if(v){ completeHabit(h.id,v); }
       closeInputSheet();
-      confirmBtn.onclick=confirmBtn._origOnclick;
       openTimeTracker(h.id);
-    };
+    },{signal:ac.signal,once:true});
   }
   showSheet('inputSheet');
   setTimeout(()=>f.focus(),340);
@@ -767,22 +775,22 @@ function _renderSettingsNow(){
       </div>
       <div class="sector-edit-panel" id="sep-${sec.id}">
         <div style="padding:0 0 18px">
-          <input class="hd-name-input" id="sn-${sec.id}" value="${sec.name}" style="width:100%;box-sizing:border-box;margin-bottom:22px">
+          <input class="hd-name-input" id="sn-${sec.id}" value="${sec.name}" style="width:100%;box-sizing:border-box;margin-bottom:22px" oninput="markSectorDirty('${sec.id}')">
           <div id="ssl-${sec.id}" style="display:flex;flex-direction:column;gap:14px;${sec.isDefault?'opacity:0.25;pointer-events:none;':''}">
             ${(sec.schedules||[]).map((sc,si)=>`
             <div id="ssr-${sec.id}-${si}" style="background:rgba(255,255,255,0.07);border-radius:16px;padding:18px 14px 14px;">
               <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:14px">
-                <input class="time-input" type="number" inputmode="numeric" id="sh-${sec.id}-${si}" min="0" max="23" value="${sc.startH}">
+                <input class="time-input" type="number" inputmode="numeric" id="sh-${sec.id}-${si}" min="0" max="23" value="${sc.startH}" oninput="markSectorDirty('${sec.id}')">
                 <span class="time-colon">:</span>
-                <input class="time-input" type="number" inputmode="numeric" id="sm-${sec.id}-${si}" min="0" max="59" value="${String(sc.startM).padStart(2,'0')}">
+                <input class="time-input" type="number" inputmode="numeric" id="sm-${sec.id}-${si}" min="0" max="59" value="${String(sc.startM).padStart(2,'0')}" oninput="markSectorDirty('${sec.id}')">
                 <span style="color:rgba(255,255,255,0.3);padding:0 6px">–</span>
-                <input class="time-input" type="number" inputmode="numeric" id="eh-${sec.id}-${si}" min="0" max="23" value="${sc.endH}">
+                <input class="time-input" type="number" inputmode="numeric" id="eh-${sec.id}-${si}" min="0" max="23" value="${sc.endH}" oninput="markSectorDirty('${sec.id}')">
                 <span class="time-colon">:</span>
-                <input class="time-input" type="number" inputmode="numeric" id="em-${sec.id}-${si}" min="0" max="59" value="${String(sc.endM).padStart(2,'0')}">
+                <input class="time-input" type="number" inputmode="numeric" id="em-${sec.id}-${si}" min="0" max="59" value="${String(sc.endM).padStart(2,'0')}" oninput="markSectorDirty('${sec.id}')">
                 ${sec.schedules.length>1?`<button class="del-sched-btn" onclick="removeSchedule('${sec.id}',${si})" style="margin-left:6px">×</button>`:''}
               </div>
               <div style="display:flex;align-items:center;justify-content:center;gap:6px">
-                ${DAYS.map((d,di)=>`<button class="day-btn${sc.weekdays.includes(di)?' active':''}" onclick="this.classList.toggle('active')">${d}</button>`).join('')}
+                ${DAYS.map((d,di)=>`<button class="day-btn${sc.weekdays.includes(di)?' active':''}" onclick="this.classList.toggle('active');markSectorDirty('${sec.id}')">${d}</button>`).join('')}
               </div>
             </div>`).join('')}
           </div>
@@ -792,7 +800,7 @@ function _renderSettingsNow(){
           <div style="display:flex;gap:8px;margin-top:22px">
             <button class="sec-act-btn danger" id="del-sec-${sec.id}" onclick="askDelete(this,'${sec.name.replace(/'/g,"\'")}',()=>deleteSector('${sec.id}'))" style="flex:0;padding:12px 18px">${trashSVG}</button>
             <button class="sec-act-btn${sec.isDefault?' open-state':''}" onclick="toggleSectorDefault('${sec.id}')" style="flex:0;padding:12px 20px" title="Domyślny sektor">${homeSVG}</button>
-            <button class="save-btn" onclick="saveSector('${sec.id}')" style="flex:1;padding:13px">Zapisz</button>
+            <button class="save-btn" id="sec-save-${sec.id}" onclick="saveSector('${sec.id}')" style="flex:1;padding:13px">Zapisz</button>
           </div>
         </div>
       </div>
@@ -827,16 +835,12 @@ function _renderSettingsNow(){
     </label>
   </div>`;
 
-  // Export — hidden under color picker tap
-  html+=`<div style="display:flex;align-items:center;justify-content:center;margin-bottom:24px">`;
-  if(_exportRevealed){
-    html+=`<button onclick="exportJSON()" style="background:rgba(255,255,255,0.07);border:none;border-radius:14px;padding:13px 28px;color:rgba(255,255,255,0.55);font-size:14px;font-family:inherit;cursor:pointer;letter-spacing:.02em;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
-      Pobierz backup JSON
-    </button>`;
-  } else {
-    html+=`<button onclick="toggleExportReveal()" style="background:none;border:none;width:44px;height:24px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;opacity:0.01" aria-label="export"></button>`;
-  }
-  html+=`</div>`;
+  // Export CSV
+  html+=`<div style="display:flex;align-items:center;justify-content:center;margin-bottom:24px">
+    <button onclick="exportCSV()" style="background:rgba(255,255,255,0.07);border:none;border-radius:14px;padding:13px 28px;color:rgba(255,255,255,0.55);font-size:14px;font-family:inherit;cursor:pointer;letter-spacing:.02em;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
+      Pobierz CSV
+    </button>
+  </div>`;
 
   } // end settingsOpen
 
@@ -924,9 +928,20 @@ function _readSectorFromDOM(sId,sec){
   });
   return true;
 }
+// #dirty-state: track which sector panels have unsaved changes
+const _dirtySecors=new Set();
+function markSectorDirty(sId){
+  _dirtySecors.add(sId);
+  const btn=document.getElementById('sec-save-'+sId);
+  if(btn){ btn.style.background='rgba(61,221,101,0.35)'; btn.style.borderColor='var(--accent)'; btn.textContent='● Zapisz'; }
+}
+function clearSectorDirty(sId){
+  _dirtySecors.delete(sId);
+}
 function saveSector(sId){
   const sec=state.sectors.find(s=>s.id===sId); if(!sec) return;
   _readSectorFromDOM(sId,sec);
+  clearSectorDirty(sId);
   invalidateSectorCache(); save(); expandedSectors.delete(sId); renderSettings();
 }
 function saveSectorSilent(sId){
@@ -1364,11 +1379,78 @@ function exportJSON(){
     setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },200);
   }catch(e){ alert('Błąd eksportu: '+e.message); }
 }
-let _exportRevealed=false;
-function toggleExportReveal(){
-  _exportRevealed=!_exportRevealed;
-  renderSettings();
+function exportCSV(){
+  try{
+    const d=new Date();
+    const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    // Build rows: date, habit name, sector, done (1/0), value, time tracked (min)
+    const rows=[['data','nawyk','sektor','wykonano','wartość','czas_min']];
+    const sectorName=id=>(state.sectors||[]).find(s=>s.id===id)?.name||'';
+    // Gather all dates present in completions
+    const dates=new Set();
+    (state.habits||[]).forEach(h=>{
+      Object.keys(h.completions||{}).forEach(dk=>dates.add(dk));
+    });
+    // Also add last 90 days so active habits show 0s
+    for(let i=0;i<90;i++){
+      const dt=new Date(); dt.setDate(dt.getDate()-i);
+      dates.add(`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`);
+    }
+    const sorted=[...dates].sort();
+    sorted.forEach(dk=>{
+      (state.habits||[]).forEach(h=>{
+        const c=h.completions?.[dk];
+        const done=c!==undefined&&c!==null&&c!==false?1:0;
+        const val=typeof c==='string'||typeof c==='number'?c:'';
+        // Time entries for this habit on this date
+        const te=(state.timeEntries?.[dk]||[]).filter(e=>e.habitId===h.id);
+        const mins=te.reduce((s,e)=>s+Math.round((e.end-e.start)/60000),0);
+        rows.push([dk, h.name, sectorName(h.sectorId), done, val, mins||'']);
+      });
+    });
+    const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('
+');
+    const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=`habits-${ds}.csv`;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },200);
+  }catch(e){ alert('Błąd eksportu: '+e.message); }
 }
+
+/* ── AUTO-BACKUP REMINDER ── */
+// Shows a non-intrusive toast once every 7 days reminding to export data.
+// localStorage on iOS Safari PWA can be cleared by the OS without warning.
+(function checkBackupReminder(){
+  try{
+    const KEY='lastBackupReminder';
+    const last=parseInt(localStorage.getItem(KEY)||'0');
+    const now=Date.now();
+    const SEVEN_DAYS=7*24*60*60*1000;
+    if(now-last < SEVEN_DAYS) return;
+    // Show after a short delay so app renders first
+    setTimeout(()=>{
+      localStorage.setItem(KEY,String(now));
+      const t=document.createElement('div');
+      t.id='backupToast';
+      t.style.cssText='position:fixed;bottom:calc(var(--safe-bottom)+110px);left:50%;transform:translateX(-50%);z-index:300;background:rgba(28,28,30,0.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:22px;padding:12px 20px 12px 16px;display:flex;align-items:center;gap:14px;font-size:13px;color:rgba(255,255,255,0.7);white-space:nowrap;animation:toastIn .3s cubic-bezier(.34,1.56,.64,1) forwards;box-shadow:0 4px 24px rgba(0,0,0,0.5);max-width:92vw;';
+      const txt=document.createElement('span');
+      txt.textContent='Zrób backup danych 💾';
+      const btn=document.createElement('button');
+      btn.style.cssText='background:none;border:none;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;padding:0;touch-action:manipulation;flex-shrink:0';
+      btn.textContent='Eksportuj';
+      btn.onclick=()=>{ t.remove(); exportJSON(); };
+      const closeBtn=document.createElement('button');
+      closeBtn.style.cssText='background:none;border:none;color:rgba(255,255,255,0.35);font-size:16px;cursor:pointer;padding:0 0 0 4px;touch-action:manipulation;flex-shrink:0;line-height:1';
+      closeBtn.textContent='×';
+      closeBtn.onclick=()=>{ t.style.animation='toastOut .2s ease forwards'; setTimeout(()=>t.remove(),220); };
+      t.appendChild(txt); t.appendChild(btn); t.appendChild(closeBtn);
+      document.body.appendChild(t);
+      setTimeout(()=>{ if(t.parentNode){ t.style.animation='toastOut .2s ease forwards'; setTimeout(()=>t.remove(),220); } },8000);
+    },3000);
+  }catch{}
+})();
 function buildCSVRows(){
   const rows=[];
   // ── NAWYKI ──
@@ -2136,3 +2218,4 @@ window.addEventListener('pagehide',()=>{
     }
   }catch{}
 })();
+

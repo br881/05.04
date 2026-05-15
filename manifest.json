@@ -1,7 +1,7 @@
 {
   "name": "Habits",
   "short_name": "Habits",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#061E0C",
   "theme_color": "#061E0C",
