@@ -842,12 +842,18 @@ function _renderSettingsNow(){
     </label>
   </div>`;
 
-  // Export CSV — styled identical to color picker label
-  html+=`<div style="display:flex;align-items:center;justify-content:center;margin-bottom:24px">
-    <button onclick="exportCSV()" aria-label="Pobierz CSV" style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
+  // Export CSV — two-step: icon → confirm button
+  const _csvReady=typeof _csvConfirm!=='undefined'&&_csvConfirm;
+  html+=`<div style="display:flex;align-items:center;justify-content:center;margin-bottom:24px">`;
+  if(_csvReady){
+    html+=`<button onclick="exportCSV()" style="background:none;border:none;color:var(--accent);cursor:pointer;padding:10px 20px;font-size:15px;font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation;letter-spacing:.01em">Zapisz</button>
+    <button onclick="cancelCSVConfirm()" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;padding:10px 12px;font-size:15px;font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation">✕</button>`;
+  } else {
+    html+=`<button onclick="showCSVConfirm()" aria-label="Pobierz CSV" style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>
-    </button>
-  </div>`;
+    </button>`;
+  }
+  html+=`</div>`;
 
   } // end settingsOpen
 
@@ -1386,10 +1392,14 @@ function exportJSON(){
     setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },200);
   }catch(e){ alert('Błąd eksportu: '+e.message); }
 }
+let _csvConfirm=false;
+function showCSVConfirm(){ _csvConfirm=true; renderSettings(); }
+function cancelCSVConfirm(){ _csvConfirm=false; renderSettings(); }
 function exportCSV(){
+  _csvConfirm=false; renderSettings();
   try{
     const d=new Date();
-    const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const ds=`${String(d.getFullYear()).slice(2)}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
     // Build rows: date, habit name, sector, done (1/0), value, time tracked (min)
     const rows=[['data','nawyk','sektor','wykonano','wartość','czas_min']];
     const sectorName=id=>(state.sectors||[]).find(s=>s.id===id)?.name||'';
