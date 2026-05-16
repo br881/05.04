@@ -290,16 +290,15 @@ function renderHome(){
     return row;
   });
 
-  // Align habits list with the done-state checkmark (absolute center of screen)
+  // Center list vertically to match done-state checkmark position
   requestAnimationFrame(()=>{
     const scroll=document.getElementById('habitsScroll');
-    const inner=document.querySelector('.habits-inner');
-    if(!scroll||!inner) return;
-    const listH=inner.scrollHeight;
-    const scrollTop=scroll.getBoundingClientRect().top;
-    const screenCenterInScroll=window.innerHeight/2-scrollTop;
-    const pt=Math.max(16, Math.round(screenCenterInScroll - listH/2));
-    inner.style.paddingTop=pt+'px';
+    const zone=document.getElementById('habitsList');
+    if(!scroll||!zone) return;
+    const zoneH=zone.offsetHeight;
+    const scrollH=scroll.clientHeight;
+    const pt=Math.max(32, Math.round((scrollH-zoneH)/2));
+    document.querySelector('.habits-inner').style.paddingTop=pt+'px';
   });
 }
 
