@@ -290,7 +290,17 @@ function renderHome(){
     return row;
   });
 
-
+  // Align habits list with the done-state checkmark (absolute center of screen)
+  requestAnimationFrame(()=>{
+    const scroll=document.getElementById('habitsScroll');
+    const inner=document.querySelector('.habits-inner');
+    if(!scroll||!inner) return;
+    const listH=inner.scrollHeight;
+    const scrollTop=scroll.getBoundingClientRect().top;
+    const screenCenterInScroll=window.innerHeight/2-scrollTop;
+    const pt=Math.max(16, Math.round(screenCenterInScroll - listH/2));
+    inner.style.paddingTop=pt+'px';
+  });
 }
 
 /* ── THINGS TAP ── */
