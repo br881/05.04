@@ -19,18 +19,18 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 /* HOME LAYOUT */
 .habits-scroll{position:absolute;top:calc(var(--safe-top) + 13px);bottom:calc(var(--safe-bottom) + 124px);left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;flex-direction:column;align-items:stretch;z-index:10;}
 .habits-scroll::-webkit-scrollbar{display:none;}
-.habits-inner{width:100%;max-width:500px;margin:auto;padding:32px 28px 0;box-sizing:border-box;}
+.habits-inner{width:100%;max-width:500px;margin:auto;padding:0 28px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;min-height:100%;}
 .habits-zone{display:flex;flex-direction:column;gap:0;}
 
 
 /* HABIT TILE */
-.habit-row{display:flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;margin-bottom:10px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);touch-action:auto;}
+.habit-row{display:flex;flex-direction:column;align-items:stretch;padding:14px 26px 10px 28px;margin-bottom:10px;background:rgba(255,255,255,0.32);border:none;border-radius:var(--radius);cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);touch-action:auto;}
 
 .habit-row.row-enter,.habit-row.row-visible{opacity:1;transform:none;}
 .habit-row:active{opacity:.55;}
 .habit-row.dimmed{opacity:.22;transition:opacity .4s ease;}
 .habit-row.vanishing{overflow:hidden;pointer-events:none;box-shadow:none!important;}
-.habit-name{font-size:21px;font-weight:400;color:#ffffff;letter-spacing:-.02em;flex:1;user-select:none;text-align:center;}
+.habit-name{font-size:21px;font-weight:400;color:#ffffff;letter-spacing:-.02em;user-select:none;text-align:center;display:block;width:100%;padding:4px 0 6px;}
 .habit-value-input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.38);color:#ffffff;font-size:17px;font-family:inherit;outline:none;width:72px;text-align:right;padding:2px 0 4px;transition:border-color .2s;font-weight:600;}
 .habit-value-input:focus{border-bottom-color:var(--accent-border);}
 .habit-value-input::placeholder{color:transparent;}

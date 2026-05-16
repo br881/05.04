@@ -258,12 +258,7 @@ function renderHome(){
     // #13: Safe DOM construction — never use innerHTML with user-controlled data (XSS)
     const nameSpan=document.createElement('span');
     nameSpan.className='habit-name';
-    nameSpan.textContent=h.name; // textContent is always safe
-    // Wrap name + streak dots in a column
-    const nameCol=document.createElement('div');
-    nameCol.style.cssText='display:flex;flex-direction:column;align-items:center;min-width:0;width:100%;';
-    nameCol.appendChild(nameSpan);
-    nameCol.appendChild(buildStreakDots(h));
+    nameSpan.textContent=h.name;
     if(h.trackTime && (h.type==='number'||h.type==='text')){
       const inp=document.createElement('input');
       inp.className='habit-value-input';
@@ -272,9 +267,9 @@ function renderHome(){
       inp.placeholder='';
       inp.onclick=e=>e.stopPropagation();
       inp.onchange=()=>completeHabitInputThenTime(h.id,inp);
-      row.appendChild(nameCol); row.appendChild(inp);
+      row.appendChild(nameSpan); row.appendChild(inp);
     } else if(h.trackTime){
-      row.appendChild(nameCol);
+      row.appendChild(nameSpan);
     } else if(h.type==='number'||h.type==='text'){
       const inp=document.createElement('input');
       inp.className='habit-value-input';
@@ -283,23 +278,16 @@ function renderHome(){
       inp.placeholder='';
       inp.onclick=e=>e.stopPropagation();
       inp.onchange=()=>completeHabitInput(h.id,inp);
-      row.appendChild(nameCol); row.appendChild(inp);
+      row.appendChild(nameSpan); row.appendChild(inp);
     } else {
-      row.appendChild(nameCol);
+      row.appendChild(nameSpan);
     }
+    // Streak dots appended directly to row, below name
+    row.appendChild(buildStreakDots(h));
     return row;
   });
 
-  // Center list vertically to match done-state checkmark position
-  requestAnimationFrame(()=>{
-    const scroll=document.getElementById('habitsScroll');
-    const zone=document.getElementById('habitsList');
-    if(!scroll||!zone) return;
-    const zoneH=zone.offsetHeight;
-    const scrollH=scroll.clientHeight;
-    const pt=Math.max(32, Math.round((scrollH-zoneH)/2));
-    document.querySelector('.habits-inner').style.paddingTop=pt+'px';
-  });
+
 }
 
 /* ── THINGS TAP ── */
