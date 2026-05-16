@@ -290,15 +290,7 @@ function renderHome(){
     return row;
   });
 
-  // Vertical centering: push list down so it sits in middle of available space
-  requestAnimationFrame(()=>{
-    const scroll=document.getElementById('habitsScroll');
-    const inner=document.querySelector('.habits-inner');
-    if(!scroll||!inner) return;
-    const gap=scroll.clientHeight-inner.scrollHeight;
-    inner.style.paddingTop=gap>60?Math.floor(gap/2)+'px':'28px';
-    inner.style.paddingBottom='28px';
-  });
+
 }
 
 /* ── THINGS TAP ── */
