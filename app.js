@@ -261,7 +261,7 @@ function renderHome(){
     nameSpan.textContent=h.name; // textContent is always safe
     // Wrap name + streak dots in a column
     const nameCol=document.createElement('div');
-    nameCol.style.cssText='flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;';
+    nameCol.style.cssText='display:flex;flex-direction:column;align-items:center;min-width:0;width:100%;';
     nameCol.appendChild(nameSpan);
     nameCol.appendChild(buildStreakDots(h));
     if(h.trackTime && (h.type==='number'||h.type==='text')){
@@ -779,7 +779,7 @@ function _renderSettingsNow(){
     const _calH=state.habits;
     const _SC=[['#60a5fa','rgba(96,165,250,0.13)'],['#34d399','rgba(52,211,153,0.13)'],['#fbbf24','rgba(251,191,36,0.13)'],['#c084fc','rgba(192,132,252,0.13)'],['#f87171','rgba(248,113,113,0.13)'],['#2dd4bf','rgba(45,212,191,0.13)']];
     html+=`<div style="padding-top:max(env(safe-area-inset-top,44px),44px)">`;
-    html+=`<div style="margin:0;overflow:hidden;width:100%;box-sizing:border-box;background:rgba(255,255,255,0.32);border-radius:16px;padding:0 8px 8px;">`;
+    html+=`<div style="margin:0;overflow:hidden;width:100%;box-sizing:border-box;">`;
     // Day header
     html+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);padding:12px 0 10px">`;
     _D.forEach(d=>html+=`<div style="text-align:center;font-size:15px;color:#fff;font-weight:700;letter-spacing:.03em">${d}</div>`);
@@ -804,7 +804,7 @@ function _renderSettingsNow(){
           else br='border-radius:0';
           const mL=prevOn?'margin-left:-1px':'';
           const mR=nextOn?'margin-right:-1px':'';
-          html+=`<div onclick="openHabitFromCal('${h.id}')" style="background:${s};${br};height:38px;display:flex;align-items:center;justify-content:center;${mL};${mR};cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;overflow:hidden;position:relative;z-index:${prevOn?0:1}">
+          html+=`<div onclick="openHabitFromCal('${h.id}')" style="background:rgba(255,255,255,0.32);${br};height:38px;display:flex;align-items:center;justify-content:center;${mL};${mR};cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;overflow:hidden;position:relative;z-index:${prevOn?0:1}">
             <span style="font-size:12px;color:rgba(255,255,255,0.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 3px;text-align:center">${h.name}</span>
           </div>`;
         }
