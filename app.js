@@ -290,6 +290,15 @@ function renderHome(){
     return row;
   });
 
+  // Vertical centering: push list down so it sits in middle of available space
+  requestAnimationFrame(()=>{
+    const scroll=document.getElementById('habitsScroll');
+    const inner=document.querySelector('.habits-inner');
+    if(!scroll||!inner) return;
+    const gap=scroll.clientHeight-inner.scrollHeight;
+    inner.style.paddingTop=gap>60?Math.floor(gap/2)+'px':'28px';
+    inner.style.paddingBottom='28px';
+  });
 }
 
 /* ── THINGS TAP ── */
@@ -375,7 +384,7 @@ function handleHabitTap(hId){
       openInputSheetThenTime(h);
       return;
     }
-    openTimeTracker(hId); return;
+    openHabitTimeScreen(hId); return;
   }
   if(h.type==='number'||h.type==='text') return;
   if(h.url){ thingsTap(hId,()=>{ completeHabit(hId,true); try{ window.open(h.url,'_blank'); }catch(e){} }); return; }
@@ -790,23 +799,31 @@ function _renderSettingsNow(){
       const [s,f]=_SC[si%_SC.length];
       html+=`<div style="padding:14px 0 16px;text-align:center"><span style="font-size:15px;color:rgba(255,255,255,0.4);font-weight:600;letter-spacing:.06em;text-transform:uppercase">${sec.name}</span></div>`;
       sh.forEach(h=>{
-        // Each active day shows full name, consecutive days pill together
-        html+=`<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0;margin-bottom:3px">`;
+        // Group consecutive active days into streaks
+        const streaks=[];
+        let cur=null;
         for(let d=0;d<7;d++){
-          const on=h.days.includes(d);
-          const prevOn=d>0&&h.days.includes(d-1);
-          const nextOn=d<6&&h.days.includes(d+1);
-          if(!on){ html+=`<div style="height:38px"></div>`; continue; }
-          let br='';
-          if(!prevOn&&!nextOn) br='border-radius:10px';
-          else if(!prevOn) br='border-radius:10px 0 0 10px';
-          else if(!nextOn) br='border-radius:0 10px 10px 0';
-          else br='border-radius:0';
-          const mL=prevOn?'margin-left:-1px':'';
-          const mR=nextOn?'margin-right:-1px':'';
-          html+=`<div onclick="openHabitFromCal('${h.id}')" style="background:rgba(255,255,255,0.32);${br};height:38px;display:flex;align-items:center;justify-content:center;${mL};${mR};cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;overflow:hidden;position:relative;z-index:${prevOn?0:1}">
-            <span style="font-size:12px;color:rgba(255,255,255,0.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 3px;text-align:center">${h.name}</span>
-          </div>`;
+          if(h.days.includes(d)){ if(cur===null) cur=d; }
+          else{ if(cur!==null){ streaks.push({s:cur,e:d-1}); cur=null; } }
+        }
+        if(cur!==null) streaks.push({s:cur,e:6});
+
+        // Use grid-column span — most reliable way to merge cells
+        // grid has 7 columns; inactive days are empty cells
+        html+=`<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;margin-bottom:3px">`;
+        let col=1; // CSS grid columns are 1-indexed
+        for(let d=0;d<7;d++){
+          const streak=streaks.find(st=>st.s===d);
+          if(streak){
+            const span=streak.e-streak.s+1;
+            const br=span===1?'border-radius:10px':'border-radius:10px';
+            html+=`<div onclick="openHabitFromCal('${h.id}')" style="grid-column:${d+1}/span ${span};background:rgba(255,255,255,0.32);border-radius:10px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;overflow:hidden">
+              <span style="font-size:12px;color:rgba(255,255,255,0.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px;text-align:center">${h.name}</span>
+            </div>`;
+            d=streak.e; // skip remaining days in streak
+          } else {
+            html+=`<div style="height:38px"></div>`;
+          }
         }
         html+=`</div>`;
       });
@@ -882,7 +899,7 @@ function _renderSettingsNow(){
 
         </div>`).join('')}
       </div>
-      <div class="add-habit-row" onclick="openNewHabit('${sec.id}')">${plusSVG}</div>
+      <div class="add-habit-row" ontouchend="event.preventDefault();openNewHabit('${sec.id}')" onclick="openNewHabit('${sec.id}')">${plusSVG}</div>
     </div>`;
   }
   if(state.sectors.length<5) html+=`<button class="add-sector-btn-icon" onclick="addSector()">${plusSVG}</button>`;
@@ -932,15 +949,25 @@ function toggleHabitTrackTime(hId){
 }
 
 function openTrackTimeSheet(){
-  document.getElementById('trackTimeSheet').classList.add('open');
-  document.getElementById('overlay').classList.add('open');
-  document.getElementById('overlay').onclick=closeTrackTimeSheet;
+  const sh=document.getElementById('trackTimeSheet');
+  sh.style.zIndex='400'; // above settings screen
+  sh.classList.add('open');
+  // backdrop inside settings — tap outside sheet closes it
+  let _bd=document.getElementById('ttSheetBackdrop');
+  if(!_bd){
+    _bd=document.createElement('div');
+    _bd.id='ttSheetBackdrop';
+    _bd.style.cssText='position:fixed;inset:0;z-index:399;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);';
+    _bd.onclick=closeTrackTimeSheet;
+    document.body.appendChild(_bd);
+  }
+  _bd.style.display='block';
   _renderTrackTimeRows();
 }
 function closeTrackTimeSheet(){
   document.getElementById('trackTimeSheet').classList.remove('open');
-  document.getElementById('overlay').classList.remove('open');
-  document.getElementById('overlay').onclick=closeAllSheets;
+  const _bd=document.getElementById('ttSheetBackdrop');
+  if(_bd) _bd.style.display='none';
   renderSettings();
 }
 function _renderTrackTimeRows(){
@@ -1230,15 +1257,17 @@ function eRowClick(e,eId){ if(etDragMoved||etDragActive) return; openExtraDetail
 let editHabitId=null, editHabitSectorId=null, _callerPage=null;
 function openNewHabit(sectorId){
   openHabitDetail('new', sectorId);
-  setTimeout(()=>{
-    const i=document.getElementById('hdn');
-    if(!i) return;
-    // Scroll input into view first, then focus
-    i.scrollIntoView({behavior:'instant',block:'center'});
+  // iOS fix: element must be on-screen for focus() to trigger keyboard.
+  // Temporarily remove transition, snap to visible, focus, restore transition.
+  const scr=document.getElementById('habitDetail');
+  const i=document.getElementById('hdn');
+  if(scr && i){
+    scr.style.transition='none';
+    scr.style.transform='translateY(0)';
     i.focus();
-    // After keyboard opens, scroll again to ensure input is visible
-    setTimeout(()=>{ i.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 350);
-  }, 420);
+    // Restore transition after browser paints
+    requestAnimationFrame(()=>{ scr.style.transition=''; });
+  }
 }
 function openHabitFromCal(hId){
   openHabitDetail(hId);
@@ -1263,7 +1292,7 @@ function openHabitDetail(hId,defaultSector){
   nameWrap.style.cssText='padding:32px 0 22px';
   const nameInput=document.createElement('input');
   nameInput.className='hd-name-input'; nameInput.id='hdn'; nameInput.value=h.name;
-  if(isNew) nameInput.setAttribute('autofocus','autofocus');
+  // focus handled by openNewHabit synchronously
   nameInput.placeholder=''; nameInput.style.cssText='width:100%;text-align:center';
   nameWrap.appendChild(nameInput); body.appendChild(nameWrap);
 
@@ -1325,7 +1354,7 @@ function openHabitDetail(hId,defaultSector){
   }
 
   document.getElementById('habitDetail').classList.add('open');
-  // focus handled by openNewHabit with delay
+
 }
 function hdType(t,el){ document.querySelectorAll('.hd-body .type-mini-btns .type-mini-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); }
 function htCatPick(el){ document.querySelectorAll('#hdCatRow .sector-pill').forEach(p=>p.classList.remove('active')); el.classList.add('active'); }
