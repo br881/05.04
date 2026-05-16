@@ -17,9 +17,9 @@ html,body{background:var(--bg);color:#ffffff;font-family:-apple-system,'SF Pro T
 #home{transform:translateX(0);}
 
 /* HOME LAYOUT */
-.habits-scroll{position:absolute;top:calc(var(--safe-top) + 13px);bottom:calc(var(--safe-bottom) + 124px);left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;flex-direction:column;align-items:stretch;z-index:10;justify-content:center;}
+.habits-scroll{position:absolute;top:calc(var(--safe-top) + 13px);bottom:calc(var(--safe-bottom) + 124px);left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;flex-direction:column;align-items:stretch;z-index:10;}
 .habits-scroll::-webkit-scrollbar{display:none;}
-.habits-inner{width:100%;max-width:500px;margin:auto;padding:0 28px;box-sizing:border-box;}
+.habits-inner{width:100%;max-width:500px;margin:0 auto;padding:0 28px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;min-height:100%;}
 .habits-zone{display:flex;flex-direction:column;gap:0;}
 
 

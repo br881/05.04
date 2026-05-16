@@ -158,6 +158,11 @@
   <button class="is-confirm" onclick="confirmExtra()">Zapisz</button>
 </div>
 
+<div id="trackTimeSheet" class="input-sheet" style="max-height:70dvh;overflow:hidden;display:flex;flex-direction:column;padding:0 0 calc(var(--safe-bottom)+16px);">
+  <div class="is-handle" onclick="closeTrackTimeSheet()" style="margin:12px auto 8px;flex-shrink:0"></div>
+  <div style="text-align:center;font-size:13px;color:rgba(255,255,255,0.35);letter-spacing:.06em;text-transform:uppercase;padding-bottom:10px;flex-shrink:0">Śledź czas</div>
+  <div id="trackTimeList" style="overflow-y:auto;flex:1;scrollbar-width:none;"></div>
+</div>
 <div id="csvSheet">
   <div class="is-handle" onclick="closeCSVSheet()"></div>
   <button onclick="exportCSV()" class="is-confirm">Pobierz</button>

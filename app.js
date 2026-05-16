@@ -160,35 +160,42 @@ function updateProgressBar(){
 
 
 // Build 7-day streak strip for a habit row
+// Only active days shown: done = green pill, consecutive done days merge
 function buildStreakDots(h){
   const strip=document.createElement('div');
-  strip.style.cssText='display:flex;gap:0;margin-top:8px;align-items:center;justify-content:center;';
+  strip.style.cssText='display:flex;gap:0;margin-top:9px;align-items:center;width:100%;';
   const now=new Date();
-  // Start from Monday of current week
-  const dow=now.getDay(); // 0=Sun
+  const dow=now.getDay();
   const mon=new Date(now); mon.setDate(now.getDate()-(dow===0?6:dow-1));
-  // Polish day index: 0=P(Mon)..6=N(Sun)
+  // Build done map for active days this week
+  const doneMap=[];
   for(let i=0;i<7;i++){
     const d=new Date(mon); d.setDate(mon.getDate()+i);
-    const dk=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const dk=fmtDate(d);
     const active=h.days.includes(i);
-    const done=active&&h.completions&&h.completions[dk];
-    // Check prev/next for pill merging
-    const prevDone=i>0&&h.days.includes(i-1)&&h.completions&&h.completions[fmtDate(new Date(mon.getTime()+(i-1)*864e5))];
-    const nextDone=i<6&&h.days.includes(i+1)&&h.completions&&h.completions[fmtDate(new Date(mon.getTime()+(i+1)*864e5))];
+    const done=active&&!!(h.completions&&h.completions[dk]);
+    doneMap.push({active,done});
+  }
+  for(let i=0;i<7;i++){
+    const {active,done}=doneMap[i];
     const el=document.createElement('div');
-    const isFirst=done&&!prevDone; const isLast=done&&!nextDone;
-    if(done){
+    el.style.cssText=`flex:1;height:5px;`;
+    if(!active){
+      // invisible spacer — keeps alignment with 7 days
+      el.style.background='transparent';
+    } else if(done){
+      const prevDone=i>0&&doneMap[i-1].done;
+      const nextDone=i<6&&doneMap[i+1].done;
       let br='';
-      if(isFirst&&isLast) br='border-radius:6px';
-      else if(isFirst) br='border-radius:6px 0 0 6px';
-      else if(isLast) br='border-radius:0 6px 6px 0';
+      if(!prevDone&&!nextDone) br='border-radius:4px';
+      else if(!prevDone) br='border-radius:4px 0 0 4px';
+      else if(!nextDone) br='border-radius:0 4px 4px 0';
       else br='border-radius:0';
-      el.style.cssText=`width:${100/7}%;height:4px;background:var(--accent);${br};`;
-    } else if(active){
-      el.style.cssText=`width:${100/7}%;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;`;
+      el.style.background='var(--accent)';
+      el.style.cssText+=br;
     } else {
-      el.style.cssText=`width:${100/7}%;height:4px;background:transparent;`;
+      // active but not done — invisible (no dot shown)
+      el.style.background='transparent';
     }
     strip.appendChild(el);
   }
@@ -783,29 +790,24 @@ function _renderSettingsNow(){
       const [s,f]=_SC[si%_SC.length];
       html+=`<div style="padding:14px 0 16px;text-align:center"><span style="font-size:15px;color:rgba(255,255,255,0.4);font-weight:600;letter-spacing:.06em;text-transform:uppercase">${sec.name}</span></div>`;
       sh.forEach(h=>{
-        // Build streak-connected row: consecutive active days merge into a pill
-        const cells=[];
+        // Each active day shows full name, consecutive days pill together
+        html+=`<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0;margin-bottom:3px">`;
         for(let d=0;d<7;d++){
           const on=h.days.includes(d);
           const prevOn=d>0&&h.days.includes(d-1);
           const nextOn=d<6&&h.days.includes(d+1);
-          if(!on){ cells.push(`<div style="height:38px"></div>`); continue; }
-          // Determine pill shape
-          const isFirst=!prevOn; const isLast=!nextOn;
+          if(!on){ html+=`<div style="height:38px"></div>`; continue; }
           let br='';
-          if(isFirst&&isLast) br='border-radius:10px';
-          else if(isFirst) br='border-radius:10px 0 0 10px';
-          else if(isLast) br='border-radius:0 10px 10px 0';
+          if(!prevOn&&!nextOn) br='border-radius:10px';
+          else if(!prevOn) br='border-radius:10px 0 0 10px';
+          else if(!nextOn) br='border-radius:0 10px 10px 0';
           else br='border-radius:0';
-          // Gap: merge by removing margin between consecutive days
-          const marginR=nextOn?'margin-right:-1px':'';
-          const marginL=prevOn?'margin-left:-1px':'';
-          // Show name only in first cell of streak
-          const showName=isFirst;
-          cells.push(`<div onclick="openHabitFromCal('${h.id}')" style="background:${s};${br};padding:10px 0;font-size:13px;color:rgba(255,255,255,0.9);cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;text-align:center;${marginR};${marginL};position:relative;height:38px;display:flex;align-items:center;justify-content:flex-start;padding-left:${isFirst?'8px':'0px'};overflow:hidden">${showName?`<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px">${h.name}</span>`:''}</div>`);
+          const mL=prevOn?'margin-left:-1px':'';
+          const mR=nextOn?'margin-right:-1px':'';
+          html+=`<div onclick="openHabitFromCal('${h.id}')" style="background:${s};${br};height:38px;display:flex;align-items:center;justify-content:center;${mL};${mR};cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;overflow:hidden;position:relative;z-index:${prevOn?0:1}">
+            <span style="font-size:12px;color:rgba(255,255,255,0.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 3px;text-align:center">${h.name}</span>
+          </div>`;
         }
-        html+=`<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0;margin-bottom:3px">`;
-        cells.forEach(c=>html+=`<div>${c}</div>`);
         html+=`</div>`;
       });
     });
@@ -888,17 +890,16 @@ function _renderSettingsNow(){
 
 
 
-  const _curBg=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#061E0C';
-  html+=`<div style="display:flex;align-items:center;justify-content:center;margin-top:16px;margin-bottom:8px">
-    <label style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;position:relative">
+  // ── 3-ICON BOTTOM BAR: zegar | kolor | pobierz ──
+  html+=`<div style="display:flex;align-items:center;justify-content:center;gap:0;margin-top:20px;margin-bottom:28px">
+    <button onclick="openTrackTimeSheet()" aria-label="Śledź czas" style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;opacity:.7">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+    </button>
+    <label aria-label="Kolor tła" style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;position:relative;opacity:.7">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
       <input type="color" id="_nativeBgPicker" style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;cursor:pointer;" oninput="applyBgColor(this.value)" onchange="applyBgColor(this.value)">
     </label>
-  </div>`;
-
-  // Export CSV — icon opens slide-up sheet
-  html+=`<div style="display:flex;align-items:center;justify-content:center;margin-bottom:24px">
-    <button onclick="openCSVSheet()" aria-label="Pobierz CSV" style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center">
+    <button onclick="openCSVSheet()" aria-label="Pobierz CSV" style="background:none;border:none;color:#fff;cursor:pointer;padding:14px 20px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;opacity:.7">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>
     </button>
   </div>`;
@@ -925,8 +926,44 @@ function _renderSettingsNow(){
 function toggleHabitTrackTime(hId){
   const h=state.habits.find(x=>x.id===hId); if(!h) return;
   h.trackTime=!h.trackTime;
-  // trackTime toggled
-  save(); renderSettings();
+  save();
+  // Re-render just the track-time sheet rows without closing it
+  _renderTrackTimeRows();
+}
+
+function openTrackTimeSheet(){
+  document.getElementById('trackTimeSheet').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('overlay').onclick=closeTrackTimeSheet;
+  _renderTrackTimeRows();
+}
+function closeTrackTimeSheet(){
+  document.getElementById('trackTimeSheet').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('overlay').onclick=closeAllSheets;
+  renderSettings();
+}
+function _renderTrackTimeRows(){
+  const box=document.getElementById('trackTimeList');
+  if(!box) return;
+  box.innerHTML='';
+  state.habits.forEach(h=>{
+    const on=!!h.trackTime;
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:14px 22px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;';
+    row.onclick=()=>toggleHabitTrackTime(h.id);
+    const name=document.createElement('span');
+    name.textContent=h.name;
+    name.style.cssText='font-size:18px;color:#fff;font-weight:400;flex:1;';
+    const tog=document.createElement('div');
+    tog.className='toggle'+(on?' on':'');
+    row.appendChild(name); row.appendChild(tog);
+    box.appendChild(row);
+    // separator
+    const sep=document.createElement('div');
+    sep.style.cssText='height:1px;background:rgba(255,255,255,0.06);margin:0 22px;';
+    box.appendChild(sep);
+  });
 }
 
 
